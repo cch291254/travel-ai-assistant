@@ -53,3 +53,22 @@ python -m venv .venv
 ```powershell
 python -m pip install -r requirements.txt
 ```
+
+## 当前支持的文档处理
+
+- 读取 UTF-8 编码的 TXT 和 Markdown 文件
+- 按自然段整理 TXT 和 Markdown 内容
+- 使用 pypdf 逐页提取文字型 PDF
+- 保留 PDF 的真实页码和来源信息
+- 对空白 PDF 页面和损坏 PDF 给出明确结果
+
+## 当前限制
+
+- 暂不支持扫描型 PDF 和 OCR
+- 暂不保证复杂表格、多栏排版的提取效果
+- 暂不进行文本切块和向量检索
+
+## 运行测试
+
+```powershell
+python -m pytest -v
