@@ -72,3 +72,14 @@ python -m pip install -r requirements.txt
 
 ```powershell
 python -m pytest -v
+```
+
+## SQLite 文档登记
+
+- 使用 `data/documents.db` 持久保存文档登记信息
+- `init_db()` 初始化 `documents` 表
+- `register_document()` 使用参数化 SQL 登记文档
+- 使用 `file_hash` 唯一约束识别重复内容
+- 保存处理状态和错误信息
+- 重复登记返回 `False`，不会中断程序
+- 本地数据库文件已加入 `.gitignore`
