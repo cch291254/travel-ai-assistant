@@ -33,9 +33,14 @@ def register_document(conn,filename,sourse,file_hash,updated_at,status,error_mes
                 conn.rollback()
                 print("重复文件，已跳过")
                 return False
+def get_document_status(conn):
+        rows=conn.execute("""select status,count(*) from documents group by status""").fetchall()
+        return dict(rows)
 if __name__ == "__main__":
         conn = init_db("data/documents.db")
         register_document(conn,"hangzhou_guide.pdf","data/raw/hangzhou_guide.pdf","abc123","2026-09-23T17:05:25","success",)
         result=conn.execute("SELECT*FROM documents").fetchone()
         print(result)
+        stats=get_document_status(conn)
+        print(stats)
         conn.close()
