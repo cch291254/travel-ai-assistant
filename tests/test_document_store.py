@@ -1,5 +1,5 @@
 
-from app.document_store import init_db,register_document
+from app.document_store import init_db,register_document,get_document_status
 def test_Init_db():
     conn=init_db(":memory:")
     result=conn.execute("""
@@ -60,4 +60,17 @@ def test_register_failed_document():
 
     assert result is True
     assert record == ("failed", "PDF解析失败")
+    conn.close()
+def test_get_ducoment_status():
+    conn=init_db(":memory:")
+    register_document(conn,"test001。pdf","data/raw/tesst001.pdf",
+    "hash_01","2026_1-1","failed","pdf解析失败")
+    register_document(
+        conn,"test_02.pdf",
+        "data/raw/tes_02.pdf",
+        "hash_002",
+        "2026-09-24T10:00:00",
+        "success",)
+    stats=get_document_status(conn)
+    assert stats=={"failed":1,"success":1}
     conn.close()
