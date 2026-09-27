@@ -39,5 +39,19 @@ def ingest_file(conn,path_value):
         "records":records}
     return {"status":"skipped",
     "records":[]}
+def ingest_directory(conn,path_value):
+    directory_path=Path(path_value)
+    if not directory_path.exists():
+        raise FileNotFoundError(f"目录不存在:{directory_path}")
+    if not directory_path.is_dir():
+        raise ValueError(f"不是目录：{directory_path}")
+    summary={"success":0,"failed":0,"skipped":0}
+    for file_path in sorted(directory_path.iterdir()):
+        if not file_path.is_file():
+            continue
+        result=ingest_file(conn,file_path)
+        status=result["status"]
+        summary[status]+=1
+    return summary
 
     

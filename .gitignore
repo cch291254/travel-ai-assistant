@@ -5,4 +5,4 @@ __pycache__/
 .pytest_cache/
 logs/*.log
 .vscode/
-data/documents.db
+data/*.db

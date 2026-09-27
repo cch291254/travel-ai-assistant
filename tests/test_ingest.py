@@ -1,5 +1,5 @@
 import pytest
-from app.ingest import parse_document, calculate_file_hash, ingest_file
+from app.ingest import parse_document, calculate_file_hash, ingest_file,ingest_directory
 from app.document_store import init_db
 
 def test_parse_document_txt(tmp_path):
@@ -66,4 +66,27 @@ def test_ingest_file_failed(tmp_path):
     assert result["status"]=="failed"
     assert result["records"]==[]
     assert result["error"]=="不支持的文件格式:.json"
+    conn.close()
+def test_ingest_directory(tmp_path):
+    input_dir=tmp_path/"input"
+    input_dir.mkdir()
+    file_a=input_dir/"a.txt"
+    file_a.write_text("第一段",encoding="utf-8")
+    file_b=input_dir/"b.md"
+    file_b.write_text("第二段",encoding="utf-8")
+    file_c=input_dir/"c.json"
+    file_c.write_text("{}")
+    file_d=input_dir/"copy.txt"
+    file_d.write_text("第一段",encoding="utf-8")
+    conn=init_db(":memory:")
+    summary=ingest_directory(conn,input_dir)
+    count=conn.execute("select count(*) from documents").fetchone()
+    assert summary=={"success":2,"failed":1,"skipped":1}
+    assert count==(3,)
+    conn.close()
+def test_ingest_directory_missing(tmp_path):
+    missing_dir=tmp_path/"missing"
+    conn=init_db(":memory:")
+    with pytest.raises(FileNotFoundError,match="目录不存在"):
+        ingest_directory(conn,missing_dir)
     conn.close()
