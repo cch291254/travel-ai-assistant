@@ -40,7 +40,7 @@ def parse_pdf_file(path_value):
         records.append(record)
     return records
 if __name__ == "__main__":
-    result = parse_pdf_file("data/raw/hangzhou_guide.pdf")
+    result = parse_pdf_file("tests/fixtures/hangzhou_guide.pdf")
 
     for record in result:
         print(record)

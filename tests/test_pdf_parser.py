@@ -18,7 +18,7 @@ def test_empty_pdf_page(tmp_path):
 #验证无内容pdf
 
 def test_parse_pdf():
-    records=parse_pdf_file("data/raw/hangzhou_guide.pdf")
+    records=parse_pdf_file("tests/fixtures/hangzhou_guide.pdf")
 
 
     assert len(records)==2

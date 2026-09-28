@@ -12,7 +12,7 @@ def test_parse_not_document(tmp_path):
     with pytest.raises(ValueError,match="不支持的文件格式"):
         parse_document(file_path)
 def test_parse_document_pdf():
-    file_path="data/raw/hangzhou_guide.pdf"
+    file_path="tests/fixtures/hangzhou_guide.pdf"
     result=parse_document(file_path)
     assert len(result)>0
 def test_caiculate_file_hash_same_content(tmp_path):
