@@ -34,6 +34,6 @@ def parse_text_file(path_value):
     
     return  records
 if __name__ == "__main__":
-    result = parse_text_file("data/raw/hangzhou_guide.md")
+    result = parse_text_file("data/raw/hangzhou_routes.md")
     for record in result:
         print(record)

@@ -38,7 +38,7 @@ def get_document_status(conn):
         return dict(rows)
 if __name__ == "__main__":
         conn = init_db("data/documents.db")
-        register_document(conn,"hangzhou_guide.pdf","data/raw/hangzhou_guide.pdf","abc123","2026-09-23T17:05:25","success",)
+        register_document(conn,"hangzhou_guide.pdf","data/raw/hangzhou_routes.md","abc123","2026-09-23T17:05:25","success",)
         result=conn.execute("SELECT*FROM documents").fetchone()
         print(result)
         stats=get_document_status(conn)
