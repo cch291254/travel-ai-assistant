@@ -1,9 +1,7 @@
 import os
-from random import choice
 import requests
 from dotenv import load_dotenv
 import time
-
 
 def should_retry(status_code):
     retryable_codes = [429, 500, 502, 503, 504]
@@ -12,7 +10,7 @@ def should_retry(status_code):
     return False
 
 
-def call_model(question):
+def call_model(question,system_prompt="你是一名旅行行程助手，回答要简洁、谨慎"):
     result={"answer":"","record":None,"error":""}
     max_input_chars=1000
     if not isinstance(question, str):
@@ -43,7 +41,7 @@ def call_model(question):
         
         "messages":[{
             "role":"system",
-            "content":"你是一名旅行社行程助手，回答要简洁、谨慎。",
+            "content":system_prompt,
         },
         {
             "role":"user",
@@ -125,5 +123,5 @@ def call_model(question):
 
 if __name__ == "__main__":
     print("只在直接运行本文件时执行")
-    result=call_model("  ")
+    result=call_model("推荐西湖")
     print(result)

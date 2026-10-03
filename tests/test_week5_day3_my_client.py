@@ -1,4 +1,3 @@
-from unittest import mock
 from examples.week5_day3_my_client import call_model
 from unittest.mock import Mock, patch
 import requests
