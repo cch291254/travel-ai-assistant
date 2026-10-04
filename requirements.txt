@@ -1,3 +1,8 @@
 pytest
 python_dotenv
 pypdf
+requests
+pydantic
+fastapi
+uvicorn
+httpx2

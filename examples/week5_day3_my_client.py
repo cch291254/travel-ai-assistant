@@ -10,7 +10,7 @@ def should_retry(status_code):
     return False
 
 
-def call_model(question,system_prompt="你是一名旅行行程助手，回答要简洁、谨慎"):
+def call_model(question,system_prompt="你是一名旅行行程助手，回答要简洁、谨慎",json_mode=False,):
     result={"answer":"","record":None,"error":""}
     max_input_chars=1000
     if not isinstance(question, str):
@@ -53,7 +53,8 @@ def call_model(question,system_prompt="你是一名旅行行程助手，回答�
         "stream":False,
         "temperature":0.2,
     }
-    
+    if json_mode:
+        payload["response_format"]={"type":"json_object"}
     max_attempts=3
     for attempt in range(max_attempts):
             call_record = {
@@ -64,8 +65,10 @@ def call_model(question,system_prompt="你是一名旅行行程助手，回答�
         "总tokens": None,
         "结束原因": None,
         "重试次数": attempt,
+        "请求耗时秒":None,
     }
-            
+            start_time = time.perf_counter()
+
             try:   
                 response=requests.post(
                     url,
@@ -73,6 +76,7 @@ def call_model(question,system_prompt="你是一名旅行行程助手，回答�
                     timeout=60,
                     headers=headers,
                 )
+                call_record["请求耗时秒"]=round(time.perf_counter()-start_time,3)
                 status_code=response.status_code
                 call_record["状态码"]=status_code
                 print("第",attempt+1,"次请求，状态码：",status_code)
@@ -110,7 +114,7 @@ def call_model(question,system_prompt="你是一名旅行行程助手，回答�
                     print("准备重试")
                     time.sleep(1)
             except requests.exceptions.RequestException as error:
-                
+                call_record["请求耗时秒"]=round(time.perf_counter()-start_time,3)
                 if attempt+1==max_attempts:
                     result["error"]=f"网络请求失败，次数已耗尽{error}，已尝试次数{attempt+1}"
                     result["record"] = call_record

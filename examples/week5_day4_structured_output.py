@@ -23,9 +23,10 @@ system_prompt = (
     '你是一名旅行助手。只返回一个JSON对象，不要附加说明或Markdown代码块。'
     '必须包含answer和sources：answer是字符串，sources是字符串列表。'
     '没有可靠来源时，sources返回空列表，不要编造来源。'
+    '输出示例：{"answer":"简短回答","sources":[]}。'
 )
 def call_structured_model(question):
-    model_result=call_model(question,system_prompt=system_prompt)
+    model_result=call_model(question,system_prompt=system_prompt,json_mode=True)
 
     if model_result["error"]:
         return{
