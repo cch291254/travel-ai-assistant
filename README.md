@@ -9,7 +9,9 @@
 - SQLite文档状态登记；
 - 单文件和目录批量导入；
 - 失败文件记录与错误原因保存；
-- 23项自动化测试通过。
+- 核心链路相关49项自动化测试通过
+- DeepSeek 调用与重试、结构化回答校验、FastAPI 接口、接口成功与失败测试
+
 
 ## 首版计划支持的功能
 
@@ -42,7 +44,7 @@
 - logs: 程序运行日志
 - tests/: 自动化测试
 - .env.example: 环境变量配置示例
-- requirement.txt: Python 依赖列表
+- requirements.txt: Python 依赖列表
 
 # 环境与安装
 
@@ -83,7 +85,7 @@ python -m pip install -r requirements.txt
 - 暂不支持扫描型 PDF 和 OCR
 - 暂不保证复杂表格、多栏排版的提取效果
 - 暂不进行文本切块和向量检索
-
+- 来源链接未经程序核验；模型函数返回的错误暂时统一映射为 502
 
 
 ## 运行测试
@@ -104,3 +106,11 @@ python -m pytest -v
 - 重复登记返回 `False`，不会中断程序
 - 本地数据库文件已加入 `.gitignore`
 
+
+
+## 启动 API 服务
+
+```
+python -m uvicorn app.week5_day5_api:app --reload
+```
+配置模型环境变量、激活虚拟环境、从项目根目录运行，以及 http://127.0.0.1:8000/docs

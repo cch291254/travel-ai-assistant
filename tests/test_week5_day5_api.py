@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 import app.week5_day5_api as api
+import examples.week5_day4_structured_output as structured_output
 
 
 client=TestClient(api.app)
@@ -103,3 +104,75 @@ def test_chat_whitespace_question(monkeypatch):
 
     assert response.status_code == 422
     assert calls==[]
+
+def test_chat_model_error(monkeypatch):
+    def fake_call_model(question):
+        return{
+            "data":None,
+            "error":"模拟模型服务失败",
+            "record":None,
+        }
+    def fake_get_model_caller():
+        return fake_call_model
+    
+    monkeypatch.setitem(
+        api.app.dependency_overrides,
+        api.get_model_caller,
+        fake_get_model_caller,
+    )
+
+    response=client.post(
+        "/chat",
+        json={"question":"推荐杭州景点"}
+    )
+    result=response.json()
+
+    assert response.status_code==502
+    assert result=={"detail":"模拟模型服务失败"}
+
+def test_chat_model_timeout(monkeypatch):
+    def fake_call_model(question):
+        return{
+            "data":None,
+            "error":"模拟模型调用超时",
+            "record":None,
+        }
+    def fake_get_model_caller():
+        return fake_call_model
+    
+    monkeypatch.setitem(
+        api.app.dependency_overrides,
+        api.get_model_caller,
+        fake_get_model_caller,
+    )
+
+    response=client.post(
+        "/chat",
+        json={"question":"推荐杭州景点"}
+    )
+    result=response.json()
+
+    assert response.status_code==502
+    assert result=={"detail":"模拟模型调用超时"}
+
+def test_chat_missing_sources(monkeypatch):
+    def fake_call_model(question,system_prompt,json_mode=False):
+        return {
+            "answer": '{"answer": "推荐西湖"}',
+            "error": "",
+            "record": {"状态码": 200},
+        }
+    monkeypatch.setattr(
+        structured_output,
+        "call_model",
+        fake_call_model,
+    )
+
+    response = client.post(
+        "/chat",
+        json={"question": "推荐杭州景点"},
+    )
+    result = response.json()
+
+    assert response.status_code == 502
+    assert "sources" in result["detail"]
