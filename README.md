@@ -11,6 +11,7 @@
 - 失败文件记录与错误原因保存；
 - 核心链路相关49项自动化测试通过
 - DeepSeek 调用与重试、结构化回答校验、FastAPI 接口、接口成功与失败测试
+- 第六周第一天 SQLite 学习示例：会话与消息关联、参数化 SQL、级联删除、JOIN、稳定排序、事务和索引查询计划；尚未接入 `/chat`
 
 
 ## 首版计划支持的功能
@@ -114,3 +115,26 @@ python -m pytest -v
 python -m uvicorn app.week5_day5_api:app --reload
 ```
 配置模型环境变量、激活虚拟环境、从项目根目录运行，以及 http://127.0.0.1:8000/docs
+
+## 第六周第一天 SQL 练习
+
+这些是学习演示脚本，不是已接入 API 的会话存储模块。四个脚本只使用 Python 标准库，不调用模型 API。
+
+- `examples/week6_day1_sql.py`：创建会话与消息表，启用外键，参数化写入和读取消息。
+- `examples/week6_day1_read.py`：读取已有会话，验证合法关联与回滚、级联删除、其他会话不受影响，并练习 JOIN 与时间排序。测试中的写入、删除和时间修改最后回滚。
+- `examples/week6_day1_user_test.py`：将创建会话和首条消息作为一组操作，演示成功提交与重新连接后的持久化读取。把消息内容改为 `None` 可验证约束失败后整组回滚。
+- `examples/week6_day1_index.py`：比较联合索引创建前后的查询计划，并使用 JOIN 按用户筛选消息。
+
+从项目根目录运行，例如：
+
+```powershell
+.\.venv\Scripts\python.exe examples\week6_day1_sql.py
+```
+
+`week6_day1_sql.py` 每次运行会新增两个会话和四条消息；`week6_day1_user_test.py` 的成功分支每次会新增一个测试会话和一条消息。只查询旧数据时不要重复执行这些 INSERT。
+
+`week6_day1_read.py` 和索引示例保留课堂数据编号：会话 15、16，消息 18、19。新环境首次运行写入脚本会生成不同编号，需根据实际输出调整示例中的查询编号和排序测试消息编号；两条排序测试消息应属于要查询的会话。不存在或没有消息的会话不能作为级联删除验证的充分证据。
+
+`week6_chat_demo.db` 与 `week6_chat_2_demo.db` 是本地生成的练习数据库，不进入 Git。不要将误拼的 `week_chat_demo.db` 当作原数据库。
+
+索引一旦创建会保留，再次运行时两次查询计划都可能使用该索引。已观察到原查询计划从 `SCAN messages` 加临时排序，变为使用 `idx_messages_conversation_time` 的 `SEARCH`；尚未测量实际耗时提升。之前的 49 项核心自动测试不包含这些手工 SQL 实验。
