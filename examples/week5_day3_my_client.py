@@ -10,7 +10,7 @@ def should_retry(status_code):
     return False
 
 
-def call_model(question,system_prompt="你是一名旅行行程助手，回答要简洁、谨慎",json_mode=False,):
+def call_model(question,system_prompt="你是一名旅行行程助手，回答要简洁、谨慎",json_mode=False,history=None):
     result={"answer":"","record":None,"error":""}
     max_input_chars=1000
     if not isinstance(question, str):
@@ -36,18 +36,22 @@ def call_model(question,system_prompt="你是一名旅行行程助手，回答�
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
     }
+    if history is None:
+        history=[]
+    messages=[
+        {
+            "role":"system",
+            "content":system_prompt
+        }]
+    messages.extend(history)
+    messages.append({
+        "role":"user",
+        "content":question})
     payload={
         "model":model,
         
-        "messages":[{
-            "role":"system",
-            "content":system_prompt,
-        },
-        {
-            "role":"user",
-            "content":question
-        },
-        ],
+        "messages":messages,
+        
         "thinking":{"type":"disabled"},
         "max_tokens":300,
         "stream":False,

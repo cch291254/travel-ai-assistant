@@ -34,7 +34,7 @@ def test_sources_erong_type():
     
 
 def test_call_structured_model_success(monkeypatch):
-    def fake_call_model(question, system_prompt,json_mode=False):
+    def fake_call_model(question, system_prompt,json_mode=False,history=None):
         assert json_mode is True
         return {
     "answer": '{"answer": "推荐西湖", "sources": ["官网"]}',
@@ -51,7 +51,7 @@ def test_call_structured_model_success(monkeypatch):
     assert result["record"]["状态码"]==200
 
 def test_call_structured_model_api_error(monkeypatch):
-    def fake_call_model(question,system_prompt,json_mode=False):
+    def fake_call_model(question,system_prompt,json_mode=False,history=None):
         assert json_mode is True
 
         return {
@@ -69,7 +69,7 @@ def test_call_structured_model_api_error(monkeypatch):
     assert result["data"] is None
 
 def test_call_structured_model_invalid_json(monkeypatch):
-    def fake_call_model(question,system_prompt,json_mode=False):
+    def fake_call_model(question,system_prompt,json_mode=False,history=None):
         assert json_mode is True
 
         return {

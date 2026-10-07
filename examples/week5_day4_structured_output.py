@@ -25,8 +25,8 @@ system_prompt = (
     '没有可靠来源时，sources返回空列表，不要编造来源。'
     '输出示例：{"answer":"简短回答","sources":[]}。'
 )
-def call_structured_model(question):
-    model_result=call_model(question,system_prompt=system_prompt,json_mode=True)
+def call_structured_model(question,history=None):
+    model_result=call_model(question,system_prompt=system_prompt,json_mode=True,history=history)
 
     if model_result["error"]:
         return{
@@ -38,7 +38,8 @@ def call_structured_model(question):
     return parse_result
 if __name__ == "__main__":
     
-    result = call_structured_model("推荐一个杭州景点")
+    result = call_structured_model("推荐一个杭州景点",history=[
+        {"role": "user", "content": "我想去杭州玩两天"},
+        {"role": "assistant", "content": "可以安排西湖和灵隐寺"}
+    ])
     print(result)
-
-
