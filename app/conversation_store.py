@@ -130,6 +130,24 @@ def create_conversation_with_turn(
     finally:
         conn.close()
 
+def delete_conversation(conversation_id):
+    conn=get_connection()
+
+    try:
+        cursor=conn.execute(
+            "DELETE FROM conversations WHERE id=?",
+            (conversation_id,)
+        )
+        conn.commit()
+        return cursor.rowcount==1
+
+    except sqlite3.Error:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
+
 if __name__=="__main__":
     init_db()
     init_db()

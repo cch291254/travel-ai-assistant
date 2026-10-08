@@ -6,6 +6,9 @@ import app.conversation_store as store
 
 
 client=TestClient(api.app)
+client.headers.update({
+    "Authorization":"Bearer token_a"
+})
 
 @pytest.fixture
 def isolated_db(tmp_path, monkeypatch):
@@ -420,3 +423,88 @@ def test_chat_history_limit(monkeypatch, isolated_db):
         {"role": "user", "content": "u5"},
         {"role": "assistant", "content": "a5"}
     ]
+
+#没有令牌时返还401
+def test_chat_missing_token():
+    no_auth_client=TestClient(api.app)
+
+    response=no_auth_client.post(
+        "/chat",
+        json={"question":"推荐杭州景点"}
+    )
+
+    assert response.status_code==401
+    assert response.json()=={"detail":"缺失访问令牌"}
+
+#user_b 不能继续 user_a 的会话。
+def test_chat_forbidden_for_other_user(isolated_db):
+    conversation_id=store.create_conversation_with_turn(
+        "用户A的会话",
+        "user_a",
+        "推荐杭州景点",
+        "可以参观西湖"
+    )
+
+    response=client.post(
+        "/chat",
+        json={
+            "question":"继续推荐",
+            "conversation_id":conversation_id
+        },
+        headers={
+            "Authorization":"Bearer token_b"
+        }
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {
+        "detail": "无权访问该对话"
+    }
+
+    messages=store.get_messages(conversation_id)
+    assert len(messages)==2
+
+def test_delete_own_conversation(isolated_db):
+    conversation_id=store.create_conversation_with_turn(
+        "待删除会话",
+        "user_a",
+        "用户消息",
+        "助手回答"
+    )
+
+    response=client.delete(
+        f"/conversations/{conversation_id}"
+    )
+
+    
+    assert response.status_code == 200
+    assert response.json() == {
+        "status": "deleted",
+        "conversation_id": conversation_id
+    }
+
+    assert store.get_conversation(conversation_id) is None
+    assert store.get_messages(conversation_id) == []
+
+
+def test_delete_other_user_conversation(isolated_db):
+    conversation_id=store.create_conversation_with_turn(
+        "用户A的会话",
+        "user_a",
+        "用户消息",
+        "助手回答"
+    )
+
+    response=client.delete(
+        f"/conversations/{conversation_id}",
+        headers={
+            "Authorization": "Bearer token_b"
+        }
+        )
+
+    assert response.status_code==403
+    assert response.json()=={
+        "detail":"无权删除该对话"
+    }
+    assert store.get_conversation(conversation_id) is not None
+    assert len(store.get_messages(conversation_id))==2
