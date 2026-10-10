@@ -508,3 +508,84 @@ def test_delete_other_user_conversation(isolated_db):
     }
     assert store.get_conversation(conversation_id) is not None
     assert len(store.get_messages(conversation_id))==2
+
+
+def test_get_own_conversation_detail(isolated_db):
+    conversation_id=store.create_conversation_with_turn(
+        "待查询会话",
+        "user_a",
+        "用户消息",
+        "助手回答"
+    )
+
+    response=client.get(
+        f"/conversations/{conversation_id}"
+    )
+
+    assert response.status_code==200
+
+    data=response.json()
+
+    assert data["conversation"]["id"]==conversation_id
+    assert data["conversation"]["title"]=="待查询会话"
+    assert data["conversation"]["owner_id"]=="user_a"
+    assert len(data["messages"])==2
+    assert data["messages"][0]["role"]=="user"
+    assert data["messages"][1]["role"]=="assistant"
+    assert data["messages"][0]["content"]=="用户消息"
+    assert data["messages"][1]["content"]=="助手回答"
+
+
+def test_get_other_user_conversation_detail(isolated_db):
+    conversation_id=store.create_conversation_with_turn(
+        "a消息",
+        "user_a",
+        "用户消息",
+        "助手回答"
+    )
+
+    response=client.get(
+        f"/conversations/{conversation_id}",
+        headers={
+            "Authorization": "Bearer token_b"
+        }
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {
+    "detail": "无权访问该会话"
+}
+    assert store.get_conversation(conversation_id) is not None
+    assert len(store.get_messages(conversation_id)) == 2
+
+def test_get_missing_conversation_detail(isolated_db):
+    response=client.get(
+        f"/conversations/999"
+    )
+    assert response.status_code == 404
+    assert response.json() == {
+    "detail": "会话不存在"
+}
+
+def test_get_invalid_conversation_id(isolated_db):
+    response = client.get(
+"/conversations/0"
+)
+    assert response.status_code == 422
+    data = response.json()
+    error = data["detail"][0]
+
+    assert error["type"] == "greater_than_equal"
+    assert error["loc"] == ["path", "conversation_id"]
+    assert error["input"] == "0"
+
+
+def test_get_conversation_without_auth():
+    no_auth_client = TestClient(api.app)
+
+    response = no_auth_client.get("/conversations/1")
+
+    assert response.status_code == 401
+    assert response.json() == {
+        "detail": "缺失访问令牌"
+    }

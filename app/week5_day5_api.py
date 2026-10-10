@@ -1,4 +1,4 @@
-from fastapi import FastAPI,HTTPException,Depends,Header
+from fastapi import FastAPI,HTTPException,Depends,Header,Path
 from pydantic import BaseModel,Field,ConfigDict
 from examples.week5_day4_structured_output import(call_structured_model,StructuredAnswer)
 from app.conversation_store import( init_db,get_conversation,get_messages,save_turn,create_conversation_with_turn,delete_conversation)
@@ -119,7 +119,7 @@ def remove_conversation(
     if conversation is None:
         raise HTTPException(
             status_code=404,
-            detail="会话不保存"
+            detail="会话不存在"
         )
 
     if conversation["owner_id"]!=current_user_id:
@@ -134,3 +134,29 @@ def remove_conversation(
         "status":"deleted",
         "conversation_id":conversation_id
     }
+
+
+@app.get("/conversations/{conversation_id}")
+def get_conversation_detail(
+    conversation_id:int =Path(ge=1),
+    current_user_id:str=Depends(get_current_user_id)
+):
+    conversation=get_conversation(conversation_id)
+    data={}
+    if conversation is None:
+        raise HTTPException(
+            status_code=404,
+            detail="会话不存在"
+        )
+
+    if conversation["owner_id"]!=current_user_id:
+        raise HTTPException(
+            status_code=403,
+            detail="无权访问该会话"
+        )
+
+    messages=get_messages(conversation_id)
+    data["conversation"]=conversation
+    data["messages"]=messages
+
+    return data
