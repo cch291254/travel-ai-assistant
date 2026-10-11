@@ -23,12 +23,20 @@ def parse_text_file(path_value):
     updated_at=datetime.fromtimestamp(modified_time).isoformat(timespec="seconds")
     records=[]
     for paragraph_index,paragraph in enumerate(paragraphs,start=1):
+        heading_level=None
+        if paragraph.startswith("#") and "\n" not in paragraph:
+            level=len(paragraph)-len(paragraph.lstrip("#"))
+            if 1<=level<=6 and paragraph[level:].startswith(" "):
+                heading_level=level
         record={"filename":file_path.name,
         "paragraph_index":paragraph_index,
         "content":paragraph,
         "document_id":document_id,
         "source":file_path.as_posix(),
-        "updated_at":updated_at}
+        "updated_at":updated_at,
+        }
+        if heading_level is not None:
+            record["heading_level"]=heading_level
         
         records.append(record)
     
