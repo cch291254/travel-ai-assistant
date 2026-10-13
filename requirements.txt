@@ -5,4 +5,5 @@ requests
 pydantic
 fastapi
 uvicorn
-httpx2
+httpx
+streamlit

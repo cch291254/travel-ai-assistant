@@ -25,8 +25,8 @@ payload={
         "content":"请为两名第一次来杭州的游客安排一日游。只按上午、下午、晚上三个时间段回答，每段推荐一个地点，不要编造实时票价。"
     },
     ],
-    "tinking":{"type":"disabled"},
-    "max_tokens":3000,
+    "thinking":{"type":"disabled"},
+    "max_tokens":300,
     "stream":False,
     "temperature":0.2,
 }
@@ -45,10 +45,16 @@ try:
         answer=data["choices"][0]["message"]["content"]
         usage=data["usage"]
         print("模型回答：",answer)
-        print("usage原始数据：", usage)
-        print("输入tokens:",usage["prompt_tokens"])
-        print("输出 tokens：", usage["completion_tokens"])
-        print("总 tokens：", usage["total_tokens"])
-        print("结束原因：", data["choices"][0]["finish_reason"])
+        print("usage原始数据：",usage)
+        call_record = {
+    "模型名":model,
+    "状态码":response.status_code,
+    "输入tokens":usage["prompt_tokens"],
+    "输出tokens":usage["completion_tokens"],
+    "总tokens":usage["total_tokens"],
+    "结束原因":data["choices"][0]["finish_reason"],
+    "重试次数":0
+}
+        print("调用记录：", call_record)
 except requests.exceptions.RequestException as error:
     print("网络请求失败：",error)

@@ -94,7 +94,6 @@
 - 对应主题：旅游产品、行程、报价与费用、退改、商家服务、景点及出行说明。
 - 本次整理文件：tour_products_S06.md、hangzhou_routes_S06.md、pricing_rules_S06.md、refund_policy_S06.md、supplier_notes_S06.md、hangzhou_attraction_S06.md。
 - 合并到项目专题文件后，应把对应主题文件名更新为实际使用的名称；所有新增来源小节保留S06编号。
-- 整理依据：用户提供的商品页面内容；按用户要求不登记图片路径或图片索引。
 - 未提供具体酒店、美食餐厅名称或千岛湖行程，不为这些主题补造内容。
 - 未新增内部P／R／SUP编号，避免与既有模拟实体编号冲突。
 
@@ -131,7 +130,7 @@
 - 对应主题：产品、行程、报价、儿童及证件优惠、退改、商家服务、千岛湖景点。
 - 本次整理文件：tour_products_S07.md、hangzhou_routes_S07.md、pricing_rules_S07.md、refund_policy_S07.md、supplier_notes_S07.md、hangzhou_attraction_S07.md。
 - 合并到项目专题文件后，对应文件名登记为实际使用的名称；所有来源小节继续保留S07编号。
-- 按用户要求不保存图片路径或图片索引，仅保存专题正文与来源清单。
+
 - 未新增内部P／R／SUP编号；套餐1／2／3是商品页面内部套餐号，不等同于项目全局产品编号。
 
 ### 已保留的差异与缺失

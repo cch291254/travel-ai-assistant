@@ -112,7 +112,7 @@ python -m pytest -v
 ## 启动 API 服务
 
 ```
-python -m uvicorn app.week5_day5_api:app --reload
+python -m uvicorn app.api:app --reload
 ```
 配置模型环境变量、激活虚拟环境、从项目根目录运行，以及 http://127.0.0.1:8000/docs
 

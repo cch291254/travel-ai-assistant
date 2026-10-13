@@ -1,6 +1,6 @@
 from fastapi import FastAPI,HTTPException,Depends,Header,Path
 from pydantic import BaseModel,Field,ConfigDict
-from examples.week5_day4_structured_output import(call_structured_model,StructuredAnswer)
+from app.structured_output import(call_structured_model,StructuredAnswer)
 from app.conversation_store import( init_db,get_conversation,get_messages,save_turn,create_conversation_with_turn,delete_conversation)
 
 
@@ -10,8 +10,10 @@ MAX_HISTORY_TURNS=3
 
 DEMO_TOKEN_USERS={
     "token_a":"user_a",
-    "token_b":"user_b"
+    "token_b":"user_b",
 }
+
+
 def get_current_user_id(
     authorization:str|None=Header(default=None)
 ):
@@ -35,6 +37,7 @@ def get_current_user_id(
     return DEMO_TOKEN_USERS[token]
 
 
+
 class ChatRequest(BaseModel):
     model_config=ConfigDict(str_strip_whitespace=True)
     question: str=Field(min_length=1,max_length=1000)
@@ -49,9 +52,11 @@ class ChatRestponse(BaseModel):
 class ErrorResponse(BaseModel):
     detail:str
 
+
 @app.get("/health")
 def health():
     return{"status":"ok"}
+
 
 def get_model_caller():
     return call_structured_model

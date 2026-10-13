@@ -1,6 +1,6 @@
 import json
 from pydantic import BaseModel,ValidationError
-from examples.week5_day3_my_client import call_model
+from app.llm_client import call_model
 
 class StructuredAnswer(BaseModel):
     answer:str

@@ -1,5 +1,5 @@
-from examples.week5_day4_structured_output import parse_structured_answer
-import examples.week5_day4_structured_output as structured_output
+from app.structured_output import parse_structured_answer
+import app.structured_output as structured_output
 
 
 def test_vaild_structured_answer():

@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
-import app.week5_day5_api as api
-import examples.week5_day4_structured_output as structured_output
+import app.api as api
+import app.structured_output as structured_output
 import pytest
 import app.conversation_store as store
 
