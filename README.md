@@ -9,9 +9,10 @@
 - SQLite文档状态登记；
 - 单文件和目录批量导入；
 - 失败文件记录与错误原因保存；
-- 核心链路相关49项自动化测试通过
+- 当前109项自动化测试通过，模型调用使用模拟响应，会话数据库使用临时目录；不包含GPU向量模型的自动化验证
 - DeepSeek 调用与重试、结构化回答校验、FastAPI 接口、接口成功与失败测试
-- 第六周第一天 SQLite 学习示例：会话与消息关联、参数化 SQL、级联删除、JOIN、稳定排序、事务和索引查询计划；尚未接入 `/chat`
+- SQLite 会话与消息存储已接入 `/chat`，支持会话历史和用户权限隔离；保留第六周第一天SQL学习示例
+- Markdown标题路径和产品标题元数据、正文切片、本地Chroma向量入库与检索、BGE重排序命令行实验
 
 
 ## 首版计划支持的功能
@@ -85,7 +86,7 @@ python -m pip install -r requirements.txt
 
 - 暂不支持扫描型 PDF 和 OCR
 - 暂不保证复杂表格、多栏排版的提取效果
-- 暂不进行文本切块和向量检索
+- 向量召回与重排序目前通过命令行示例运行，尚未接入 `/chat` 的回答生成及可核验引用
 - 来源链接未经程序核验；模型函数返回的错误暂时统一映射为 502
 
 
@@ -138,3 +139,29 @@ python -m uvicorn app.api:app --reload
 `week6_chat_demo.db` 与 `week6_chat_2_demo.db` 是本地生成的练习数据库，不进入 Git。不要将误拼的 `week_chat_demo.db` 当作原数据库。
 
 索引一旦创建会保留，再次运行时两次查询计划都可能使用该索引。已观察到原查询计划从 `SCAN messages` 加临时排序，变为使用 `idx_messages_conversation_time` 的 `SEARCH`；尚未测量实际耗时提升。之前的 49 项核心自动测试不包含这些手工 SQL 实验。
+
+## 第七周向量检索与重排序实验
+
+- Embedding：`BAAI/bge-m3`，使用归一化的1024维稠密向量。
+- 向量化输入：完整标题路径加正文；Chroma分别保存原正文和来源元数据。
+- 当前批量切片配置：400字符、80字符重叠；标题和纯来源编号行不生成正文切片。
+- 本地向量库目录：`data/chroma/`；当前索引与查询示例使用集合 `travel_documents_bge_m3_titles_v4`。
+- 召回：最多5条候选；`where` 可按已确认的产品元数据限定范围，当前查询示例保留全库检索实验的 `where=None`。
+- 重排序：`BAAI/bge-reranker-v2-m3`，对问题和候选文本联合打分，再按原文档与段落筛选最多2条证据。段落筛选是实验规则，不能保证证据充分或产品一致。
+- 两个模型输入上限设为512 token，使用CUDA与半精度；召回完成后Embedding移到CPU，腾出显存供Reranker使用。
+- 当前已验证环境为Python 3.10、PyTorch `2.13.0+cu130`。运行GPU示例需另行准备兼容的CUDA版PyTorch。
+- `app/embedding.py` 和查询示例使用 `local_files_only=True`，需先准备两个模型的本地Hugging Face缓存；模型权重不进入Git。
+
+在项目根目录运行：
+
+```powershell
+python -m examples.week7_day1_chunking
+python -m examples.week7_day2_index
+python -m examples.week7_day2_reload
+```
+
+索引脚本会写入本地集合，`upsert` 不会自动删除旧切片。切片参数或Embedding输入发生变化时，应使用新集合或明确重建对应集合，不能仅凭本次处理数判断没有旧记录。
+
+`examples/week7_day2_embedding.py` 保留基础向量示例，`examples/week7_day3_reranker.py` 保留固定候选打分示例。检索实验记录位于 `examples/week6_day5_quetions.md`；这些开发题结果不代表整个知识库的召回率。
+
+原始资料和构建脚本进入Git，`data/chroma/`、SQLite数据库、模型缓存、密钥和运行日志不进入Git。

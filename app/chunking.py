@@ -27,7 +27,7 @@ def split_text(text,chunk_size=500,overlap=80):
 
     return  chunk_text
 
-def split_record(record,chunk_size=500,overlap=80):
+def split_record(record,chunk_size=200,overlap=80):
     pieces=split_text(record["content"],chunk_size,overlap)
     chunks=[]
 
@@ -51,11 +51,18 @@ def split_record(record,chunk_size=500,overlap=80):
 
     return chunks
 
-def split_records(records,chunk_size=500,overlap=80):
+def split_records(records,chunk_size=400,overlap=80):
     chunks=[]
+    #阻止标题切片
     for record in records:
         if record.get("heading_level")is not None:
             continue
+
+        #阻止提示进行切片
+        content=record["content"].strip()
+        if "\n" not in content and content.startswith(("来源编号:","来源编号：")):
+            continue
+
         pieces=split_record(record,chunk_size,overlap)
         chunks.extend(pieces)
 

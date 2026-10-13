@@ -12,6 +12,8 @@ print("records数量：", len(records))
 print("chunks数量：", len(chunks))
 
 for chunk in chunks:
-    if chunk["source_id"] is not None:
-        pprint(chunk)
+    if chunk.get("source_id") == "S05" and "12:00" in chunk["content"]:
+        print("来源标题：", chunk["source_title"])
+        print("子章节：", chunk["section_title"])
+        print("正文：", chunk["content"])
         break

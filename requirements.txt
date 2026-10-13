@@ -7,3 +7,5 @@ fastapi
 uvicorn
 httpx
 streamlit
+sentence-transformers==6.1.0
+chromadb==1.5.9
