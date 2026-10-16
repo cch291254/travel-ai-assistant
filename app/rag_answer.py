@@ -1,8 +1,7 @@
 from app.llm_client import call_model
 from app.structured_output import parse_structured_answer
-from app.query_rewriter import rewrite_retrieval_question
 
-
+#拿回答的模块
 RAG_SYSTEM_PROMPT=("""
 你是旅行社员工的资料助手，帮助员工回答业务问题或组织客户回复。
 
@@ -52,7 +51,7 @@ RAG_SYSTEM_PROMPT=("""
 """
 )
 
-def generate_rag_answer(question,context_result,history=None,*,retrieval_question=None):
+def generate_rag_answer(question,context_result,*,retrieval_question=None):
     result={
         "data":None,
         "citations":[],
@@ -70,18 +69,10 @@ def generate_rag_answer(question,context_result,history=None,*,retrieval_questio
         }
         return result
 
-    # 兼容直接传history的调用者，但不把原始旧回答交给最终回答模型。
     # 主流程已改写过时传retrieval_question，避免再次调用改写模型。
     if retrieval_question is None:
-        if history:
-            rewrite_result = rewrite_retrieval_question(question, history)
-            if rewrite_result["error"]:
-                result["error"] = "问题改写失败：" + rewrite_result["error"]
-                result["record"] = rewrite_result["record"]
-                return result
-            retrieval_question = rewrite_result["answer"]
-        else:
-            retrieval_question = question
+        retrieval_question = question
+        
     if not isinstance(retrieval_question, str) or not retrieval_question.strip():
         result["error"] = "检索问题必须是非空字符串"
         return result

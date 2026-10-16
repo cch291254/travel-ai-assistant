@@ -28,7 +28,7 @@ def test_unkown_citation_is_rejected():
         },
     }
 
-    fack_model_result={
+    fake_model_result={
         "answer": '{"answer": "午餐费用自理。", "sources": ["9"]}',
         "record": None,
         "error": "",
@@ -36,7 +36,7 @@ def test_unkown_citation_is_rejected():
 
     with patch(
         "app.rag_answer.call_model",
-        return_value=fack_model_result,
+        return_value=fake_model_result,
     ):
         result=generate_rag_answer("午餐包含吗",context_result)
 
@@ -45,13 +45,92 @@ def test_unkown_citation_is_rejected():
         assert result["citations"]==[]
 
 
-def test_valid_citayion():
-    history = [
-    {"role": "user", "content": "我想吃鱼和鸡，推荐哪家？"},
-    {"role": "assistant", "content": "可以考虑五庄·江浙菜（河坊街店）。"},
-]
+def test_valid_citation():
+     # 1. 准备：模拟检索上下文和模型返回
     context_result = {
         "context": "[1] 午餐费用自理。",
+        "source_map": {
+            "1": {
+                "chunk_id": "test-chunk-1",
+                "metadata": {"source_id": "S07"},
+            }
+        },
+    }
+
+    fake_model_result={
+        "answer": '{"answer": "午餐费用自理。", "sources": ["1"]}',
+        "record": {"总tokens":15},
+        "error": "",
+    }
+# 2. 执行：替换真实模型调用，不发出网络请求
+    with patch(
+        "app.rag_answer.call_model",
+        return_value=fake_model_result,
+    ) as mock_model:
+            result=generate_rag_answer("这个套餐午餐包含吗",context_result,retrieval_question="千岛湖套餐1午餐包含吗")
+
+    assert result["error"]==""
+    assert result["citations"][0]["chunk_id"]=="test-chunk-1"
+    assert result["record"]=={"总tokens":15}
+    assert result["data"] == {
+        "answer": "午餐费用自理。",
+        "sources": ["1"],
+    }
+    assert result["citations"] == [
+        {
+            "citation_id": "1",
+            "chunk_id": "test-chunk-1",
+            "metadata": {"source_id": "S07"},
+        }
+    ]
+    assert mock_model.call_args.kwargs["history"] is None
+    assert mock_model.call_args.args[0] == "千岛湖套餐1午餐包含吗"
+    mock_model.assert_called_once()
+
+
+# 检查完整问题的传递，以及上下文的保留
+def test_resolved_question_preserves_context():
+    context_result={
+        "context": "[1] 来源编号：S07；零点之后不可退。",
+        "source_map": {
+            "1": {
+                "chunk_id": "s07-refund",
+                "metadata": {"source_id": "S07"},
+    }}}
+    original_context=context_result["context"]
+    full_question="千岛湖套餐1出发当天凌晨1点取消能否退款？"
+
+    fake_result={
+        "answer":'{"answer":"需核对订单适用条款。","sources":["1"]}',
+        "record": None,
+        "error": "",
+    }
+
+    with patch(
+        "app.rag_answer.call_model",
+        return_value=fake_result,
+    ) as mock_model:
+        result=generate_rag_answer(
+            "我应该怎么回复",
+            context_result,
+            retrieval_question=full_question,
+        )
+
+    assert result["error"]==""
+    mock_model.assert_called_once()
+    assert mock_model.call_args.args[0]==full_question
+    sen_context=mock_model.call_args.kwargs["context"]
+    assert "我应该怎么回复" in sen_context
+    assert original_context in sen_context
+    assert mock_model.call_args.kwargs["history"] is None
+    assert context_result["context"]== original_context
+
+    
+
+#模型错误返回
+def test_model_error_is_returned():
+    context_result = {
+        "context": "[1] 示例资料",
         "source_map": {
             "1": {
                 "chunk_id": "test-chunk-1",
@@ -59,71 +138,23 @@ def test_valid_citayion():
             }
         },
     }
-
-    fack_model_result={
-        "answer": '{"answer": "午餐费用自理。", "sources": ["1"]}',
-        "record": None,
-        "error": "",
+    fake_result = {
+        "answer": "",
+        "record": {"状态码": 503},
+        "error": "模型服务暂时不可用",
     }
-
     with patch(
-        "app.rag_answer.call_model",
-        return_value=fack_model_result,
-    ) as mock_model:
-        with patch(
-            "app.rag_answer.rewrite_retrieval_question",
-            return_value={"answer": "五庄·江浙菜（河坊街店）午餐包含吗？", "record": None, "error": ""},
-        ) as mock_rewrite:
-            result=generate_rag_answer("午餐包含吗",context_result,history)
-
-    assert result["error"]==""
-    assert result["data"]["sources"]==["1"]
-    assert len(result["citations"])==1
-    assert result["citations"][0]["citation_id"]=="1"
-    assert result["citations"][0]["chunk_id"]=="test-chunk-1"
-    mock_rewrite.assert_called_once_with("午餐包含吗", history)
-    assert mock_model.call_args.kwargs["history"] is None
-    assert mock_model.call_args.args[0] == "五庄·江浙菜（河坊街店）午餐包含吗？"
-
-
-def test_resolved_question_uses_current_evidence_without_old_answers():
-    history = [
-        {"role": "user", "content": "之前另一个商品能退吗？"},
-        {"role": "assistant", "content": "旧助手错误结论：前一天12点之后扣50%。"},
-    ]
-    context_result = {
-        "context": "[1] 来源编号：S07；零点之后不可退。",
-        "source_map": {"1": {"chunk_id": "s07-refund", "metadata": {"source_id": "S07"}}},
-    }
-    original_context = context_result["context"]
-    fake_result = {"answer": '{"answer":"需核对订单适用条款。","sources":["1"]}', "record": None, "error": ""}
-    with patch("app.rag_answer.call_model", return_value=fake_result) as mock_model:
-        with patch("app.rag_answer.rewrite_retrieval_question") as mock_rewrite:
+        "app.rag_answer.call_model", 
+        return_value=fake_result,
+        )as mock_model:
             result = generate_rag_answer(
-                "我应该怎么回复？", context_result, history,
-                retrieval_question="千岛湖套餐1出发当天凌晨1点取消能否退款？",
-            )
-    mock_rewrite.assert_not_called()
-    assert result["error"] == ""
-    assert mock_model.call_args.kwargs["history"] is None
-    assert "旧助手错误结论" not in mock_model.call_args.kwargs["context"]
-    assert "我应该怎么回复？" in mock_model.call_args.kwargs["context"]
-    assert "来源编号：S07" in mock_model.call_args.kwargs["context"]
-    assert "千岛湖套餐1" in mock_model.call_args.args[0]
-    assert context_result["context"] == original_context
-
-
-def test_failed_history_resolution_does_not_call_answer_model():
-    context_result = {"context": "[1] 示例", "source_map": {"1": {"chunk_id": "one", "metadata": {}}}}
-    with patch("app.rag_answer.rewrite_retrieval_question", return_value={
-        "answer": "", "record": None, "error": "改写遗漏数字条件",
-    }):
-        with patch("app.rag_answer.call_model") as mock_model:
-            result = generate_rag_answer("这个能退吗？", context_result, [{"role": "user", "content": "套餐1"}])
-    assert "改写遗漏数字条件" in result["error"]
+                "午餐包含吗？", 
+                context_result)
+    assert result["error"]=="模型服务暂时不可用"
+    assert result["record"]=={"状态码":503}
     assert result["data"] is None
-    mock_model.assert_not_called()
-
+    assert result["citations"]==[]
+    mock_model.assert_called_once()
 
 def test_empty_resolved_question_does_not_call_answer_model():
     context_result = {"context": "[1] 示例", "source_map": {"1": {"chunk_id": "one", "metadata": {}}}}
