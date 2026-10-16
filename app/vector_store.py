@@ -1,6 +1,6 @@
 import chromadb
 
-
+#获取或创建指定名称的持久化向量集合
 def get_vector_collection(name="travel_chunks"):
     client=chromadb.PersistentClient(path="data/chroma")
 
@@ -16,6 +16,7 @@ def get_vector_collection(name="travel_chunks"):
     return collection
 
 
+#存向量库
 def upsert_chunks(chunks,model,collection):
     if not chunks:
         return 0
@@ -64,6 +65,7 @@ def upsert_chunks(chunks,model,collection):
 
     return len(ids)
 
+#召回向量
 def query_chunks(question,model,collection,n_results=3,where=None):
     question=question.strip()
 

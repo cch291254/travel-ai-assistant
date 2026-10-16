@@ -1,5 +1,7 @@
 from sentence_transformers import SentenceTransformer
 
+
+#配置向量模型
 def load_embedding_model():
     model=SentenceTransformer(
         "BAAI/bge-m3",
