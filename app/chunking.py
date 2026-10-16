@@ -60,7 +60,7 @@ def split_records(records,chunk_size=400,overlap=80):
 
         #阻止提示进行切片
         content=record["content"].strip()
-        if "\n" not in content and content.startswith(("来源编号:","来源编号：")):
+        if "\n" not in content and content.startswith(("来源编号:","来源编号：","首次整理日期")):
             continue
 
         pieces=split_record(record,chunk_size,overlap)

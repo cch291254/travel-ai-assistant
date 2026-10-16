@@ -187,3 +187,40 @@ def test_timeout_retry_exhausted(monkeypatch):
     assert result["record"]["重试次数"] == 2
     assert mock_post.call_count == 3
     assert mock_sleep.call_count == 2
+
+#测试资料获取是否正常
+def test_context_is_sent(monkeypatch):
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "test-key")
+    fake_response = make_200_response()
+    context = "[1] 午餐费用自理。"
+
+    with patch(
+        "app.llm_client.requests.post",
+        return_value=fake_response,
+    ) as mock_post:
+        result = call_model("午餐包含吗？", context=context)
+
+    messages = mock_post.call_args.kwargs["json"]["messages"]
+
+    assert result["error"] == ""
+    assert messages[-1]["role"] == "user"
+    assert context in messages[-1]["content"]
+    assert "午餐包含吗？" in messages[-1]["content"]
+    assert context not in messages[0]["content"]
+
+
+def test_output_budget_can_be_set_without_changing_default(monkeypatch):
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "test-key")
+    with patch("app.llm_client.requests.post", return_value=make_200_response()) as mock_post:
+        call_model("整理检索问题", max_tokens=1024)
+        assert mock_post.call_args.kwargs["json"]["max_tokens"] == 1024
+        call_model("回答问题")
+        assert mock_post.call_args.kwargs["json"]["max_tokens"] == 300
+
+
+def test_invalid_output_budget_does_not_send_request():
+    with patch("app.llm_client.requests.post") as mock_post:
+        for budget in (0, -1, True, "300", None):
+            result = call_model("测试问题", max_tokens=budget)
+            assert result["error"] == "max_tokens必须是正整数"
+    mock_post.assert_not_called()
