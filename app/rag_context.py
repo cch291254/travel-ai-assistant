@@ -1,4 +1,4 @@
-#构建上下文
+#构建上下文，清洗拿到的排序
 def build_context(evidence):
     parts=[]
     source_map={}

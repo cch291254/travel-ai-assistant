@@ -177,6 +177,7 @@ def rewrite_retrieval_question(question, history=None):
         ):
             result["error"] = "历史消息必须包含user或assistant角色及文本内容"
             return result
+        
         history_data.append({"index": index, "role": message["role"], "content": message["content"]})
 
 #ensure_ascii=False 让中文保持原样显示，方便查看。
@@ -192,7 +193,7 @@ def rewrite_retrieval_question(question, history=None):
     )
 
     if history_context:
-        rewrite_context += "\n\n" + history_context
+        rewrite_context += "\n\n" + history_context #相当于在里面添加了历史
 
     #注意拿到的是问题，且对问题修改
     model_result = call_model(
@@ -204,11 +205,12 @@ def rewrite_retrieval_question(question, history=None):
         max_tokens=1024,
     )
     result.update(model_result)
+    
     if result["error"]:
         return result
 
 
-    try:
+    try:   #answer 里面的 6 个字段：由模型按照提示词生成，暂时还是 JSON 字符串。
         checked = RetrievalRewrite.model_validate_json(model_result["answer"])
     except ValidationError as error:
         result["error"] = f"检索问题格式无效：{error}"
