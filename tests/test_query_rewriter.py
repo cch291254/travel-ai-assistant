@@ -1,18 +1,25 @@
-"""离线测试请求构造与校验，不代表真实模型已正确理解这些场景。"""
 import json
 from unittest.mock import patch
 
 import pytest
 
 from app.query_rewriter import rewrite_retrieval_question
+from app.source_catalog import SOURCE_CATALOG
 
 
 def model_result(question, used_history=None):
     return {
-        "answer": json.dumps({"question": question, "used_history": used_history or []}, ensure_ascii=False),
-        "record": {"状态码": 200},
-        "error": "",
-    }
+    "answer": json.dumps({
+        "question": question,
+        "used_history": used_history or [],
+        "sub_questions": [question],
+        "needs_clarification": False,
+        "clarification_question": "",
+        "target_source_ids": [],
+    }, ensure_ascii=False),
+    "record": {"状态码": 200},
+    "error": "",
+}
 
 
 def test_first_turn_is_normalized_too():
@@ -25,7 +32,10 @@ def test_first_turn_is_normalized_too():
     assert result["used_history"] == []
     assert mock_model.call_args.kwargs["question"] == original
     assert mock_model.call_args.kwargs["json_mode"] is True
-    assert mock_model.call_args.kwargs["context"] == ""
+    context = mock_model.call_args.kwargs["context"]
+    catalog_json = context.split("\n", 1)[1]
+
+    assert json.loads(catalog_json) == SOURCE_CATALOG
     assert mock_model.call_args.kwargs["history"] is None
     assert mock_model.call_args.kwargs["max_tokens"] == 1024
 
@@ -36,21 +46,37 @@ def test_topic_switch_keeps_prices_without_copying_old_topic():
         {"role": "assistant", "content": "旧答案还提到了16:30。"},
     ]
     question = "9人团328元起，原价428元、立减100元，是228元吗？"
-    with patch("app.query_rewriter.call_model", return_value=model_result(question)) as mock_model:
+
+    with patch(
+        "app.query_rewriter.call_model",
+        return_value=model_result(question),
+    ) as mock_model:
         result = rewrite_retrieval_question(question, history)
+
     assert result["error"] == ""
     assert result["answer"] == question
     assert result["used_history"] == []
     assert mock_model.call_args.kwargs["history"] is None
-    history_context = mock_model.call_args.kwargs["context"].split("\n", 1)[1]
-    history_data = json.loads(history_context)
-    assert history_data[0] == {"index": 1, "role": "user", "content": "我想去西湖拍照。"}
+
+    # 调用完成后，再检查传给模型的历史参考数据
+    context = mock_model.call_args.kwargs["context"]
+    history_json = context.split(
+        "仅供解析本轮指代的历史参考数据：\n", 1
+    )[1]
+    history_data = json.loads(history_json)
+
+    assert history_data[0] == {
+        "index": 1,
+        "role": "user",
+        "content": "我想去西湖拍照。",
+    }
     assert history_data[1]["role"] == "assistant"
+
+    # 确认传入的原始历史没有被修改
     assert history == [
         {"role": "user", "content": "我想去西湖拍照。"},
         {"role": "assistant", "content": "旧答案还提到了16:30。"},
     ]
-
 
 def test_follow_up_can_keep_same_product_when_business_topic_changes():
     history = [{"role": "user", "content": "洲游假日9人小团怎么收费？"}]
@@ -116,15 +142,30 @@ def test_invalid_history_indices_are_rejected(indices):
 
 
 def test_only_latest_six_messages_are_used():
-    history = [{"role": "user", "content": f"旧消息{i}"} for i in range(8)]
-    with patch("app.query_rewriter.call_model", return_value=model_result("有包间吗？")) as mock_model:
+    # 准备8条历史消息
+    history = [
+        {"role": "user", "content": f"旧消息{i}"}
+        for i in range(8)
+    ]
+
+    with patch(
+        "app.query_rewriter.call_model",
+        return_value=model_result("有包间吗？"),
+    ) as mock_model:
         result = rewrite_retrieval_question("有包间吗？", history)
+
     assert result["error"] == ""
-    history_data = json.loads(mock_model.call_args.kwargs["context"].split("\n", 1)[1])
+
+    # 调用完成后，再读取实际传给模型的上下文
+    context = mock_model.call_args.kwargs["context"]
+    history_json = context.split(
+        "仅供解析本轮指代的历史参考数据：\n", 1
+    )[1]
+    history_data = json.loads(history_json)
+
     assert len(history_data) == 6
     assert history_data[0]["content"] == "旧消息2"
     assert history_data[-1]["index"] == 6
-
 
 @pytest.mark.parametrize("question,history", [
     (None, None), (" ", None), ("问" * 1001, None),
