@@ -1,8 +1,13 @@
-from fastapi.testclient import TestClient
-import app.api as api
-import app.structured_output as structured_output
+from unittest.mock import patch,Mock
+
 import pytest
+from fastapi.testclient import TestClient
+
 import app.conversation_store as store
+
+
+with patch.object(store, "init_db"):#防止提前初始化数据库
+    import app.api as api #正常导入api,让init——db储存库临时替换
 
 
 client=TestClient(api.app)
@@ -10,17 +15,27 @@ client.headers.update({
     "Authorization":"Bearer token_a"
 })
 
-@pytest.fixture
+@pytest.fixture(autouse=True)#每条测试自动使用临时数据库
 def isolated_db(tmp_path, monkeypatch):
-    test_db_path = tmp_path / "test_conversation.db"
-
     monkeypatch.setattr(
         store,
         "DB_PATH",
-        test_db_path
+        tmp_path/"test_conversation.db"
+    )  
+    store.init_db()
+    #函数自动模拟连接测试数据库
+
+     # 测试必须自己提供模拟 RAG，不允许意外调用真实模型
+    def forbig_real_rag(*ARGS,**kwargs):#禁止调用函数
+        raise AssertionError("测试未设置模拟 RAG，禁止调用真实模型")
+
+    monkeypatch.setitem(
+        api.app.dependency_overrides, #FastAPI 提供的“依赖替换字典”
+        api.get_model_caller,  #指定
+        lambda:forbig_real_rag,  #替换
     )
 
-    store.init_db()
+
 
 
 
@@ -40,24 +55,28 @@ def test_not_exist():
 def test_chat_success(monkeypatch):
     model_calls=[]
     created_turns=[]
-    def fake_call_model(question,history=None):
+    def fake_call_model(question, history=None, *, pending_question=None):
         model_calls.append({
-            "question":question,
-            "history":history
-        })
-        return{
-            "data":{
-                "answer":"推荐西湖",
-                "sources":[],
+        "question": question,
+        "history": history,
+    })
+
+        return {
+            "data": {
+                "answer": "推荐西湖",
+                "sources": [],
             },
-            "error":"",
-            "record":{"状态码":200},
+            "error": "",
+            "record": {"状态码": 200},
+            "pending_question": None,
         }
     def fake_create_conversation_with_turn(
         title,
-        owner_id,
-        user_content,
-        assistant_content
+    owner_id,
+    user_content,
+    assistant_content,
+    *,
+    pending_question=None,
     ):
         created_turns.append({
             "title":title,
@@ -106,7 +125,7 @@ def test_chat_success(monkeypatch):
 
 def test_chat_empty_question(monkeypatch):
     calls = []
-    def fake_call_model(question,history=None):
+    def fake_call_model(question, history=None, *, pending_question=None):
         calls.append(question)
         return{
             "data":{
@@ -115,6 +134,7 @@ def test_chat_empty_question(monkeypatch):
             },
             "error":"",
             "record":{"状态码":200},
+            "pending_question": None,
         }
     def fake_get_model_caller():
         return fake_call_model
@@ -135,7 +155,7 @@ def test_chat_empty_question(monkeypatch):
 
 def test_chat_whitespace_question(monkeypatch):
     calls = []
-    def fake_call_model(question,history=None):
+    def fake_call_model(question, history=None, *, pending_question=None):
         calls.append(question)
         return{
             "data":{
@@ -163,7 +183,7 @@ def test_chat_whitespace_question(monkeypatch):
     assert calls==[]
 
 def test_chat_model_error(monkeypatch):
-    def fake_call_model(question,history=None):
+    def fake_call_model(question, history=None, *, pending_question=None):
         return{
             "data":None,
             "error":"模拟模型服务失败",
@@ -188,7 +208,7 @@ def test_chat_model_error(monkeypatch):
     assert result=={"detail":"模拟模型服务失败"}
 
 def test_chat_model_timeout(monkeypatch):
-    def fake_call_model(question,history=None):
+    def fake_call_model(question, history=None, *, pending_question=None):
         return{
             "data":None,
             "error":"模拟模型调用超时",
@@ -212,27 +232,28 @@ def test_chat_model_timeout(monkeypatch):
     assert response.status_code==502
     assert result=={"detail":"模拟模型调用超时"}
 
-def test_chat_missing_sources(monkeypatch):
-    def fake_call_model(question,system_prompt,json_mode=False,history=None):
+def test_chat_missing_data(monkeypatch):
+    def fake_rag(question, history=None, *, pending_question=None):
         return {
-            "answer": '{"answer": "推荐西湖"}',
+            "data": None,
             "error": "",
-            "record": {"状态码": 200},
+            "record": None,
+            "pending_question": None,
         }
-    monkeypatch.setattr(
-        structured_output,
-        "call_model",
-        fake_call_model,
+
+    monkeypatch.setitem(
+        api.app.dependency_overrides,
+        api.get_model_caller,
+        lambda: fake_rag,
     )
 
     response = client.post(
         "/chat",
         json={"question": "推荐杭州景点"},
     )
-    result = response.json()
 
     assert response.status_code == 502
-    assert "sources" in result["detail"]
+    assert response.json() == {"detail": "未返回可用结果"}
 
 
 def test_chat_existing_conversation(monkeypatch, isolated_db):
@@ -244,10 +265,10 @@ def test_chat_existing_conversation(monkeypatch, isolated_db):
     )
     model_calls = []
 
-    def fake_call_model(question, history=None):
+    def fake_call_model(question, history=None, *, pending_question=None):
         model_calls.append({
             "question": question,
-            "history": history
+            "history": history,
         })
 
         return {
@@ -256,7 +277,9 @@ def test_chat_existing_conversation(monkeypatch, isolated_db):
                 "sources": []
             },
             "error": "",
-            "record": {"状态码": 200}
+            "record": {"状态码": 200},
+            "pending_question": None,
+
         }
 
     def fake_get_model_caller():
@@ -314,7 +337,7 @@ def test_chat_existing_conversation(monkeypatch, isolated_db):
 def test_chat_conversation_not_found(monkeypatch, isolated_db):
     model_calls = []
 
-    def fake_call_model(question, history=None):
+    def fake_call_model(question, history=None, *, pending_question=None):
         model_calls.append({
             "question": question,
             "history": history
@@ -326,7 +349,9 @@ def test_chat_conversation_not_found(monkeypatch, isolated_db):
                 "sources": []
             },
             "error": "",
-            "record": {"状态码": 200}
+            "record": {"状态码": 200},
+            "pending_question": None,
+
         }
 
     def fake_get_model_caller():
@@ -368,7 +393,7 @@ def test_chat_history_limit(monkeypatch, isolated_db):
     assert len(messages) == 8
 
     model_calls = []
-    def fake_call_model(question, history=None):
+    def fake_call_model(question, history=None, *, pending_question=None):
         model_calls.append({
             "question": question,
             "history": history
@@ -380,7 +405,9 @@ def test_chat_history_limit(monkeypatch, isolated_db):
                 "sources": []
             },
             "error": "",
-            "record": {"状态码": 200}
+            "record": {"状态码": 200},
+            "pending_question": None,
+            
         }
 
     def fake_get_model_caller():
@@ -589,3 +616,195 @@ def test_get_conversation_without_auth():
     assert response.json() == {
         "detail": "缺失访问令牌"
     }
+
+#测试判断需要澄清
+def test_chat_clarification(monkeypatch):
+    first = "晚上23:10下单，能保证30分钟内收到接车通知吗？"
+    second = "艾客旅游千岛湖套餐1"
+    clarification = "您预订的是哪个产品或套餐？"
+    final_answer = "不能保证下单后30分钟内收到最终接车通知。"
+
+    fake_rag = Mock(side_effect=[
+        {
+            "data": {"answer": clarification, "sources": []},
+            "error": "",
+            "record": None,
+            "needs_clarification": True,
+            "pending_question": first,
+        },
+        {
+            "data": {"answer": final_answer, "sources": []},
+            "error": "",
+            "record": {"状态码": 200},
+            "needs_clarification": False,
+            "pending_question": None,
+        },
+    ])
+
+    monkeypatch.setitem(
+        api.app.dependency_overrides,
+        api.get_model_caller,
+        lambda:fake_rag,
+    )
+
+    first_response = client.post(
+        "/chat",
+        json={"question": first},
+    )
+
+    assert first_response.status_code == 200
+    first_data = first_response.json()
+    conversation_id = first_data["conversation_id"]
+
+    assert first_data["needs_clarification"] is True
+    assert first_data["data"]["answer"] == clarification
+    assert store.get_pending_question(conversation_id) == first
+
+    first_messages = store.get_messages(conversation_id)
+    assert first_messages == [
+        {"role": "user", "content": first},
+        {"role": "assistant", "content": clarification},
+    ]
+
+    second_response = client.post(
+        "/chat",
+        json={
+            "question": second,
+            "conversation_id": conversation_id,
+        },
+    )
+
+    assert second_response.status_code == 200
+    second_data = second_response.json()
+
+    # 检查两次调用收到的历史和状态
+    assert fake_rag.call_count == 2
+    assert fake_rag.call_args_list[0].args == (first,)
+    assert fake_rag.call_args_list[0].kwargs == {
+        "history": [],
+            "pending_question": None}
+    assert fake_rag.call_args_list[1].args == (second,)
+    assert fake_rag.call_args_list[1].kwargs == {
+        "history": first_messages,
+        "pending_question": first,
+    }
+
+     # 完成后清除状态，但保留两轮聊天记录
+    assert store.get_pending_question(conversation_id) is None
+    assert store.get_messages(conversation_id) == first_messages + [
+        {"role": "user", "content": second},
+        {"role": "assistant", "content": final_answer},
+    ]
+
+    assert second_data["conversation_id"] == conversation_id
+    assert second_data["needs_clarification"] is False
+    assert second_data["data"]["answer"] == final_answer
+
+
+#用户补充后仍缺信息
+def test_chat_followup_still_needs_clarification(monkeypatch):
+    first = "晚上23:10下单，能保证30分钟内收到接车通知吗？"
+    second = "艾客旅游千岛湖套餐1"
+    clarification = "您预订的是哪个产品或套餐？"
+    second_clarification = "请再补充出行日期。"
+    combined_question = first + "\n用户补充信息：" + second
+    
+    fake_rag = Mock(side_effect=[
+        {
+            "data": {"answer": clarification, "sources": []},
+            "error": "",
+            "record": None,
+            "needs_clarification": True,
+            "pending_question": first,
+        },
+        {
+            "data": {"answer": second_clarification, "sources": []},
+            "error": "",
+            "record": {"状态码": 200},
+            "needs_clarification": True,
+            "pending_question": combined_question,
+        },
+    ])
+
+    monkeypatch.setitem(
+        api.app.dependency_overrides,
+        api.get_model_caller,
+        lambda:fake_rag,
+    )
+    first_response = client.post(
+            "/chat",
+            json={"question": first},
+        )
+
+    first_data = first_response.json()
+    conversation_id = first_data["conversation_id"]
+    first_messages=store.get_messages(conversation_id)
+
+    second_response = client.post(
+            "/chat",
+            json={
+                "question": second,
+                "conversation_id": conversation_id,
+            },
+        )
+    second_data = second_response.json()
+    
+    assert first_response.status_code == 200
+    assert second_response.status_code == 200
+    assert second_data["needs_clarification"] is True
+    assert second_data["data"]["answer"] == second_clarification
+
+    assert store.get_pending_question(conversation_id) == combined_question
+    assert store.get_messages(conversation_id) == first_messages + [
+        {"role": "user", "content": second},
+        {"role": "assistant", "content": second_clarification},
+]
+
+
+#RAG 失败时，不覆盖旧消息和追问状态
+def test_chat_error_preserves_pending_state(monkeypatch):
+    pending_question = "原来等待补充的问题"
+    supplement = "用户本次补充"
+
+    conversation_id = store.create_conversation_with_turn(
+        title="追问失败测试",
+        owner_id="user_a",
+        user_content=pending_question,
+        assistant_content="请补充产品信息。",
+        pending_question=pending_question,
+    )
+    original_messages = store.get_messages(conversation_id)
+
+    fake_rag = Mock(return_value={
+        "data": None,
+        "error": "模拟 RAG 服务失败",
+        "record": None,
+        "pending_question": None,
+    })
+
+    monkeypatch.setitem(
+        api.app.dependency_overrides,
+        api.get_model_caller,
+        lambda: fake_rag,
+    )
+
+    response = client.post(
+        "/chat",
+        json={
+            "question": supplement,
+            "conversation_id": conversation_id,
+        },
+    )
+
+    assert response.status_code == 502
+    assert response.json() == {"detail": "模拟 RAG 服务失败"}
+
+    fake_rag.assert_called_once_with(
+        supplement,
+        history=original_messages,
+        pending_question=pending_question,
+    )
+
+    # 失败结果不能清除旧状态，也不能写入半轮聊天
+    assert store.get_pending_question(conversation_id) == pending_question
+    assert store.get_messages(conversation_id) == original_messages

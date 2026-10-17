@@ -84,3 +84,53 @@ def query_chunks(question,model,collection,n_results=3,where=None):
     )
 
     return results
+
+# 查询指定文档的全部切片 ID
+def get_document_chunk_ids(document_id, collection):
+    if not isinstance(document_id, str) or not document_id.strip():
+        raise ValueError("文档 ID 必须是非空字符串")
+
+    result = collection.get(
+        where={"document_id": document_id.strip()}
+    )
+
+    return result["ids"]
+
+#删除指定文档切片
+def delete_document_chunks(document_id,collection):
+    ids=get_document_chunk_ids(document_id,collection)
+
+    if not ids:
+        return 0
+    collection.delete(ids=ids)
+
+    return len(ids)
+
+#添加新切片
+def replace_document_chunks(document_id,chunks,model,collection):
+    if not chunks:
+        raise ValueError("新切片不能为空,删除文档请使用删除函数")
+
+    old_ids=set(get_document_chunk_ids(document_id,collection))
+    new_ids=set()
+
+
+    for chunk in chunks:
+        if chunk["document_id"]!=document_id.strip():
+            raise ValueError("新切片需为指定文档切片")
+        new_ids.add(chunk["chunk_id"])
+
+    if len(new_ids) !=len(chunks):
+        raise ValueError("新切片ID不能重复")
+    #添加的是整个更新的文档
+    written=upsert_chunks(chunks,model,collection)
+#看看有没有多余剩下的切片
+    stale_ids=sorted(old_ids-new_ids)
+    if stale_ids:
+        collection.delete(ids=stale_ids)
+
+    return{
+        "written":written,
+        "deleted":len(stale_ids),
+    }
+

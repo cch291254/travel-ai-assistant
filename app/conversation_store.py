@@ -42,6 +42,16 @@ def init_db():
     REFERENCES conversations(id)
     ON DELETE CASCADE)
     """)
+        #一个会话保存一条待补充问题
+        conn.execute("""  
+        CREATE TABLE IF NOT EXISTS conversation_states(
+            conversation_id INTEGER PRIMARY KEY,
+            pending_question TEXT NOT NULL,
+            FOREIGN KEY (conversation_id)
+            REFERENCES conversations(id)
+            ON DELETE CASCADE
+            )
+        """)
         conn.commit()
     finally:
         conn.close()
@@ -86,7 +96,7 @@ def get_messages(conversation_id,):
     finally:
         conn.close()
 
-def save_turn(conversation_id,user_content,assistant_content):
+def save_turn(conversation_id,user_content,assistant_content,*,pending_question=None):
     conn=get_connection()
 
     try:
@@ -95,6 +105,11 @@ def save_turn(conversation_id,user_content,assistant_content):
         )
         conn.execute(
             """INSERT INTO messages(conversation_id,role,content) VALUES (?,?,?)""",(conversation_id,"assistant",assistant_content)
+        )
+        _write_pending_question(
+            conn,
+            conversation_id,
+            pending_question,
         )
         conn.commit()
     except sqlite3.Error:
@@ -107,7 +122,9 @@ def create_conversation_with_turn(
     title,
     owner_id,
     user_content,
-    assistant_content
+    assistant_content,
+    *,
+    pending_question=None,
 ):
     conn=get_connection()
     try:
@@ -122,6 +139,11 @@ def create_conversation_with_turn(
         """INSERT INTO messages(conversation_id,role,content) VALUES(?,?,?)""",
         (conversation_id,"assistant",assistant_content)
     )
+        _write_pending_question(
+            conn,
+            conversation_id,
+            pending_question,
+        )
         conn.commit()
         return conversation_id
     except sqlite3.Error:
@@ -147,6 +169,38 @@ def delete_conversation(conversation_id):
 
     finally:
         conn.close()
+
+def get_pending_question(conversation_id):
+    conn=get_connection()
+
+    try:
+        row=conn.execute(
+            """
+            SELECT pending_question
+            FROM conversation_states
+            WHERE conversation_id=?
+            """,(conversation_id,)
+        ).fetchone()
+
+        if row is None:
+            return None
+
+        return row[0]
+    finally:
+        conn.close()
+
+def _write_pending_question(conn,conversation_id,pending_question):
+    conn.execute(
+        "DELETE FROM conversation_states WHERE conversation_id=?",
+        (conversation_id,)
+    )
+    # 有待补充问题时，保存新状态；None 表示结束等待
+    if pending_question is not None:
+        conn.execute(
+            """INSERT INTO conversation_states(conversation_id,pending_question)
+            VALUES (?,?)""",
+            (conversation_id,pending_question)
+        )
 
 if __name__=="__main__":
     init_db()

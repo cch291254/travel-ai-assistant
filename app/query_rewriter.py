@@ -9,7 +9,7 @@ from app.source_catalog import SOURCE_CATALOG
 MAX_HISTORY_MESSAGES = 6
 MAX_QUESTION_CHARS = 1000
 
-#限定问题格式
+#改写模型输出的结构与类型校验
 class RetrievalRewrite(BaseModel):
     model_config = ConfigDict(extra="forbid") #禁止额外字段
 
