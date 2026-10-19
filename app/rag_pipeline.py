@@ -21,7 +21,8 @@ def run_rag(
         "record":None,
         "error":"",
         "needs_clarification":False,
-        "pending_question":pending_question
+        "pending_question":pending_question,
+        "raw_answer": "",
     }
 
     rewrite_input=question
@@ -91,6 +92,7 @@ def run_rag(
     
     answer_result=generate_rag_answer(question,context_result,retrieval_question=retrieval_question)
     result["record"]=answer_result["record"]
+    result["raw_answer"] = answer_result["raw_answer"]
     if answer_result["error"]:
         result["error"]=answer_result["error"]
         return  result

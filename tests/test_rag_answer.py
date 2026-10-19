@@ -1,5 +1,18 @@
+import json
 from unittest.mock import patch
-from app.rag_answer import generate_rag_answer
+
+import pytest
+
+from app.rag_answer import RAG_SYSTEM_PROMPT, generate_rag_answer
+from app.rag_context import build_context
+
+
+@pytest.fixture(autouse=True)
+def forbid_real_http(monkeypatch):
+    def fail_request(*args, **kwargs):
+        raise AssertionError("引用单元测试禁止真实HTTP请求")
+
+    monkeypatch.setattr("requests.sessions.Session.request", fail_request)
 
 
 def test_no_evidence_skips_model():
@@ -162,3 +175,108 @@ def test_empty_resolved_question_does_not_call_answer_model():
         result = generate_rag_answer("这个能退吗？", context_result, retrieval_question=" ")
     assert result["error"] == "检索问题必须是非空字符串"
     mock_model.assert_not_called()
+
+
+def test_prompt_lists_actual_current_citation_ids():
+    context_result = {
+        "context": "[2] 第一片。\n[7] 第二片。",
+        "source_map": {
+            "2": {"chunk_id": "first", "metadata": {"source_id": "S02"}},
+            "7": {"chunk_id": "second", "metadata": {"source_id": "SIM01"}},
+        },
+    }
+    fake_result = {
+        "answer": '{"answer":"第一片支持回答。","sources":["2"]}',
+        "record": None,
+        "error": "",
+    }
+    original_prompt = RAG_SYSTEM_PROMPT
+
+    with patch("app.rag_answer.call_model", return_value=fake_result) as mock_model:
+        result = generate_rag_answer("测试问题", context_result)
+
+    assert result["error"] == ""
+    prompt = mock_model.call_args.kwargs["system_prompt"]
+    assert '本轮sources允许选择的引用编号：["2", "7"]' in prompt
+    assert "S02、S03、SIM01等来源标识" in prompt
+    assert "均不能填入sources" in prompt
+    assert RAG_SYSTEM_PROMPT == original_prompt
+    assert "本轮sources允许选择的引用编号" not in RAG_SYSTEM_PROMPT
+    assert list(context_result["source_map"]) == ["2", "7"]
+
+
+@pytest.mark.parametrize("source_id", ["S02", "S03", "SIM01"])
+def test_source_id_is_rejected_without_guessing_a_chunk(source_id):
+    context_result = build_context([
+        {"chunk_id": "one", "content": "第一片。", "metadata": {"source_id": source_id}},
+        {"chunk_id": "two", "content": "第二片。", "metadata": {"source_id": source_id}},
+    ])
+    fake_result = {
+        "answer": json.dumps({"answer": "测试回答。", "sources": [source_id]}, ensure_ascii=False),
+        "record": None,
+        "error": "",
+    }
+
+    with patch("app.rag_answer.call_model", return_value=fake_result):
+        result = generate_rag_answer("测试问题", context_result)
+
+    assert result["error"] == f"模型引用了未知资料编号：{source_id}"
+    assert result["data"] is None
+    assert result["citations"] == []
+
+
+def test_two_chunks_from_one_source_keep_distinct_citations():
+    context_result = build_context([
+        {"chunk_id": "photo-position", "content": "拍摄位置。", "metadata": {"source_id": "S03"}},
+        {"chunk_id": "photo-safety", "content": "临水安全。", "metadata": {"source_id": "S03"}},
+    ])
+    fake_result = {
+        "answer": '{"answer":"拍摄时注意临水安全。","sources":["1","2"]}',
+        "record": None,
+        "error": "",
+    }
+
+    with patch("app.rag_answer.call_model", return_value=fake_result):
+        result = generate_rag_answer("在哪拍、注意什么？", context_result)
+
+    assert result["error"] == ""
+    assert result["data"]["sources"] == ["1", "2"]
+    assert [item["chunk_id"] for item in result["citations"]] == ["photo-position", "photo-safety"]
+    assert all(item["metadata"]["source_id"] == "S03" for item in result["citations"])
+
+
+def test_empty_sources_are_allowed_when_evidence_does_not_support_answer():
+    context_result = build_context([
+        {"chunk_id": "menu", "content": "仅有菜品推荐。", "metadata": {"source_id": "S02"}},
+    ])
+    fake_result = {
+        "answer": '{"answer":"资料未提供包间信息。","sources":[]}',
+        "record": None,
+        "error": "",
+    }
+
+    with patch("app.rag_answer.call_model", return_value=fake_result):
+        result = generate_rag_answer("有没有包间？", context_result)
+
+    assert result["error"] == ""
+    assert result["data"]["sources"] == []
+    assert result["citations"] == []
+
+
+def test_allowed_citation_ids_are_rebuilt_for_each_call():
+    prompts = []
+    fake_result = {"answer": '{"answer":"信息不足。","sources":[]}', "record": None, "error": ""}
+
+    with patch("app.rag_answer.call_model", return_value=fake_result) as mock_model:
+        for citation_id in ["1", "8"]:
+            context_result = {
+                "context": f"[{citation_id}] 测试片段。",
+                "source_map": {citation_id: {"chunk_id": citation_id, "metadata": {}}},
+            }
+            result = generate_rag_answer("测试问题", context_result)
+            assert result["error"] == ""
+            prompts.append(mock_model.call_args.kwargs["system_prompt"])
+
+    assert '本轮sources允许选择的引用编号：["1"]' in prompts[0]
+    assert '本轮sources允许选择的引用编号：["8"]' in prompts[1]
+    assert '本轮sources允许选择的引用编号：["1"]' not in prompts[1]

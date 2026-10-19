@@ -14,7 +14,7 @@ def collect_chunks(raw_dir):
     all_chunks=[]
     for file_path in files:
         records=parse_document(file_path)
-        enriched_records=add_source_id(records,document_type=file_path.stem)
+        enriched_records=add_source_id(records)
         chunks=split_records(enriched_records,chunk_size=400,overlap=80)
 
         all_chunks.extend(chunks)

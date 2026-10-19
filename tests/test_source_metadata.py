@@ -12,27 +12,23 @@ def test_add_source_id():
     {"content": "另一条路线的安排", "heading_level": None},
 ]
     source_ids=[]
-    section_titles=[]
-    enriched_reocrds=add_source_id(records)
-    for record in enriched_reocrds:
-        source_id=record["source_id"]
-        section_title=record["section_title"]
-        source_ids.append(source_id)
-        section_titles.append(section_title)
+    enriched_records=add_source_id(records)
+    for record in enriched_records:
+        source_ids.append(record["source_id"])
+        assert "section_title" not in record
 
-    assert source_ids==[None, "S01", "S01", "S01", "S01", "S02", "S02"]
-    assert section_titles==[
-    None,
-    "s01 路线一",
-    "s01 路线一",
-    "详细行程",
-    "详细行程",
-    "s02｜路线二",
-    "s02｜路线二",
-]
+    assert source_ids == [
+        None, "S01", "S01", "S01", "S01", "S02", "S02"
+    ]
+
+    assert enriched_records[2]["source_title"] == "s01 路线一"
+    assert enriched_records[4]["source_title"] == "s01 路线一"
+    assert enriched_records[4]["section_path"] == "s01 路线一/详细行程"
+    assert enriched_records[6]["source_title"] == "s02｜路线二"
     for record in records:
         assert "source_id" not in record
-        assert "section_title" not in record
+        assert "source_title" not in record
+        assert "section_path" not in record
 
 def test_extract_sorce_id():
     records= [
@@ -61,7 +57,7 @@ def test_validity_inherits_and_resets():
     {"content": "## S05 真实产品", "heading_level": 2},
     {"content": "未提供有效期的真实产品正文"},
 ]
-    result = add_source_id(records, document_type="product")
+    result = add_source_id(records)
 
     assert result[2]["valid_from"]=="2026-09-28"
     assert result[2]["valid_until"]=="2026-12-31"
@@ -69,9 +65,9 @@ def test_validity_inherits_and_resets():
     assert result[4]["valid_until"]=="2026-12-31"
     assert result[6]["valid_from"]==None
     assert result[6]["valid_until"]==None
-    assert result[6]["document_type"]=="product"
     assert result[6]["source_id"] == "S05"
     assert result[2]["section_level"] == 1
     assert result[4]["section_level"] == 3
     assert result[6]["section_level"] == 2
-
+    for record in result:
+        assert "document_type" not in record

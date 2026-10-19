@@ -1,0 +1,109 @@
+{
+  "run_info": {
+    "started_at": "2026-10-18T22:56:16.815909+08:00",
+    "mode": "mock",
+    "caller": "fake_model_caller",
+    "model": null,
+    "selected_case_ids": [
+      "E02",
+      "E03"
+    ]
+  },
+  "results": [
+    {
+      "case_id": "E02",
+      "turn_number": 1,
+      "question": "客户逛完河坊街后想找一家适合聚餐的餐厅，希望既能吃鱼也能吃鸡，我可以向他推荐哪一家？",
+      "status": "ok",
+      "result": {
+        "data": {
+          "answer": "这里是模拟回答",
+          "sources": []
+        },
+        "error": "",
+        "needs_clarification": false,
+        "pending_question": null
+      },
+      "error": "",
+      "elapsed_seconds": 0.0,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S02"
+        ],
+        "points": [
+          "将五庄·江浙菜（河坊街店）列为可考虑的候选",
+          "推荐理由对应河坊街、鱼类和鸡肉需求，并说明聚餐接待条件尚需确认",
+          "可以向员工提供便于转述给客户的简短推荐理由"
+        ],
+        "forbidden_points": [
+          "虚构具体价格、营业时间、包间或订座情况",
+          "把分享者的用餐体验表述成旅行社已经核实的固定事实"
+        ]
+      }
+    },
+    {
+      "case_id": "E03",
+      "turn_number": 1,
+      "question": "客户逛完河坊街后想找一家适合聚餐的餐厅，希望既能吃鱼也能吃鸡，我可以向他推荐哪一家？",
+      "status": "ok",
+      "result": {
+        "data": {
+          "answer": "这里是模拟回答",
+          "sources": []
+        },
+        "error": "",
+        "needs_clarification": false,
+        "pending_question": null
+      },
+      "error": "",
+      "elapsed_seconds": 0.0,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S02"
+        ],
+        "points": [
+          "将五庄·江浙菜（河坊街店）列为可考虑的候选",
+          "推荐理由对应河坊街、鱼类和鸡肉需求，并说明聚餐接待条件尚需确认"
+        ],
+        "forbidden_points": [
+          "虚构具体价格、营业时间、包间或订座情况",
+          "把分享者的用餐体验表述成旅行社已经核实的固定事实"
+        ]
+      }
+    },
+    {
+      "case_id": "E03",
+      "turn_number": 2,
+      "question": "能接待我们10个人聚餐吗？有没有包间，需要提前订座吗？",
+      "status": "ok",
+      "result": {
+        "data": {
+          "answer": "这里是模拟回答",
+          "sources": []
+        },
+        "error": "",
+        "needs_clarification": false,
+        "pending_question": null
+      },
+      "error": "",
+      "elapsed_seconds": 0.0,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S02"
+        ],
+        "points": [
+          "明确说明现有资料未提供10人聚餐接待能力、包间和订座条件",
+          "建议员工向餐厅确认具体人数接待能力、包间可用情况和订座要求"
+        ],
+        "forbidden_points": [
+          "把餐厅位置、推荐菜品或口味评价当成接待能力的证明",
+          "编造可以接待10人、有包间、必须或无需提前订座等结论",
+          "把资料未提供相关信息说成餐厅不能接待、没有包间或不接受订座"
+        ]
+      }
+    }
+  ]
+}

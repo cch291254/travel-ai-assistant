@@ -5,7 +5,7 @@ from pprint import pprint
 
 
 records = parse_document("data/raw/hangzhou_routes.md")
-enriched_records = add_source_id(records,document_type="route")
+enriched_records = add_source_id(records)
 chunks = split_records(enriched_records)
 
 print("records数量：", len(records))
@@ -14,6 +14,6 @@ print("chunks数量：", len(chunks))
 for chunk in chunks:
     if chunk.get("source_id") == "S05" and "12:00" in chunk["content"]:
         print("来源标题：", chunk["source_title"])
-        print("子章节：", chunk["section_title"])
+        print("章节路径：", chunk["section_path"])
         print("正文：", chunk["content"])
         break

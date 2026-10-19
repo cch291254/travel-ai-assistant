@@ -38,10 +38,9 @@ def extract_validity(content):
     return dates
 
 
-def add_source_id(records,document_type=None):
+def add_source_id(records):
     enriched_records = []
     current_source_id=None
-    current_title=None
     current_valid_from = None
     current_valid_until = None
     current_heading_level=None
@@ -55,7 +54,6 @@ def add_source_id(records,document_type=None):
 
         if heading_level is not None:
             title=content[heading_level:].strip()
-            current_title=title
             current_heading_level = heading_level
             heading_titles[heading_level-1]=title
             #列表形态[chunk,none,none,noen,none,noe]
@@ -87,8 +85,6 @@ def add_source_id(records,document_type=None):
         record_with_source=record.copy()
         record_with_source["source_date"] = None
         record_with_source["source_id"]=current_source_id
-        record_with_source["section_title"]=current_title
-        record_with_source["document_type"]=document_type
         record_with_source["valid_from"] = current_valid_from
         record_with_source["valid_until"] = current_valid_until
         record_with_source["section_level"] = current_heading_level

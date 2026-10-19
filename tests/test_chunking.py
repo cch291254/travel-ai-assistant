@@ -138,7 +138,7 @@ def test_split_records_skips_heading():
             "document_id": "test_document",
             "paragraph_index": 2,
             "content": "第一天游览西湖",
-            "section_title": "S01 路线一",
+            "section_path": "S01 路线一",
             "section_level": 1,
         },
     ]
@@ -147,7 +147,7 @@ def test_split_records_skips_heading():
 
     assert len(result)==1
     assert result[0]["content"]=="第一天游览西湖"
-    assert result[0]["section_title"]=="S01 路线一"
+    assert result[0]["section_path"]=="S01 路线一"
     assert result[0]["section_level"] == 1
 
 def test_split_records_with_only_heading():
