@@ -15,7 +15,7 @@ def index_document(path_value,model,collection):
 
     records=parse_document(file_path)
 
-    enriched_records=add_source_id(records,document_type=document_id)
+    enriched_records=add_source_id(records)
 
     chunks=split_records(
         enriched_records,
@@ -52,7 +52,7 @@ def index_document_with_registration(
 
     return result
 
-#删除先删除向量切片，成功后再删除 SQL 登记
+#先删除向量切片，成功后再删除 SQL 登记
 def delete_document_with_registration(document_id,collection,conn):
     delete_chunks=delete_document_chunks(document_id,collection)
 

@@ -1,3 +1,5 @@
+import json
+
 from app.llm_client import call_model
 from app.structured_output import parse_structured_answer
 
@@ -45,7 +47,8 @@ RAG_SYSTEM_PROMPT=("""
 【输出格式】
 - 只返回JSON对象，且只包含answer和sources两个字段。
 - answer是回答正文，不添加引用编号、来源标签或外部链接。
-- sources是实际支持回答的本次资料编号字符串列表，例如["1", "2"]。
+- sources是实际支持回答的本轮引用编号字符串列表，只能从本轮允许编号中选择，例如["1", "2"]。
+- 使用证据块标明的引用编号；S02、S03、SIM01等来源标识，以及标题、文件名和chunk_id，均不能填入sources。
 - 不得将仅仅被召回、但未支持回答的资料列入sources。
 - 没有支持依据时，sources返回空列表。
 """
@@ -57,6 +60,7 @@ def generate_rag_answer(question,context_result,*,retrieval_question=None):
         "citations":[],
         "record":None,
         "error":"",
+        "raw_answer": "",
     }
 
 #检索可用的context来源的source_map
@@ -81,17 +85,29 @@ def generate_rag_answer(question,context_result,*,retrieval_question=None):
         + "\n\n当前用户原文（仅用于核对本轮需求和回复方式，不是业务事实依据）：\n"
         + question
     )
+    # 按本轮source_map生成允许列表；同一来源的不同切片仍使用不同引用编号。
+    answer_system_prompt = (
+        RAG_SYSTEM_PROMPT
+        + "\n本轮sources允许选择的引用编号："
+        + json.dumps(list(source_map), ensure_ascii=False)
+        + "。仅选择实际支持回答的编号；无支持依据时返回[]。"
+    )
 
 #调用请求模型，拿到record
     model_result=call_model(
         retrieval_question.strip(),
-        system_prompt=RAG_SYSTEM_PROMPT,
+        system_prompt=answer_system_prompt,
         json_mode=True,
         context=answer_context,
         history=None,
     )
 
     result["record"]=model_result["record"]
+    result["raw_answer"] = model_result["answer"]  #call_model最开始是answer，后续整理为data
+
+    if model_result["error"]:
+        result["error"] = model_result["error"]
+        return result
 
     if model_result["error"]:
         result["error"]=model_result["error"]

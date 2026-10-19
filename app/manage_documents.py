@@ -8,7 +8,7 @@ from app.document_indexer import (
     delete_document_with_registration,
 )
 
-
+#终端执行添加、更改、删除等
 def main():
     parser = argparse.ArgumentParser(   #创建一个参数解析器
         description="管理单份文档的向量索引"

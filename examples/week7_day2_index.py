@@ -6,7 +6,7 @@ from app.vector_store import get_vector_collection, upsert_chunks
 
 
 records = parse_document("data/raw/hangzhou_routes.md")
-enriched_records = add_source_id(records, document_type="route")
+enriched_records = add_source_id(records)
 chunks = split_records(enriched_records)
 
 model = load_embedding_model()

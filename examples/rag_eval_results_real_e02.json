@@ -1,0 +1,152 @@
+{
+  "run_info": {
+    "started_at": "2026-10-18T23:12:14.393094+08:00",
+    "mode": "mock",
+    "caller": "fake_model_caller",
+    "model": "deepseek-flash",
+    "selected_case_ids": [
+      "E02"
+    ]
+  },
+  "results": [
+    {
+      "case_id": "E02",
+      "turn_number": 1,
+      "question": "客户逛完河坊街后想找一家适合聚餐的餐厅，希望既能吃鱼也能吃鸡，我可以向他推荐哪一家？",
+      "status": "ok",
+      "result": {
+        "data": {
+          "answer": "可以优先推荐河坊街的五庄·江浙菜（河坊街店）。这家店位置就在河坊街，逛完后过去比较方便；分享者推荐了清蒸舟山小海鲜和千岛湖生炒土鸡，既有鱼鲜类菜品，也有鸡肉菜，适合聚餐。",
+          "sources": [
+            "1"
+          ]
+        },
+        "citations": [
+          {
+            "citation_id": "1",
+            "chunk_id": "food_guide:paragraph-9:chunk-1",
+            "metadata": {
+              "filename": "food_guide.md",
+              "section_level": 2,
+              "document_id": "food_guide",
+              "document_type": "food_guide",
+              "source": "data/raw/food_guide.md",
+              "section_path": "s02｜美食推荐",
+              "chunk_index": 1,
+              "source_title": "s02｜美食推荐",
+              "source_id": "S02",
+              "paragraph_index": 9,
+              "section_title": "s02｜美食推荐",
+              "updated_at": "2026-09-28T15:43:38"
+            }
+          }
+        ],
+        "evidence": [
+          {
+            "chunk_id": "food_guide:paragraph-9:chunk-1",
+            "content": "- **五庄·江浙菜（河坊街店）**：截图称店在河坊街。分享者推荐清蒸舟山小海鲜和千岛湖生炒土鸡，评价带鱼鲜而不腻，土鸡裹满汤汁、适合拌饭。",
+            "metadata": {
+              "filename": "food_guide.md",
+              "section_level": 2,
+              "document_id": "food_guide",
+              "document_type": "food_guide",
+              "source": "data.md",
+              "section_path": "s02｜美食推荐",
+              "chunk_index": 1,
+              "source_title": "s02｜美食推荐",
+              "source_id": "S02",
+              "paragraph_index": 9,
+              "section_title": "s02｜美食推荐",
+              "updated_at": "2026-09-28T15:43:38"
+            },
+            "retrieval_rank": 1,
+            "rerank_rank": 1,
+            "rerank_score": 0.6677979230880737
+          },
+          {
+            "chunk_id": "food_guide:paragraph-10:chunk-1",
+            "content": "- **悦旺土菜馆**：截图称其经营了16年，推荐开化清水鱼和爆炒肥肠。分享者评价清水鱼鱼肉嫩滑、微酸解腻；肥肠油润不腻，适合下酒下饭。",
+            "metadata": {
+              "paragraph_index": 10,
+              "source_id": "S02",
+              "section_level": 2,
+              "document_id": "food_guide",
+              "filename": "food_guide.md",
+              "updated_at": "2026-09-28T15:43:38",
+              "section_title": "s02｜美食推荐",
+              "source": "data/raw/food_guide.md",
+              "source_title": "s02｜美食推荐",
+              "section_path": "s02｜美食推荐",
+              "chunk_index": 1,
+              "document_type": "food_guide"
+            },
+            "retrieval_rank": 4,
+            "rerank_rank": 2,
+            "rerank_score": 0.016277460381388664
+          },
+          {
+            "chunk_id": "food_guide:paragraph-12:chunk-1",
+            "content": "- **越英核桃酒**：截图称有斗富三桥和五柳巷两家店。分享者推荐核桃露和黄鱼年糕，评价核桃露有浓郁核桃香、甜而不腻；黄鱼鲜嫩，年糕吸足鱼汁。",
+            "metadata": {
+              "section_path": "s02｜美食推荐",
+              "chunk_index": 1,
+              "filename": "food_guide.md",
+              "source": "data/raw/food_guide.md",
+              "updated_at": "2026-09-28T15:43:38",
+              "source_title": "s02｜美食推荐",
+              "section_title": "s02｜美食推荐",
+              "paragraph_index": 12,
+              "document_type": "food_guide",
+              "section_level": 2,
+              "source_id": "S02",
+              "document_id": "food_guide"
+            },
+            "retrieval_rank": 3,
+            "rerank_rank": 2,
+            "rerank_score": 0.024750972166657448
+          }
+        ],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1680,
+          "输出tokens": 93,
+          "总tokens": 1773,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 0.827
+        },
+        "record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1030,
+          "输出tokens": 75,
+          "总tokens": 1105,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 0.95
+        },
+        "error": "",
+        "needs_clarification": false,
+        "pending_question": null
+      },
+      "error": "",
+      "elapsed_seconds": 35.3168,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S02"
+        ],
+        "points": [
+          "将五庄·江浙菜（河坊街店）列为可考虑的候选",
+          "推荐理由对应河坊街、鱼类和鸡肉需求，并说明聚餐接待条件尚需确认",
+          "可以向员工提供便于转述给客户的简短推荐理由"
+        ],
+        "forbidden_points": [
+          "虚构具体价格、营业时间、包间或订座情况",
+          "把分享者的用餐体验表述成旅行社已经核实的固定事实"
+        ]
+      }
+    }
+  ]
+}
