@@ -1,4 +1,5 @@
-from app.chunking import split_text,split_record,split_records
+from app.chunking import split_text,split_record,split_records,same_merge_scope,is_merge_boundary,merge_short_records,merge_two_records
+
 import pytest
 
 
@@ -163,3 +164,129 @@ def test_split_records_with_only_heading():
     result = split_records(records)
 
     assert result == []
+
+#测试是否合并
+def test_same_merge_scope():
+    left = {
+        "document_id": "tour_products",
+        "source_id": "SIM01",
+        "section_path": "SIM01/P001",
+        "valid_until": "2026-12-31",
+    }
+
+    # 1. 范围完全一致
+    right = left.copy()
+    assert same_merge_scope(left, right) is True
+
+    # 2. 小节不同
+    right["section_path"] = "SIM01/P002"
+    assert same_merge_scope(left, right) is False
+
+    # 3. 有效期不同
+    right = left.copy()
+    right["valid_until"] = "2027-12-31"
+    assert same_merge_scope(left, right) is False
+
+    # 4. 缺少必要的来源编号
+    right = left.copy()
+    del right["source_id"]
+    assert same_merge_scope(left, right) is False
+
+
+#测试合并有没有加入标题和冗余
+def test_is_merge_boundary():
+    # 标题不能跨过去合并
+    assert is_merge_boundary({
+        "content": "### 服务方式",
+        "heading_level": 3,
+    }) is True
+
+    # 空内容和来源说明也是边界
+    assert is_merge_boundary({"content": "   "}) is True
+    assert is_merge_boundary({"content": "来源编号：SIM01"}) is True
+
+    # 普通正文、列表本身不构成边界
+    assert is_merge_boundary({"content": "成人票价为328元"}) is False
+    assert is_merge_boundary({"content": "- 包含司机服务"}) is False
+
+
+#测试段落合并情况
+def test_merge_two_records():
+    left = {
+        "content": "第一段说明\n",
+        "paragraph_index": 4,
+        "source_id": "S06",
+    }
+    right = {
+        "content": "\n第二段限制",
+        "paragraph_index": 5,
+        "source_id": "S06",
+    }
+
+    result = merge_two_records(left, right)
+
+    assert result["content"] == "第一段说明\n\n第二段限制"
+    assert result["paragraph_index"] == 4
+    assert result["source_id"] == "S06"
+
+    # 原始记录没有被修改
+    assert left["content"] == "第一段说明\n"
+    assert right["content"] == "\n第二段限制"
+    assert result is not left
+
+#测试切片是否正常进入
+def test_merge_short_records_continuously():
+    records = []
+
+    for index, size in enumerate([20, 60, 120, 20], start=1):
+        records.append({
+            "document_id": "test_document",
+            "source_id": "S01",
+            "section_path": "S01/服务方式",
+            "paragraph_index": index,
+            "content": "文" * size,
+        })
+
+    result = merge_short_records(records)
+
+    # 前三条：20 + 60 + 120 + 四个换行 = 204
+    # 达到200，结束这一组
+    assert len(result) == 2
+    assert len(result[0]["content"]) == 204
+    assert result[0]["paragraph_index"] == 1
+
+    # 第四条单独保留，由循环结束后的收尾逻辑保存
+    assert result[1]["content"] == "文" * 20
+    assert result[1]["paragraph_index"] == 4
+
+    # 原始记录不变
+    assert len(records) == 4
+    assert records[0]["content"] == "文" * 20
+
+
+#遇到标题，要先保存待合并内容，不能跨标题继续拼。
+def test_merge_short_records_stops_at_heading():
+    first = {
+        "document_id": "test_document",
+        "source_id": "S01",
+        "section_path": "S01/服务方式",
+        "paragraph_index": 1,
+        "content": "甲" * 20,
+    }
+
+    heading = {
+        "content": "### 服务方式",
+        "heading_level": 3,
+    }
+
+    last = first.copy()
+    last["paragraph_index"] = 3
+    last["content"] = "乙" * 60
+
+    result = merge_short_records([first, heading, last])
+
+    # 即使前后范围相同，也不能跨过标题合并
+    assert len(result) == 3
+    assert result[0]["content"] == "甲" * 20
+    assert result[1]["content"] == "### 服务方式"
+    assert result[2]["content"] == "乙" * 60

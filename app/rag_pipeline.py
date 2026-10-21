@@ -33,12 +33,14 @@ def run_rag(
             +question
         )
 
-    rewrite_result=rewrite_retrieval_question(
+    rewrite_result=rewrite_retrieval_question(   #问题在这里重写
             rewrite_input,
             history,
         )
 
     result["rewrite_record"]=rewrite_result["record"]
+    # 仅留存改写结果用于定位，不加入回答模型的上下文。
+    result["rewrite_result"] = rewrite_result
 
     if rewrite_result["error"]:
         result["error"]=rewrite_result["error"]
@@ -60,26 +62,36 @@ def run_rag(
     retrieval_question = rewrite_result["answer"].strip()
 
     target_source_ids = rewrite_result["target_source_ids"]
+
+    use_source_filter = True
     where = None
-    if target_source_ids:
+    if target_source_ids and use_source_filter:
             where = {
                 "source_id": {"$in": target_source_ids}
             }
 
     #子问题检索后，如果重复就去掉
     sub_questions = rewrite_result["sub_questions"]
+    retrieval_questions =  [retrieval_question] #子问题和主问题的集合，当前最大为5路
+
+    for sub_question in sub_questions:
+        sub_question=sub_question.strip()
+        if sub_question not in retrieval_questions:
+            retrieval_questions.append(sub_question)
+
+
     evidence = []
     seen_chunk_ids = set()
 
-    for query_index, sub_question in enumerate(sub_questions, start=1):
+    for sub_question in  retrieval_questions:
         branch_evidence = retrieve_evidence(
             sub_question,
             model,
             collection,
             reranker,
             where=where,
-            n_results=5,
-            top_k=2
+            n_results=7,
+            top_k=3
         )
 
         for item in branch_evidence:

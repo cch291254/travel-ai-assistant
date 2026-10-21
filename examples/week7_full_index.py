@@ -31,10 +31,13 @@ if __name__ == "__main__":
 
 
     collection=get_vector_collection(
-        name="travel_documents_full_20161014_v1"
+        name="travel_documents_full_20161014_v2"
     )
     if collection.count()!=0:
         raise ValueError("当前集合已有数据，请先检查，不要继续写入")
 
     model=load_embedding_model()
     processed_count=upsert_chunks(chunks,model,collection)
+
+    print("写入切片数：", processed_count)
+    print("集合当前数量：", collection.count())

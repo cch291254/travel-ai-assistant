@@ -21,7 +21,7 @@ conversation_id = None
 pending_question = None
 
 
-collection=get_vector_collection("travel_documents_full_20161014_v1")
+collection=get_vector_collection("travel_documents_full_20161014_v2")
 model=load_embedding_model()
 model.to("cpu")
 reranker=load_reranker()

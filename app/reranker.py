@@ -15,7 +15,7 @@ def load_reranker():
 
 
 
-def rerank_chunks(question,results,reranker,top_k=2):
+def rerank_chunks(question,results,reranker,top_k=3):
     if top_k<=0:
         raise ValueError("返回数量必须大于0")
 
@@ -50,22 +50,12 @@ def rerank_chunks(question,results,reranker,top_k=2):
 
 
     evidence=[]
-    seen_paragraph=set() 
 
 #去掉文档和章节重复的排列
     for rerank_rank,item in enumerate(ranked,start=1):
         index=item["corpus_id"]
         metadata=metadatas[index]
 
-        paragraph_key=(
-            metadata["document_id"],
-            metadata["paragraph_index"],
-        )
-
-        if paragraph_key in seen_paragraph:
-            continue
-
-        seen_paragraph.add(paragraph_key)
         evidence.append({
             "chunk_id":ids[index],
             "content":documents[index],

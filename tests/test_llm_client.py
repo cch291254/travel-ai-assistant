@@ -214,8 +214,12 @@ def test_output_budget_can_be_set_without_changing_default(monkeypatch):
     with patch("app.llm_client.requests.post", return_value=make_200_response()) as mock_post:
         call_model("整理检索问题", max_tokens=1024)
         assert mock_post.call_args.kwargs["json"]["max_tokens"] == 1024
+        assert mock_post.call_args.kwargs["json"]["thinking"] == {"type": "disabled"}
+        assert "reasoning_effort" not in mock_post.call_args.kwargs["json"]
         call_model("回答问题")
-        assert mock_post.call_args.kwargs["json"]["max_tokens"] == 300
+        assert mock_post.call_args.kwargs["json"]["max_tokens"] == 4028
+        assert mock_post.call_args.kwargs["json"]["thinking"] == {"type": "disabled"}
+        assert "reasoning_effort" not in mock_post.call_args.kwargs["json"]
 
 
 def test_invalid_output_budget_does_not_send_request():
@@ -224,3 +228,25 @@ def test_invalid_output_budget_does_not_send_request():
             result = call_model("测试问题", max_tokens=budget)
             assert result["error"] == "max_tokens必须是正整数"
     mock_post.assert_not_called()
+
+
+def test_thinking_response_keeps_only_final_answer(monkeypatch):
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "test-key")
+    monkeypatch.setenv("DEEPSEEK_MODEL", "deepseek-flash")
+    final_answer = '{"answer":"需向商家确认。","sources":[]}'
+    response = make_200_response(answer=final_answer)
+    response.json.return_value["choices"][0]["message"]["reasoning_content"] = "模拟的思考内容，不是最终回答。"
+
+    with (
+        patch("app.llm_client.load_dotenv"),
+        patch("app.llm_client.requests.post", return_value=response) as mock_post,
+    ):
+        result = call_model("测试问题", json_mode=True)
+
+    payload = mock_post.call_args.kwargs["json"]
+    assert payload["model"] == "deepseek-flash"
+    assert payload["thinking"] == {"type": "disabled"}
+    assert "reasoning_effort" not in payload
+    assert payload["response_format"] == {"type": "json_object"}
+    assert result["answer"] == final_answer
+    assert result["error"] == ""
