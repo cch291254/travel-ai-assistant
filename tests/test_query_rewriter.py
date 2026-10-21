@@ -37,7 +37,7 @@ def test_first_turn_is_normalized_too():
 
     assert json.loads(catalog_json) == SOURCE_CATALOG
     assert mock_model.call_args.kwargs["history"] is None
-    assert mock_model.call_args.kwargs["max_tokens"] == 1024
+    assert mock_model.call_args.kwargs["max_tokens"] == 4048
 
 
 def test_topic_switch_keeps_prices_without_copying_old_topic():

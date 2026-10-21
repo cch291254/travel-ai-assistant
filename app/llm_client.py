@@ -16,7 +16,7 @@ def call_model(
         json_mode=False,
         history=None,
         context="",
-        max_tokens=300,
+        max_tokens=4028,
         ):
 
 #问题长度检查
@@ -88,6 +88,7 @@ def call_model(
         "model":model,
         "messages":messages,
         "thinking":{"type":"disabled"},
+        # "reasoning_effort":"low",
         "max_tokens":max_tokens,
         "stream":False,
         "temperature":0.2,

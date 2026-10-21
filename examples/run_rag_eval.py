@@ -170,6 +170,11 @@ def save_eval_results(results,path):
         json.dump(results,f,ensure_ascii=False,indent=2)
 
 def main():
+    output_path = (
+        "examples/rag_eval_results_"
+        + datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+        + ".json"
+    )
     cases=load_eval_cases("examples/rag_eval_cases.json")
 
     print(f"题目数量:{len(cases)}")
@@ -187,11 +192,11 @@ def main():
     "caller": "real_model_caller",     #本次实际使用的函数名称，目前手动填写
     "model": os.getenv("DEEPSEEK_MODEL", "deepseek-flash"),       #调用真实模型
     "selected_case_ids": selected_case_ids,             #本次选了哪些题。
-    "collection": "travel_documents_full_20161014_v1",   #向量集合
+    "collection": "travel_documents_full_20161014_v2",   #向量集合
     "chunk_size": 400,          #尺寸
     "chunk_overlap": 80,         #每片保留
-    "retrieval_n_results_per_query": 5,      #召回top
-    "rerank_top_k_per_query": 2,        #重排使用top
+    "retrieval_n_results_per_query": 7,      #与当前检索调用保持一致
+    "rerank_top_k_per_query": 3,        #与当前重排调用保持一致
     "version_hashes": collect_version_hashes(),     #哈希
 }
     all_results=[]
@@ -207,7 +212,7 @@ def main():
 
             save_eval_results(
                     report,
-                    "examples/rag_eval_baseline_v1.json"
+                    output_path
                 )
 
             for item in results:

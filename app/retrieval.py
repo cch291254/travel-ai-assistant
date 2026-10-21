@@ -8,8 +8,8 @@ def retrieve_evidence(
         collection,
         reranker,
         where=None,
-        n_results=5,
-        top_k=2,
+        n_results=7,
+        top_k=3,
 ):
 
     reranker.to("cpu")
@@ -23,12 +23,15 @@ def retrieve_evidence(
         where=where,
     )
     #查询召回片段
-    # for rank, (chunk_id, content) in enumerate(
-    # zip(results["ids"][0], results["documents"][0]),
-    # start=1,
+    # print("\n实际检索问题：", question)
+    # print("来源过滤：", where)
+
+    # for rank, (chunk_id, metadata) in enumerate(
+    #     zip(results["ids"][0], results["metadatas"][0]),
+    #     start=1,
     # ):
-    #     print("召回候选：", rank, chunk_id)
-    #     print(content)
+    #     print("初召回：", rank, chunk_id,
+    #         "来源：", metadata.get("source_id"))
 
     model.to("cpu")
 

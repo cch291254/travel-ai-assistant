@@ -1,5 +1,7 @@
 from unittest.mock import patch
 
+import pytest
+
 from app.rag_pipeline import run_rag
 
 #需要澄清时，提前返回，保存的问题不会被清成 None
@@ -50,6 +52,7 @@ def test_clarification_saves_question():
     }
 
     assert result["rewrite_record"]=={"总tokens":30}
+    assert result["rewrite_result"] == fake_rewrite
     assert result["record"] is None
     assert result["evidence"]==[]
     assert result["citations"]==[]
@@ -89,6 +92,7 @@ def test_rewrite_error_preserves_pending_question():
 )
     mock_rewrite.assert_called_once_with(expected_input, history)
     assert result["rewrite_record"] == {"总tokens": 30}
+    assert result["rewrite_result"] == fake_rewrite
     assert result["error"] == "改写遗漏数字条件"
     assert result["pending_question"] == pending_question
     assert result["data"] is None
@@ -99,24 +103,39 @@ def test_rewrite_error_preserves_pending_question():
 
 
 #正常流程测试
-def test_successfu_run_rag():
+@pytest.mark.parametrize(
+    ("target_source_ids", "expected_where"),
+    [
+        (["S07"], {"source_id": {"$in": ["S07"]}}),
+        ([], None),
+    ],
+    ids=["source-filter", "no-source-filter"],
+)
+@pytest.mark.parametrize("query_mode", ["split", "single", "duplicate"])
+def test_successfu_run_rag(target_source_ids, expected_where, query_mode):
     pending_question = "这个套餐几点、在哪里集合？"
     question = "艾客旅游千岛湖套餐1"
     history = []
     full_question = "艾客旅游千岛湖套餐1几点、在哪里集合？"
+
+    sub_questions = [
+        "艾客旅游千岛湖套餐1的集合时间",
+        "艾客旅游千岛湖套餐1的集合地点",
+    ]
+    if query_mode == "single":
+        sub_questions = []
+    elif query_mode == "duplicate":
+        sub_questions.append(sub_questions[0])
 
     fake_rewrite={
         "answer": full_question,
         "record": {"总tokens": 30},
         "error": "",
         "used_history": [],
-        "sub_questions": [
-            "艾客旅游千岛湖套餐1的集合时间",
-            "艾客旅游千岛湖套餐1的集合地点",
-        ],
+        "sub_questions": sub_questions,
         "needs_clarification": False,
         "clarification_question": "",
-        "target_source_ids": ["S07"],
+        "target_source_ids": target_source_ids,
     }
 
     chunk_a = {
@@ -144,7 +163,7 @@ def test_successfu_run_rag():
         ) as mock_rewrite,
         patch(
             "app.rag_pipeline.retrieve_evidence",
-            side_effect=[[chunk_a], [chunk_a, chunk_b]],
+            side_effect=[[chunk_a, chunk_b], [chunk_a], [chunk_b]],
         ) as mock_retrieve,
         patch(
             "app.rag_answer.call_model",
@@ -162,13 +181,21 @@ def test_successfu_run_rag():
 
         rewrite_input=pending_question + "\n用户补充信息：" + question
         mock_rewrite.assert_called_once_with(rewrite_input,history)
-        assert mock_retrieve.call_count == 2
+        # 完整主问题始终参与检索，子问题去重后追加。
+        expected_queries = (
+            [full_question] if query_mode == "single" else [
+                full_question,
+                "艾客旅游千岛湖套餐1的集合时间",
+                "艾客旅游千岛湖套餐1的集合地点",
+            ]
+        )
+        assert mock_retrieve.call_count == len(expected_queries)
         for index,actual_call in enumerate(mock_retrieve.call_args_list):
-            assert actual_call.args[0] == fake_rewrite["sub_questions"][index]
+            assert actual_call.args[0] == expected_queries[index]
             assert actual_call.kwargs == {
-            "where": {"source_id": {"$in": ["S07"]}},
-            "n_results": 5,
-            "top_k": 2,
+            "where": expected_where,
+            "n_results": 7,
+            "top_k": 3,
         }
         assert result["evidence"] == [chunk_a, chunk_b]
         assert result["error"] == ""
@@ -191,6 +218,7 @@ def test_successfu_run_rag():
         },
     ]
         assert result["rewrite_record"]=={"总tokens": 30}
+        assert result["rewrite_result"] == fake_rewrite
         assert result["record"] == {"总tokens": 50}
         mock_model.assert_called_once()
         assert mock_model.call_args.args[0] == full_question

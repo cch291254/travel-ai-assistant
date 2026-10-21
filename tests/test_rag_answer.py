@@ -54,8 +54,10 @@ def test_unkown_citation_is_rejected():
         result=generate_rag_answer("午餐包含吗",context_result)
 
         assert result["error"]=="模型引用了未知资料编号：9"
+        assert result["raw_answer"] == fake_model_result["answer"]
         assert result["data"] is None
         assert result["citations"]==[]
+
 
 
 def test_valid_citation():
