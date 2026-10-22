@@ -1,0 +1,7 @@
+**
+!Dockerfile
+!requirements.docker.txt
+!app/
+!app/*.py
+app/bm25_retrieval.py
+app/streamlit.py
