@@ -83,10 +83,43 @@ def call_rag(question,history=None,*,pending_question=None):
         pending_question=pending_question,
     )
 
+#工具的接口
+def call_tool_chat(question,history=None,*,pending_question=None):
+    from app.tool_calling import run_tool_chat
+
+    if pending_question is not None:
+        question=pending_question+"\n用户补充信息："+question
+
+    tool_result=run_tool_chat(question,history=history)
+
+    result={
+        "data":None,
+        "error":tool_result["error"],
+        "record":None,
+        "pending_question":None,
+    }
+
+    if tool_result["error"]:
+        return result
+
+    answer=tool_result["answer"]
+    if not isinstance(answer,str) or not answer.strip():
+        result["error"]="模型未返回有效回答"
+        return result
+
+    result["data"]={
+        "answer":answer,
+        "sources":tool_result.get("sources",[])
+    }
+    result["citations"]=tool_result.get("citations",[])
+    result["evidence"]=tool_result.get("evidence",[])
+
+    return result
 
 
+#调用接口
 def get_model_caller():
-    return call_rag
+    return call_tool_chat
 @app.post("/chat",response_model=ChatRestponse,responses={
         502: {
             "model": ErrorResponse,

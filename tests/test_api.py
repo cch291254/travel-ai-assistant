@@ -4,6 +4,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 import app.conversation_store as store
+import requests
 
 
 with patch.object(store, "init_db"):#防止提前初始化数据库
@@ -808,3 +809,123 @@ def test_chat_error_preserves_pending_state(monkeypatch):
     # 失败结果不能清除旧状态，也不能写入半轮聊天
     assert store.get_pending_question(conversation_id) == pending_question
     assert store.get_messages(conversation_id) == original_messages
+
+
+#验证接入工具后是否回答正常
+def test_chat_uses_tool_chat(monkeypatch):
+    import app.tool_calling as tool_calling
+
+    answer="你好，请告诉我目的地和天数"
+    fake_model=Mock(return_value={
+        "role":"assistant",
+        "content":answer
+    })
+
+    monkeypatch.setattr(tool_calling,"call_tool_model",fake_model)
+    monkeypatch.setitem(
+        api.app.dependency_overrides,
+        api.get_model_caller,
+        lambda:api.call_tool_chat
+    )
+
+    assert api.get_model_caller() is api.call_tool_chat
+
+    response=client.post("/chat",json={"question":"你好"})
+
+    assert response.status_code==200
+    data=response.json()
+
+    assert data["data"]=={"answer":answer,"sources":[]}
+
+    assert store.get_messages(data["conversation_id"])==[
+        {"role":"user","content":"你好"},
+        {"role":"assistant","content":answer}
+    ]
+    fake_model.assert_called_once()
+
+
+#模型工具请求失败
+def test_chat_tool_model_failure_does_not_save(monkeypatch):
+    import app.tool_calling as tool_calling
+
+    fake_model = Mock(
+        side_effect=requests.exceptions.Timeout("模拟模型超时")
+    )
+    fake_create = Mock()
+
+    monkeypatch.setattr(tool_calling, "call_tool_model", fake_model)
+    monkeypatch.setattr(
+        api, "create_conversation_with_turn", fake_create
+    )
+    monkeypatch.setitem(
+        api.app.dependency_overrides,
+        api.get_model_caller,
+        lambda: api.call_tool_chat,
+    )
+
+    response = client.post("/chat", json={"question": "你好"})
+
+    assert response.status_code == 502
+    assert "模型请求失败" in response.json()["detail"]
+    fake_model.assert_called_once()
+    fake_create.assert_not_called()
+
+
+
+#确认这些字段经过接口包装后没有丢失。
+def test_chat_returns_tool_citations(monkeypatch):
+    import app.tool_calling as tool_calling
+
+    evidence = [{
+        "chunk_id": "demo:chunk-1",
+        "content": "示例线路每天上午9点集合。",
+        "metadata": {
+            "source_id": "S01",
+            "source_title": "示例线路说明",
+        },
+    }]
+
+    citations = [{
+        "citation_id": "1",
+        "chunk_id": "demo:chunk-1",
+        "metadata": evidence[0]["metadata"],
+    }]
+
+    fake_run = Mock(return_value={
+        "answer": "示例线路上午9点集合。",
+        "sources": ["1"],
+        "citations": citations,
+        "evidence": evidence,
+        "error": "",
+    })
+    monkeypatch.setattr(
+        tool_calling, "run_tool_chat", fake_run
+    )
+
+    # 使用真实的接口包装函数
+    monkeypatch.setitem(
+        api.app.dependency_overrides,
+        api.get_model_caller,
+        lambda: api.call_tool_chat,
+    )
+
+    response = client.post(
+        "/chat",
+        json={"question": "示例线路几点集合？"},
+    )
+
+    assert response.status_code == 200
+    result = response.json()
+
+    assert result["data"] == {
+        "answer": "示例线路上午9点集合。",
+        "sources": ["1"],
+    }
+    assert result["citations"] == citations
+    assert result["evidence"] == evidence
+    assert result["error"] == ""
+
+    fake_run.assert_called_once_with(
+        "示例线路几点集合？",
+        history=[],
+    )
