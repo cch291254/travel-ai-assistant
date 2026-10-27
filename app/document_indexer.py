@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from app.ingest import parse_document,calculate_file_hash
+from app.ingest import parse_document,calculate_file_hash,validate_document_file
 from app.source_metadata import add_source_id
 from app.chunking import split_records
 from app.vector_store import replace_document_chunks
@@ -37,7 +37,7 @@ def index_document(path_value,model,collection):
 def index_document_with_registration(
         path_value,model,collection,conn
 ):
-    file_path=Path(path_value)
+    file_path=validate_document_file(path_value)
     file_hash=calculate_file_hash(file_path)
 
     result=index_document(file_path,model,collection)

@@ -1,5 +1,7 @@
 from pathlib import Path
 from datetime import datetime
+
+
 def parse_text_file(path_value):
     file_path=Path(path_value)
     if not file_path.exists():
@@ -13,6 +15,7 @@ def parse_text_file(path_value):
     content=file_path.read_text(encoding="utf-8")    
     parts=content.split("\n\n")
     paragraphs=[]
+    
     for part in parts:
         clean_part=part.strip()
         if clean_part:
@@ -22,12 +25,16 @@ def parse_text_file(path_value):
     modified_time=file_path.stat().st_mtime
     updated_at=datetime.fromtimestamp(modified_time).isoformat(timespec="seconds")
     records=[]
+
     for paragraph_index,paragraph in enumerate(paragraphs,start=1):
         heading_level=None
+
         if paragraph.startswith("#") and "\n" not in paragraph:
             level=len(paragraph)-len(paragraph.lstrip("#"))
+
             if 1<=level<=6 and paragraph[level:].startswith(" "):
                 heading_level=level
+
         record={"filename":file_path.name,
         "paragraph_index":paragraph_index,
         "content":paragraph,
@@ -35,6 +42,7 @@ def parse_text_file(path_value):
         "source":file_path.as_posix(),
         "updated_at":updated_at,
         }
+
         if heading_level is not None:
             record["heading_level"]=heading_level
         

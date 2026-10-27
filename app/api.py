@@ -5,9 +5,76 @@ from app.conversation_store import( init_db,get_conversation,get_messages,save_t
 from threading import Lock
 from app.conversation_store import get_pending_question
 
+import logging
+from contextlib import asynccontextmanager   #定义应用启动和关闭
+from app.logging_config import setup_logging,request_id_var  #导入日志模块
+
+from fastapi import Request   #获取请求方法、路径
+from time import perf_counter   #计算耗时
+from uuid import uuid4   #独立编号
+from app.tracing import setup_tracing,shutdown_tracing,get_tracing_client
+
+
+
+logger=logging.getLogger(__name__)
+
+@asynccontextmanager
+async def lifespan(app):    #应用生命周期的写法，聊天接口保持原样。
+    #在这里启动日志  
+    setup_logging()    # 初始化本地日志
+    setup_tracing()   
+    logger.info("后端启动，日志配置已就绪")
+
+    try:
+        yield     #开始处理
+    finally:
+        shutdown_tracing()  #发送追踪
+        #这里关闭同步
+        logger.info("后端已关闭")
+    
 
 init_db()
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
+
+@app.middleware("http")    #middleware，在进行处理之前进行日志处理
+async def log_request(request:Request,call_next):  #
+    #编号处理
+    request_id=uuid4().hex
+    context_token=request_id_var.set(request_id)
+    start_time=perf_counter()
+    status_code=500 #出现的异常，按服务端错误记录
+
+    try: #通过过滤获得request_id
+        logger.info("请求开始 method=%s path=%s",request.method,request.url.path)
+
+        #交给后面的接口处理，等待相应
+        response=await call_next(request)
+        status_code=response.status_code
+
+        #编号放入请求头，统一相应
+        response.headers["X-Request-ID"]=request_id
+        return response
+
+    except Exception:
+        #这里记录异常
+        logger.exception("请求发生异常 request_id=%s",request_id)
+        raise
+
+    finally:
+        #记录耗时
+        elapsed_ms=(perf_counter()-start_time)*1000
+        logger.info(
+            "请求结束 request_id=%s method=%s path=%s status=%s elapsed_ms=%.2f",
+            request_id,
+            request.method,
+            request.url.path,
+            status_code,
+            elapsed_ms,
+        )
+
+        #恢复请求前的值
+        request_id_var.reset(context_token)
+
 MAX_HISTORY_TURNS=3
 RAG_REQUEST_LOCK=Lock() #单进程锁
 
@@ -90,7 +157,43 @@ def call_tool_chat(question,history=None,*,pending_question=None):
     if pending_question is not None:
         question=pending_question+"\n用户补充信息："+question
 
-    tool_result=run_tool_chat(question,history=history)
+    client=get_tracing_client()
+
+    if client is None:
+        #未开启追踪，正常聊天
+        tool_result=run_tool_chat(question,history=history)
+
+    else:
+        #开始聊天，关联本地日志
+        with client.start_as_current_observation(
+            as_type="span",
+            name="tool-chat",
+            metadata={"request_id":request_id_var.get()},
+            input={
+                "question_length":len(question),
+                "history_messages":len(history or [])
+            }
+        ) as span:
+            tool_result=run_tool_chat(question,history=history)
+
+            #记录执行结果，
+            span.update(output={
+                "ok":not bool(tool_result["error"]),
+                "answer_length":len(tool_result.get("answer") or "")
+            })
+
+            # 工具聊天返回错误时，在追踪中标为错误。
+            if tool_result["error"]:
+                span.update(
+                    level="ERROR",
+                    status_message="工具聊天处理失败",
+                )
+
+            #将langfues 追踪编号写入本地
+            logger.info(
+                "聊天追踪 trace_id=%s",
+                client.get_current_trace_id()
+            )
 
     result={
         "data":None,
