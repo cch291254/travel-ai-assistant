@@ -11,3 +11,4 @@ sentence-transformers==6.1.0
 chromadb==1.5.9
 rank-bm25
 jieba
+langfuse==4.17.0

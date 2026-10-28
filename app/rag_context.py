@@ -1,11 +1,11 @@
 import re
 
 #构建上下文，清洗拿到的排序
-def build_context(evidence):
+def build_context(evidence,start_nimber=1):
     parts=[]
     source_map={}
 
-    for number,item in enumerate(evidence,start=1):
+    for number,item in enumerate(evidence,start=start_nimber):
         citation_id=str(number)
         metadata=item["metadata"]
 

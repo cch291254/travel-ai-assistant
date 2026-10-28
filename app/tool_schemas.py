@@ -9,7 +9,7 @@ class KnowledgeSearchInput(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
 
     query: str = Field(min_length=1, max_length=1000)
-    top_k: int = Field(default=3, strict=True, ge=1, le=10)
+    #top_k: int = Field(default=3, strict=True, ge=1, le=10)
 
 
 class AccommodationItemInput(BaseModel):

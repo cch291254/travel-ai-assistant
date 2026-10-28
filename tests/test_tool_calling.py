@@ -317,6 +317,60 @@ def test_run_tool_chat_returns_knowledge_citations(monkeypatch):
 
 
 #会话编号不同
+@pytest.mark.parametrize("second_indices", [(2, 3, 4), (0, 1, 2), (3, 4, 5)])
+def test_repeated_search_sends_only_new_evidence_and_keeps_citations(monkeypatch, second_indices):
+    # 覆盖部分重叠、全部重叠和完全不同的两次检索。
+    items = [
+        {"chunk_id": f"demo:{i}", "content": f"独立资料{i}。", "metadata": {}}
+        for i in range(6)
+    ]
+    first = items[:3]
+    second = [items[i] for i in second_indices]
+    new_items = [item for item in second if item not in first]
+    expected = first + new_items
+    calls = [
+        {
+            "id": f"search_{i}", "type": "function",
+            "function": {"name": "knowledge_search", "arguments": '{"query":"测试资料"}'},
+        }
+        for i in range(2)
+    ]
+    execute = Mock(side_effect=[
+        {"ok": True, "data": {"evidence": batch}, "error": None}
+        for batch in (first, second)
+    ])
+    monkeypatch.setattr("app.tool_calling.execute_tool", execute)
+    model = Mock(side_effect=[
+        {"role": "assistant", "content": None, "tool_calls": calls},
+        {"role": "assistant", "content": json.dumps({
+            "answer": f"综合资料[1][{len(expected)}]。",
+            "sources": ["1", str(len(expected))],
+        })},
+    ])
+    monkeypatch.setattr("app.tool_calling.call_tool_model", model)
+
+    result = run_tool_chat("综合这些资料")
+
+    assert result["error"] == ""
+    assert result["evidence"] == expected
+    assert [item["chunk_id"] for item in result["citations"]] == [
+        expected[0]["chunk_id"], expected[-1]["chunk_id"],
+    ]
+    messages = model.call_args.args[0]
+    contexts = [
+        json.loads(message["content"])["data"]["context"]
+        for message in messages if message["role"] == "tool"
+    ]
+    for item in first:
+        assert item["content"] in contexts[0]
+        assert item["content"] not in contexts[1]
+    for offset, item in enumerate(new_items, start=4):
+        assert item["content"] in contexts[1]
+        assert f"引用编号：{offset}\n" in contexts[1]
+    if not new_items:
+        assert "没有新增加的资料" in contexts[1]
+
+
 def test_run_tool_chat_rejects_unknown_citation(monkeypatch):
     # 模拟知识库检索到的一条资料
     evidence = [{
@@ -436,7 +490,10 @@ def test_run_tool_chat_logs_invalid_knowledge_answer(monkeypatch, caplog):
 
     assert result == {"answer": "", "error": "知识库回答格式不正确"}
     assert "知识库回答解析失败" in caplog.text
-    assert raw_answer in caplog.text
+    # 验证仍有错误标识，但完整回答没有进入日志。
+    assert "error_code=INVALID_ANSWER_FORMAT" in caplog.text
+    assert f"answer_length={len(raw_answer)}" in caplog.text
+    assert raw_answer not in caplog.text
     assert fake_model.call_count == 2
 
 

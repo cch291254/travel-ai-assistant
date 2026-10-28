@@ -61,9 +61,9 @@ def test_contracts_match_handlers():
 
 #测试是否去掉空白
 def test_search_validation_converts_defaults():
-    assert validate_search_input({"query": "  杭州住宿  "})["data"] == {
-        "query": "杭州住宿", "top_k": 3,
-    }
+    assert validate_search_input(
+        {"query": "  杭州住宿  "}
+    )["data"] == {"query": "杭州住宿"}
 
 #
 @pytest.mark.parametrize("raw", [
@@ -79,20 +79,23 @@ def test_invalid_search_does_not_load_resources(raw, fake_search):
     retrieve.assert_not_called()
 
 
-@pytest.mark.parametrize("top_k, candidates", [(None, 7), (1, 7), (5, 7), (10, 10)])
-def test_search_passes_resources_and_counts(top_k, candidates, fake_search):
+def test_search_passes_resources_and_counts(fake_search):
     resources, get_resources, retrieve = fake_search
-    raw = {"query": "  杭州住宿  "}
-    if top_k is not None:
-        raw["top_k"] = top_k
-    result = execute_tool("knowledge_search", raw)
+
+    result = execute_tool(
+        "knowledge_search",
+        {"query": "  杭州住宿  "},
+    )
+
     get_resources.assert_called_once_with()
     retrieve.assert_called_once_with(
-        question="杭州住宿", **resources,
-        n_results=candidates, top_k=3 if top_k is None else top_k,
+        question="杭州住宿",
+        **resources,
+        n_results=7,
+        top_k=3,
     )
-    assert result == {"ok": True, "data": {"evidence": retrieve.return_value}, "error": None}
-
+    assert result["ok"] is True
+    assert result["data"]["evidence"] == retrieve.return_value
 
 def test_empty_search_is_success(fake_search):
     _, _, retrieve = fake_search

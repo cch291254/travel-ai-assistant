@@ -175,8 +175,8 @@ def knowledge_search(raw):
             model=resources["model"],
             collection=resources["collection"],
             reranker=resources["reranker"],
-            n_results=max(7, data["top_k"]),
-            top_k=data["top_k"],
+            n_results=7,
+            top_k=3,
         )
     except Exception:
         # 对外返回稳定提示；日志记录具体异常，便于排查导入、加载或检索问题。
@@ -352,7 +352,19 @@ def execute_tool(tool_name, raw):
     return handler(raw)
 
 
+def compact_tool_schema(value):
+    # 只精简模型看到的说明，不修改 Pydantic 的校验规则。
+    if isinstance(value, dict):
+        return {
+            key: compact_tool_schema(item)
+            for key, item in value.items()
+            if key not in {"title", "default", "pattern"}
+        }
 
+    if isinstance(value, list):
+        return [compact_tool_schema(item) for item in value]
+
+    return value
 
 
 
@@ -366,7 +378,7 @@ def build_model_tools():
             "function":{   #函数
                 "name":tool_name,
                 "description":contract["description"],
-                "parameters":contract["parameters"]
+                "parameters": compact_tool_schema(contract["parameters"])
             }
         })
     return tools
