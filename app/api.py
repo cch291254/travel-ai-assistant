@@ -14,10 +14,16 @@ from time import perf_counter   #计算耗时
 from uuid import uuid4   #独立编号
 from app.tracing import setup_tracing,shutdown_tracing,get_tracing_client
 
+import json
+
+from app.tool_schemas import CalculateQuoteInput
+from app.tools import calculate_quote_parts
+from app.tool_results import tool_result_to_json
 
 
 logger=logging.getLogger(__name__)
 
+#后端的启动和关闭
 @asynccontextmanager
 async def lifespan(app):    #应用生命周期的写法，聊天接口保持原样。
     #在这里启动日志  
@@ -36,6 +42,7 @@ async def lifespan(app):    #应用生命周期的写法，聊天接口保持原
 init_db()
 app = FastAPI(lifespan=lifespan)
 
+#记录每一次 HTTP 请求。
 @app.middleware("http")    #middleware，在进行处理之前进行日志处理
 async def log_request(request:Request,call_next):  #
     #编号处理
@@ -83,7 +90,7 @@ DEMO_TOKEN_USERS={
     "token_b":"user_b",
 }
 
-
+#这里进行初步的用户隔离
 def get_current_user_id(
     authorization:str|None=Header(default=None)
 ):
@@ -113,7 +120,7 @@ class ChatRequest(BaseModel):
     question: str=Field(min_length=1,max_length=1000)
     conversation_id:int | None=Field(default=None,ge=1)
 
-class ChatRestponse(BaseModel):
+class ChatResponse(BaseModel):
     conversation_id:int|None=None
     data:StructuredAnswer | None
     error:str
@@ -149,6 +156,22 @@ def call_rag(question,history=None,*,pending_question=None):
         reranker=resources["reranker"],
         pending_question=pending_question,
     )
+
+#这里的请求是计算的
+@app.post("/quotes/calculate")
+def calculate_quote(
+    request:CalculateQuoteInput,
+    current_user_id:str=Depends(get_current_user_id)  #访问令牌校验
+):
+    result=calculate_quote_parts(request.model_dump())
+
+    if not result["ok"]:
+        raise HTTPException(
+            status_code=422,
+            detail=result["error"]["message"]
+        )
+
+    return json.loads(tool_result_to_json(result["data"]))
 
 #工具的接口
 def call_tool_chat(question,history=None,*,pending_question=None):
@@ -189,7 +212,7 @@ def call_tool_chat(question,history=None,*,pending_question=None):
                     status_message="工具聊天处理失败",
                 )
 
-            #将langfues 追踪编号写入本地
+            #将langfuse 追踪编号写入本地
             logger.info(
                 "聊天追踪 trace_id=%s",
                 client.get_current_trace_id()
@@ -223,7 +246,7 @@ def call_tool_chat(question,history=None,*,pending_question=None):
 #调用接口
 def get_model_caller():
     return call_tool_chat
-@app.post("/chat",response_model=ChatRestponse,responses={
+@app.post("/chat",response_model=ChatResponse,responses={
         502: {
             "model": ErrorResponse,
             "description": "模型服务调用失败",

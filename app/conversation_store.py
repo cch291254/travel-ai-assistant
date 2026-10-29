@@ -1,5 +1,6 @@
 import sqlite3
 from pathlib import Path
+import json
 
 
 
@@ -52,11 +53,52 @@ def init_db():
             ON DELETE CASCADE
             )
         """)
+        #自动存入的草稿
+        conn.execute("""
+        CREATE TABLE IF NOT EXISTS conversation_drafts(
+        conversation_id INTEGER PRIMARY KEY,
+        draft_json TEXT not NULL,
+        updated_at TEXT not NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (conversation_id)
+        REFERENCES conversations(id)
+        ON DELETE CASCADE)"""
+        )
+        #这里是存入的线路草稿
+        conn.execute("""
+        CREATE TABLE IF NOT EXIStS plans(
+        id INTEGER PRIMARY KEY,
+        owner_id TEXT NOT NULL,
+        conversation_id INTEGER,
+        title TEXT NOT NULL,
+        current_version INTEGER NOT NULL,
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (conversation_id)
+        REFERENCES conversations(id)
+        ON DELETE SET NULL)""")#删除引用对话时这里为空
+        #这里一直在增加的草稿
+        conn.execute("""
+        CREATE TABLE IF NOT EXISTS plan_versions(
+        id INTEGER PRIMARY KEY,
+        plan_id INTEGER NOT NULL,
+        version INTEGER NOT NULL,
+        status TEXT NOT NULL DEFAULT 'draft' CHECK(
+        status IN('draft','pending','confirmed')),
+        draft_json TEXT NOT NULL,
+        created_by TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(plan_id,version),
+        FOREIGN KEY (plan_id)
+        REFERENCES plans(id)
+        ON DELETE CASCADE)"""
+        )
+
+
         conn.commit()
     finally:
         conn.close()
 
-def creat_conversation(title,owner_id):
+def create_conversation(title,owner_id):
     conn=get_connection()
 
     try:
@@ -189,6 +231,7 @@ def get_pending_question(conversation_id):
     finally:
         conn.close()
 
+#写入更新pending_question，
 def _write_pending_question(conn,conversation_id,pending_question):
     conn.execute(
         "DELETE FROM conversation_states WHERE conversation_id=?",
@@ -201,6 +244,43 @@ def _write_pending_question(conn,conversation_id,pending_question):
             VALUES (?,?)""",
             (conversation_id,pending_question)
         )
+
+#保存和覆盖草案
+def save_draft(conversation_id,draft):
+    conn=get_connection()
+    try:
+        conn.execute(
+            """INSERT INTO conversation_drafts(conversation_id,draft_json)
+            VALUES (?,?)
+            ON CONFLICT(conversation_id) DO UPDATE SET
+                draft_json=excluded.draft_json,
+                updated_at=CURRENT_TIMESTAMP
+            """,(conversation_id,json.dumps(draft,ensure_ascii=False))
+        )
+        conn.commit()
+    except sqlite3.Error:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+#拿到草稿
+def get_draft(conversation_id):
+    conn=get_connection()
+
+    try:
+        row=conn.execute(
+            """SELECT draft_json FROM conversation_drafts WHERE conversation_id=?""",(conversation_id,)
+        ).fetchone()
+
+        if row is None:
+            return None
+        
+        return json.loads(row[0])  #返回是元组所以需要
+    finally:
+        conn.close()
+
 
 if __name__=="__main__":
     init_db()
@@ -221,13 +301,13 @@ if __name__=="__main__":
     conn.close()
     
 
-    conversation_id=creat_conversation("杭州两日游","user_a")
+    conversation_id=create_conversation("杭州两日游","user_a")
     print(get_conversation(9999))
     print(get_conversation(conversation_id))
 
 
     print(get_messages(conversation_id))
-
+    
 
     save_turn(
     conversation_id,
@@ -237,7 +317,7 @@ if __name__=="__main__":
     print(get_messages(conversation_id))
 
 
-    rollback_id=creat_conversation("测试回滚","user_a")
+    rollback_id=create_conversation("测试回滚","user_a")
     try:
         save_turn(rollback_id,
         "这条用户消息不能单独留下",

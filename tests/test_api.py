@@ -464,6 +464,7 @@ def test_chat_missing_token():
     assert response.status_code==401
     assert response.json()=={"detail":"缺失访问令牌"}
 
+
 #user_b 不能继续 user_a 的会话。
 def test_chat_forbidden_for_other_user(isolated_db):
     conversation_id=store.create_conversation_with_turn(
@@ -929,3 +930,53 @@ def test_chat_returns_tool_citations(monkeypatch):
         "示例线路几点集合？",
         history=[],
     )
+
+
+#核算成功
+def test_quote_calculate_success(isolated_db):
+    response=client.post(
+        "/quotes/calculate",
+        json={
+            "adults":2,
+            "children":0,
+            "room_items":[],
+            "meal_price":300,
+            "transport_price":220,
+            "guide_price":0,
+            "ticket_price":120,
+        }
+    )
+
+    assert response.status_code==200
+
+    body=response.json()
+    assert body["known_total"]=="1280.00"
+    assert body["adult_known_total"]=="1280.00"
+    assert body["person_costs"]["missing_items"]==["boat_price","entertainment_price"]
+    assert "ok" not in body
+
+#令牌无效
+def test_calculate_quote_invalid_token():
+    response=client.post(
+        "/quotes/calculate",
+        json={"adults": 2, "children": 0},
+        headers={"Authorization":"Bearer bad"}
+    )
+
+    assert response.status_code==401
+
+    body=response.json()
+    assert body["detail"]=="访问令牌无效"
+
+#人数为0
+def test_calculate_quote_no_adult():
+    response=client.post(
+        "/quotes/calculate",
+        json={
+            "adults":0,
+            "children":0,
+        }
+    )
+
+
+    assert response.status_code==422

@@ -2,6 +2,7 @@ import argparse
 from pathlib import Path
 import chromadb
 
+from app.ingest import validate_document_file
 from app.document_store import init_db
 from app.document_indexer import (
     index_document_with_registration,   
@@ -34,8 +35,11 @@ def main():
         parser.error("找不到向量库目录，请在项目根目录运行")
 
     if args.action == "index":
-        if not Path(args.target).is_file():
-            parser.error("目标文件不存在，或者不是文件")
+        try:
+            # 在打开数据库、向量库和加载模型之前检查资料。
+            validate_document_file(args.target)
+        except (ValueError, FileNotFoundError) as error:
+            parser.error(str(error))  # 显示错误并结束命令
 
     if args.action=="delete":
         confirmation = input(

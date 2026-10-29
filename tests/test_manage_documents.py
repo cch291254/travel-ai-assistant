@@ -17,6 +17,7 @@ def resources(monkeypatch):
     conn = Mock()
     init_db = Mock(return_value=conn)
     model = Mock()
+    validate=Mock()
     load_model = Mock(return_value=model)
     embedding = ModuleType('app.embedding')
     embedding.load_embedding_model = load_model
@@ -34,6 +35,7 @@ def resources(monkeypatch):
     monkeypatch.setattr(cli, 'delete_document_with_registration', delete)
     monkeypatch.setitem(sys.modules, 'app.embedding', embedding)
     monkeypatch.setattr('builtins.input', confirm)
+    monkeypatch.setattr(cli, "validate_document_file", validate)
 
     def run(*args):
         monkeypatch.setattr(sys, 'argv', ['manage_documents.py', *args])
@@ -42,7 +44,7 @@ def resources(monkeypatch):
     return SimpleNamespace(
         collection=collection, client=client, persistent_client=persistent_client,
         conn=conn, init_db=init_db, model=model, load_model=load_model,
-        index=index, delete=delete, path=path, confirm=confirm, run=run,
+        index=index, delete=delete, path=path, confirm=confirm, run=run,validate=validate,  # 让具体测试可以设置校验失败
     )
 
 
@@ -104,7 +106,7 @@ def test_missing_paths_open_no_resources(resources, missing):
     if missing == 'directory':
         r.path.is_dir.return_value = False
     else:
-        r.path.is_file.return_value = False
+        r.validate.side_effect = FileNotFoundError("资料文件不存在")
     with pytest.raises(SystemExit) as error:
         r.run('index', 'guide.md', '--collection', 'test_collection')
     assert error.value.code == 2
