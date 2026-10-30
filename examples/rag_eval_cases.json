@@ -840,7 +840,268 @@
       ]
     }
   ]
-}
-
+},
+  {
+    "id": "E31",
+    "turns": [
+      {
+        "question": "帮我算一下这个团的费用：3位成人、1位儿童。成人每人餐饮300元、交通150元、门票200元；儿童每人餐饮150元、交通120元、门票100元。再加2间房住2晚，每间每晚480元。总共多少钱？",
+        "expected_needs_clarification": false,
+        "expected_source_ids": [],
+        "expected_tools": [
+          "calculate_quote"
+        ],
+        "expected_points": [
+          "成人小计1950元（每人650元×3人）",
+          "儿童小计370元（每人370元×1人）",
+          "住宿小计1920元（2间×2晚×480元）",
+          "整组已知费用合计4240元",
+          "说明结果需要员工确认"
+        ],
+        "forbidden_points": [
+          "总价不是4240元",
+          "把住宿费按人数重复计算或分摊到每人",
+          "把儿童按成人价计算",
+          "未调用计算工具却自行编造明细"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "E32",
+    "turns": [
+      {
+        "question": "4位成人，每人门票120元、餐饮80元，船票商家说这次赠送是0元。导游和用车的报价师傅还没回我。先帮我算一下现在能算出多少，不住宿。",
+        "expected_needs_clarification": false,
+        "expected_source_ids": [],
+        "expected_tools": [
+          "calculate_quote"
+        ],
+        "expected_points": [
+          "已知费用合计800元（每人200元×4人）",
+          "说明导游和交通费用尚未提供，800元不是完整报价",
+          "说明船票是明确的0元，和未提供不同"
+        ],
+        "forbidden_points": [
+          "把导游或交通当作0元或免费",
+          "自行估算导游或用车费用",
+          "把800元说成最终总价"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "E33",
+    "turns": [
+      {
+        "question": "2位成人带1个孩子，成人每人餐饮200元、门票150元，孩子的价格供应商还没给。不住宿，帮我算总价。",
+        "expected_needs_clarification": false,
+        "expected_source_ids": [],
+        "expected_tools": [
+          "calculate_quote"
+        ],
+        "expected_points": [
+          "成人已知费用700元（每人350元×2人）",
+          "说明儿童费用未计入，要等供应商报价",
+          "说明700元只是成人部分，不是三人总价"
+        ],
+        "forbidden_points": [
+          "把成人单价套用到儿童，得出1050元",
+          "按半价或其他比例估算儿童费用",
+          "把700元说成三人总价"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "E34",
+    "turns": [
+      {
+        "question": "两位成人带一个身高1.1米的孩子，想报胜蓝旅游雷峰塔西湖灵隐寺一日游的10人小团。按页面价格一共要多少钱？这个价格孩子的门票和游船都包含了吗？",
+        "expected_needs_clarification": false,
+        "expected_source_ids": [
+          "S05"
+        ],
+        "expected_tools": [
+          "knowledge_search",
+          "calculate_quote"
+        ],
+        "expected_points": [
+          "1.1米的孩子属于0.5米至1.19米的儿童票范围",
+          "10人小团成人328元/份、儿童198元/份",
+          "按页面价格合计854元（328元×2+198元）",
+          "说明儿童价只含景区交通和导游，不含门票和游船",
+          "说明儿童的门票和船票金额资料未提供，854元不含这部分，需向商家确认"
+        ],
+        "forbidden_points": [
+          "使用18人经典团的258元或128元计算",
+          "把1.1米的孩子按成人票计算",
+          "说儿童价已包含门票和游船",
+          "自行估算儿童门票或船票金额"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "E35",
+    "turns": [
+      {
+        "question": "6位成人，每人餐饮180元、交通220元、门票160元，订3间房住1晚，每间400元。总共多少钱？",
+        "expected_needs_clarification": false,
+        "expected_source_ids": [],
+        "expected_tools": [
+          "calculate_quote"
+        ],
+        "expected_points": [
+          "成人小计3360元（每人560元×6人）",
+          "住宿小计1200元（3间×1晚×400元）",
+          "整组已知费用合计4560元"
+        ],
+        "forbidden_points": [
+          "总价不是4560元",
+          "把住宿费计入每人单价"
+        ]
+      },
+      {
+        "question": "又多来1位成人，再加1间房，其他都不变，现在多少钱？",
+        "expected_needs_clarification": false,
+        "expected_source_ids": [],
+        "expected_tools": [
+          "calculate_quote"
+        ],
+        "expected_points": [
+          "承接上一轮的单价和住宿条件，不要求重新提供",
+          "成人小计3920元（每人560元×7人）",
+          "住宿小计1600元（4间×1晚×400元）",
+          "整组已知费用合计5520元"
+        ],
+        "forbidden_points": [
+          "遗忘上一轮的单价，要求用户重复",
+          "只加人数不加房间，或只加房间不加人数",
+          "总价不是5520元"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "E36",
+    "turns": [
+      {
+        "question": "有位客人下个月想去南京玩三天，主要逛夫子庙和总统府，第一次去。住宿选哪一片比较方便？帮我查一下。",
+        "expected_needs_clarification": false,
+        "expected_source_ids": [],
+        "expected_tools": [
+          "web_search"
+        ],
+        "expected_points": [
+          "给出南京的住宿区域建议，并说明和夫子庙、总统府的位置关系",
+          "回答依据网页资料，并给出来源",
+          "提醒具体酒店、价格和房态需要核实"
+        ],
+        "forbidden_points": [
+          "套用杭州的住宿资料",
+          "断言资料库没有所以无法回答",
+          "没有网页依据却给出具体酒店价格",
+          "承诺具体酒店有房"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "E37",
+    "turns": [
+      {
+        "question": "客人想去苏州博物馆本馆，问要不要提前预约，怎么约？帮我查一下最新说明。",
+        "expected_needs_clarification": false,
+        "expected_source_ids": [],
+        "expected_tools": [
+          "web_search"
+        ],
+        "expected_points": [
+          "说明苏州博物馆本馆需要提前预约",
+          "说明可通过官网、官方微信公众号或官方小程序等官方渠道预约",
+          "回答依据网页资料，并给出来源",
+          "提醒开放时间和预约规则以官方最新公告为准"
+        ],
+        "forbidden_points": [
+          "说本馆不用预约",
+          "把西馆的免预约规则套用到本馆",
+          "套用杭州博物馆的规则",
+          "没有来源却断言具体闭馆日"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "E38",
+    "turns": [
+      {
+        "question": "客人晚上到杭州萧山机场，要去杭州东站换车，想坐地铁。中间要不要换乘？帮我查一下。",
+        "expected_needs_clarification": false,
+        "expected_source_ids": [],
+        "expected_tools": [
+          "web_search"
+        ],
+        "expected_points": [
+          "说明可以乘坐地铁19号线从萧山机场直达火车东站，不需要换乘",
+          "回答依据网页资料，并给出来源",
+          "提醒晚上到达要核实末班车时间"
+        ],
+        "forbidden_points": [
+          "要求不必要的换乘",
+          "没有来源却给出精确分钟数或末班车时间",
+          "承诺一定能赶上地铁"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "E39",
+    "turns": [
+      {
+        "question": "客人2026年11月想从杭州去黄山，问成人门票和云谷索道单程各多少钱？帮我查一下官方价格。",
+        "expected_needs_clarification": false,
+        "expected_source_ids": [],
+        "expected_tools": [
+          "web_search"
+        ],
+        "expected_points": [
+          "说明2026年11月属于平旺季，成人全票190元",
+          "说明云谷索道平旺季单程80元",
+          "回答依据网页资料，并给出来源，优先说明官方公告",
+          "提醒出行前以黄山官方最新公告为准"
+        ],
+        "forbidden_points": [
+          "按冬游价150元回答2026年11月的门票",
+          "把二手攻略里未核实的促销价当作官方价格",
+          "没有来源却给出价格"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "E40",
+    "turns": [
+      {
+        "question": "同事发来这个网页 https://zh.wikipedia.org/wiki/良渚古城遗址 ，帮我打开整理一下，告诉我它在哪里、什么时候列入世界遗产、大概是什么年代的。",
+        "expected_needs_clarification": false,
+        "expected_source_ids": [],
+        "expected_tools": [
+          "web_fetch"
+        ],
+        "expected_points": [
+          "说明遗址位于浙江杭州余杭区一带",
+          "说明2019年7月列入世界遗产",
+          "说明遗址年代约为公元前3300年至公元前2300年",
+          "说明内容来自所给网页"
+        ],
+        "forbidden_points": [
+          "网页打不开时仍假装已读取并编造内容",
+          "把未读取的内容说成网页原文",
+          "只凭常识回答而不说明来源"
+        ]
+      }
+    ]
+  }
 ]
 

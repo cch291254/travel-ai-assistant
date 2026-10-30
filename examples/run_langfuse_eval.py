@@ -189,10 +189,12 @@ if __name__ == "__main__":
         dataset = client.get_dataset("travel-rag-v1")
 
         # 每道题独立执行；同一道题内按顺序保留多轮历史。
+        # 只取题库上传的题目：编号固定，页面从运行记录加入的条目不是标准题。
         selected_items = [
             item
             for item in dataset.items
-            if args.all or item.metadata["case_id"] in args.case
+            if item.id.startswith("travel-rag-v1-E")
+            and (args.all or item.metadata["case_id"] in args.case)
         ]
 
         if not selected_items:
