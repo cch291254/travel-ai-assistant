@@ -63,7 +63,7 @@ def init_db():
         REFERENCES conversations(id)
         ON DELETE CASCADE)"""
         )
-        #这里是存入的线路草稿
+        #正式方案：一行一个方案，记录当前版本号
         conn.execute("""
         CREATE TABLE IF NOT EXIStS plans(
         id INTEGER PRIMARY KEY,
@@ -76,7 +76,7 @@ def init_db():
         FOREIGN KEY (conversation_id)
         REFERENCES conversations(id)
         ON DELETE SET NULL)""")#删除引用对话时这里为空
-        #这里一直在增加的草稿
+        #方案版本：每次保存新增一行，不覆盖旧版本
         conn.execute("""
         CREATE TABLE IF NOT EXISTS plan_versions(
         id INTEGER PRIMARY KEY,

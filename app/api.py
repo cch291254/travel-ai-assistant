@@ -3,7 +3,7 @@ from pydantic import BaseModel,Field,ConfigDict
 from app.structured_output import StructuredAnswer
 from app.conversation_store import( init_db,get_conversation,get_messages,save_turn,create_conversation_with_turn,delete_conversation)
 from threading import Lock
-from app.conversation_store import get_pending_question
+from app.conversation_store import (get_pending_question,get_draft,save_draft)
 
 import logging
 from contextlib import asynccontextmanager   #定义应用启动和关闭
@@ -19,6 +19,10 @@ import json
 from app.tool_schemas import CalculateQuoteInput
 from app.tools import calculate_quote_parts
 from app.tool_results import tool_result_to_json
+from typing import Literal
+
+
+from app.plan_store import (get_plan,list_plans,change_plan_status,delete_plan,copy_plan,create_plan,save_plan_version)
 
 
 logger=logging.getLogger(__name__)
@@ -114,6 +118,31 @@ def get_current_user_id(
     return DEMO_TOKEN_USERS[token]
 
 
+#代替所以的conversation
+def _get_owner_conversation(conversation_id,current_user_id):
+    conversation=get_conversation(conversation_id)
+
+    if conversation is None:
+        raise HTTPException(status_code=404,detail="会话不存在")
+
+    if conversation["owner_id"]!=current_user_id:
+        raise HTTPException(
+            status_code=403,
+            detail="无权访问该对话"
+        )
+
+    return conversation
+
+def _get_owner_plan(plan_id,current_user_id):
+    plan=get_plan(plan_id)
+    if plan is None:
+        raise HTTPException(status_code=404,detail="方案不存在")
+
+    if plan["owner_id"]!=current_user_id:
+        raise HTTPException(status_code=403,detail="无权访问该方案")
+
+    return plan
+
 
 class ChatRequest(BaseModel):
     model_config=ConfigDict(str_strip_whitespace=True)
@@ -134,6 +163,26 @@ class ChatResponse(BaseModel):
 class ErrorResponse(BaseModel):
     detail:str
 
+class SaveDraftRequest(BaseModel):
+    model_config=ConfigDict(extra="forbid")  #不允许出现没有定义的字段
+    draft:dict
+
+class CreatePlanRequest(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    title:str=Field(min_length=1)
+    draft:dict
+    conversation_id:int |  None=None
+
+class SavePlanRequest(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    draft:dict
+    base_version:int=Field(ge=1)
+    title:str|None=Field(default=None,min_length=1)
+
+class ChangePlanStatusRequest(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    status:Literal["draft","pending","confirmed"]  #限定只有那几个
+    base_version:int=Field(ge=1)
 
 @app.get("/health")
 def health():
@@ -264,16 +313,7 @@ def chat(
 
         
         if conversation_id is not None:
-            conversation=get_conversation(conversation_id)
-
-            if conversation is None:
-                raise HTTPException(status_code=404,detail="会话不存在")
-
-            if conversation["owner_id"]!=current_user_id:
-                raise HTTPException(
-                    status_code=403,
-                    detail="无权访问该对话"
-                )
+            conversation=_get_owner_conversation(conversation_id,current_user_id)
 
             history=get_messages(conversation_id)
             history=history[-MAX_HISTORY_TURNS*2:]#倒数两个对话
@@ -325,19 +365,7 @@ def remove_conversation(
     conversation_id:int,
     current_user_id=Depends(get_current_user_id)
 ):
-    conversation=get_conversation(conversation_id)
-
-    if conversation is None:
-        raise HTTPException(
-            status_code=404,
-            detail="会话不存在"
-        )
-
-    if conversation["owner_id"]!=current_user_id:
-        raise HTTPException(
-            status_code=403,
-            detail="无权删除该对话"
-        )
+    _get_owner_conversation(conversation_id,current_user_id)
 
     delete_conversation(conversation_id)
 
@@ -352,22 +380,99 @@ def get_conversation_detail(
     conversation_id:int =Path(ge=1),
     current_user_id:str=Depends(get_current_user_id)
 ):
-    conversation=get_conversation(conversation_id)
+    conversation=_get_owner_conversation(conversation_id,current_user_id)
     data={}
-    if conversation is None:
-        raise HTTPException(
-            status_code=404,
-            detail="会话不存在"
-        )
-
-    if conversation["owner_id"]!=current_user_id:
-        raise HTTPException(
-            status_code=403,
-            detail="无权访问该会话"
-        )
+    
 
     messages=get_messages(conversation_id)
     data["conversation"]=conversation
     data["messages"]=messages
 
     return data
+
+@app.get("/conversations/{conversation_id}/draft")
+def read_draft(conversation_id:int=Path(ge=1),  #最小为1
+    current_user_id: str =Depends(get_current_user_id)):
+    _get_owner_conversation(conversation_id,current_user_id)
+
+    return {"draft":get_draft(conversation_id)}
+
+
+@app.put("/conversations/{conversation_id}/draft")
+def write_draft(request:SaveDraftRequest,
+                conversation_id:int =Path(ge=1),
+                current_user_id:str =Depends(get_current_user_id)):
+    _get_owner_conversation(conversation_id,current_user_id)
+    save_draft(conversation_id,request.draft)
+    return {"status":"saved"}
+
+
+#这是一组请求
+@app.post("/plans")
+def create_new_plan(request:CreatePlanRequest,
+                    current_user_id:str =Depends(get_current_user_id)):
+    if request.conversation_id is not None:
+        _get_owner_conversation(request.conversation_id,current_user_id)
+    plan_id=create_plan(current_user_id,request.title,request.draft,request.conversation_id)
+    
+    return {"plan_id":plan_id,"version":1}
+
+#看哪些方案
+@app.get("/plans")
+def read_plan_list(
+    current_user_id:str =Depends(get_current_user_id)
+):
+    return {"plans":list_plans(current_user_id)}
+
+#看具体方案
+@app.get("/plans/{plan_id}")
+def read_plan(
+    plan_id:int=Path(ge=1),
+    current_user_id:str =Depends(get_current_user_id)
+):
+    plan=_get_owner_plan(plan_id,current_user_id)
+    return plan
+
+
+@app.delete("/plans/{plan_id}")
+def remove_plan(plan_id:int=Path(ge=1),
+    current_user_id:str =Depends(get_current_user_id)):
+    _get_owner_plan(plan_id,current_user_id)
+    delete_plan(plan_id)
+    return {"status":"deleted","plan_id":plan_id}
+
+
+@app.post("/plans/{plan_id}/copy")
+def copy_existing_plan(plan_id:int=Path(ge=1),
+    current_user_id:str =Depends(get_current_user_id)):
+    _get_owner_plan(plan_id,current_user_id)
+    new_plan_id=copy_plan(plan_id,current_user_id)
+    return{"plan_id":new_plan_id,"version":1}
+
+
+@app.put("/plans/{plan_id}")
+def update_plan(request:SavePlanRequest,
+        plan_id:int =Path(ge=1),
+        current_user_id:str =Depends(get_current_user_id)):
+    _get_owner_plan(plan_id,current_user_id)
+    new_version=save_plan_version(plan_id,request.draft,request.base_version,current_user_id,request.title)
+    if new_version is None:
+        raise HTTPException(status_code=409,detail="方案已被修改，请刷新后重试")
+    return {"plan_id":plan_id,"version":new_version}
+
+
+@app.post("/plans/{plan_id}/status")
+def update_plan_status(request:ChangePlanStatusRequest,
+        plan_id:int =Path(ge=1),
+        current_user_id:str =Depends(get_current_user_id)):
+    _get_owner_plan(plan_id,current_user_id)
+    result=change_plan_status(plan_id,request.base_version,request.status)
+    if result["ok"] is False:
+        if result["error"]=="version_conflict":
+            raise HTTPException(status_code=409,detail="方案已被修改，请刷新后重试")
+        if result["error"]=="invalid_transition":
+            raise HTTPException(status_code=409,detail="当前状态不支持这个操作")
+        if result["error"]=="missing_prices":
+            raise HTTPException(status_code=422,detail="当前缺少这些价格："+"；".join(result["missing"]))
+
+    return {"plan_id":plan_id,"status":result["status"]}

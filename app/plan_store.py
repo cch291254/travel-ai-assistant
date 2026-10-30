@@ -59,15 +59,15 @@ def get_plan(plan_id):
         conn.close()
 
 #进行版本更改
-def save_plan_version(plan_id,draft,base_version,created_by):
+def save_plan_version(plan_id,draft,base_version,created_by,title=None):
     conn=get_connection()
 
     try:   #这里使用乐观锁，防止多人更改
         new_version=base_version+1
         cursor=conn.execute("""
         UPDATE plans 
-        set current_version=?,updated_at=CURRENT_TIMESTAMP
-        WHERE id=? AND current_version=?""",(new_version,plan_id,base_version))
+        set current_version=?,title=COALESCE(?,title),updated_at=CURRENT_TIMESTAMP
+        WHERE id=? AND current_version=? """,(new_version,title,plan_id,base_version))
 
         if cursor.rowcount==0:
             conn.rollback()
@@ -124,4 +124,46 @@ def change_plan_status(plan_id,base_version,new_status):
     finally:
         conn.close()
         
-        
+# 返回某个员工的方案列表，最近修改的在前；每项含 id, title,
+# current_version, status, updated_at，不含 draft
+def list_plans(owner_id):
+    conn=get_connection()
+    try:
+        rows=conn.execute("""
+            SELECT p.id,p.title,p.current_version,v.status,p.updated_at
+            FROM plans p
+            JOIN plan_versions v ON p.id=v.plan_id
+            AND v.version=p.current_version
+            WHERE p.owner_id=?
+            ORDER BY p.updated_at DESC ,p.id DESC""",(owner_id,)).fetchall()
+
+        results=[]
+        for row in rows:
+            results.append({"id":row[0],"title":row[1],"current_version":row[2],"status":row[3],"updated_at":row[4]})
+        return results
+    finally:
+        conn.close()
+
+
+def delete_plan(plan_id):
+    conn=get_connection()
+    try:
+        cursor=conn.execute("""
+        DELETE FROM plans WHERE id=?""",(plan_id,))
+
+        conn.commit()
+        return cursor.rowcount==1
+    except sqlite3.Error:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def copy_plan(plan_id,owner_id):
+    plan=get_plan(plan_id)
+    if plan is None:
+        return None
+    new_plan_id=create_plan(owner_id,f'{plan["title"]}-副本',plan["draft"])
+    return new_plan_id
+

@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 
 import app.conversation_store as store
 import requests
+from app.workspace_plan import empty_draft
 
 
 with patch.object(store, "init_db"):#防止提前初始化数据库
@@ -533,7 +534,7 @@ def test_delete_other_user_conversation(isolated_db):
 
     assert response.status_code==403
     assert response.json()=={
-        "detail":"无权删除该对话"
+        "detail":"无权访问该对话"
     }
     assert store.get_conversation(conversation_id) is not None
     assert len(store.get_messages(conversation_id))==2
@@ -582,7 +583,7 @@ def test_get_other_user_conversation_detail(isolated_db):
 
     assert response.status_code == 403
     assert response.json() == {
-    "detail": "无权访问该会话"
+    "detail": "无权访问该对话"
 }
     assert store.get_conversation(conversation_id) is not None
     assert len(store.get_messages(conversation_id)) == 2
@@ -978,5 +979,146 @@ def test_calculate_quote_no_adult():
         }
     )
 
+    assert response.status_code==422
+
+#页面 PUT 进去的内容，GET 能原样取回来。    
+def test_draft_save_and_read():
+    conversation_id = api.create_conversation_with_turn("杭州三日", "user_a", "问题", "回答")
+    draft={"name":"杭州三日游","adults":2}
+
+    put_response=client.put(f"/conversations/{conversation_id}/draft",
+                            json={"draft":draft})
+
+    assert put_response.status_code==200            
+
+    get_response=client.get(f"/conversations/{conversation_id}/draft")
+    assert get_response.status_code==200
+    assert get_response.json()=={"draft":draft}
+
+
+def test_read_draft_empty():
+    conversation_id = api.create_conversation_with_turn("杭州三日", "user_a", "问题", "回答")
+    get_response=client.get(f"/conversations/{conversation_id}/draft")
+    assert get_response.status_code==200
+    assert get_response.json()=={"draft":None}
+
+def test_draft_forbidden_for_other_user():
+    conversation_id = api.create_conversation_with_turn("杭州三日", "user_a", "问题", "回答")
+    draft={"name":"杭州三日游","adults":2}
+    get_response = client.get(f"/conversations/{conversation_id}/draft",
+                      headers={"Authorization": "Bearer token_b"})
+    
+    put_response=client.put(f"/conversations/{conversation_id}/draft",
+                                json={"draft":draft},
+                                 headers={"Authorization": "Bearer token_b"})
+    assert get_response.status_code==403
+    assert put_response.status_code==403
+
+def test_save_draft_rejects_extra_field():
+    conversation_id = api.create_conversation_with_turn("杭州三日", "user_a", "问题", "回答")
+    draft={"name":"杭州三日游","adults":2}
+    response = client.put(
+    f"/conversations/{conversation_id}/draft",
+    json={"draft": draft, "owner_id": "user_b"},
+)
 
     assert response.status_code==422
+    get_response=client.get(
+        f"/conversations/{conversation_id}/draft"
+    )
+    assert get_response.json()=={"draft":None}
+
+
+#正常测试
+def test_create_and_read_plan():
+    draft={"name":"杭州三日游","adults":2}
+    response=client.post(f"/plans",json={"draft":draft,"title":"杭州三日游"})
+    plan_id=response.json()["plan_id"]    
+    get_response=client.get(f"/plans/{plan_id}")
+
+    assert response.status_code==200
+    assert get_response.status_code==200
+    assert get_response.json()["draft"]==draft
+    assert get_response.json()["owner_id"]=="user_a"
+    assert get_response.json()["current_version"]==1
+
+
+#用户隔离：别人的方案看不到，别人的对话不能关联
+def test_plan_access_control():
+    b_headers={"Authorization":"Bearer token_b"}
+    plan_id=client.post("/plans",json={"title":"杭州三日游","draft":{"adults":2}}).json()["plan_id"]
+        #当前默认为a的
+    # user_b 看不到、打不开 user_a 的方案
+    assert client.get("/plans",headers=b_headers).json()=={"plans":[]}
+    assert client.get(f"/plans/{plan_id}",headers=b_headers).status_code==403
+    assert client.get("/plans/999").status_code==404
+
+    # user_a 不能把方案关联到 user_b 的对话，也不会多建一个方案
+    conversation_id=api.create_conversation_with_turn("杭州三日","user_b","问题","回答")
+    #默认header为a
+    response=client.post("/plans",json={"title":"杭州一日游","draft":{},"conversation_id":conversation_id})
+    assert response.status_code==403
+    assert len(client.get("/plans").json()["plans"])==1
+
+
+#删除和复制：别人不能操作，自己复制后删除原方案，副本还在
+def test_delete_and_copy_plan():
+    b_headers={"Authorization":"Bearer token_b"}
+    plan_id=client.post("/plans",json={"title":"杭州三日游","draft":{"adults":2}}).json()["plan_id"]
+
+    assert client.post(f"/plans/{plan_id}/copy",headers=b_headers).status_code==403
+    assert client.delete(f"/plans/{plan_id}",headers=b_headers).status_code==403
+
+    copy_response=client.post(f"/plans/{plan_id}/copy")
+    assert copy_response.status_code==200
+    new_plan_id=copy_response.json()["plan_id"]
+    assert client.get(f"/plans/{new_plan_id}").json()["title"]=="杭州三日游-副本"
+
+    assert client.delete(f"/plans/{plan_id}").status_code==200
+    assert client.get(f"/plans/{plan_id}").status_code==404
+    assert client.get(f"/plans/{new_plan_id}").status_code==200
+
+#冲突测试
+def test_update_plan_version_conflict():
+    plan_id=client.post("/plans",json={"title":"杭州三日游","draft":{"adults":2}}).json()["plan_id"]
+    first_draft={"adults":3}
+    second_draft={"adults":5}
+    response=client.put(f"/plans/{plan_id}" ,json={"draft":first_draft,"base_version":1})
+    a_response=client.put(f"/plans/{plan_id}", json={"draft":second_draft,"base_version":1})
+
+    assert response.status_code==200
+    assert a_response.status_code==409
+    assert client.get(f"/plans/{plan_id}").json()["current_version"]==2
+    assert client.get(f"/plans/{plan_id}").json()["draft"]==first_draft
+    assert response.json()["version"]==2
+
+
+def test_change_plan_status_errors():
+    plan_id=client.post("/plans",json={"title":"杭州三日游","draft":empty_draft()}).json()["plan_id"]
+    url=f"/plans/{plan_id}/status"
+        # 跳过 pending，直接确认
+    response=client.post(url,json={"status":"confirmed","base_version":1})
+    assert response.status_code==409
+
+    response=client.post(url,json={"status":"pending","base_version":2})
+    assert response.status_code==409
+
+    response=client.post(url,json={"status":"pending","base_version":1})
+    assert response.status_code==200
+
+    response=client.post(url,json={"status":"confirmed","base_version":1})
+    assert response.status_code==422
+    assert "成人单价" in response.json()["detail"]
+
+    response=client.post(url,json={"status":"done","base_version":1})
+    assert response.status_code==422
+
+
+#保存时能修改方案标题
+def test_update_plan_title():
+    plan_id=client.post("/plans",json={"title":"杭州三日游","draft":{"adults":2}}).json()["plan_id"]
+
+    response=client.put(f"/plans/{plan_id}",json={"draft":{"adults":3},"base_version":1,"title":"杭州四日游"})
+
+    assert response.status_code==200
+    assert client.get(f"/plans/{plan_id}").json()["title"]=="杭州四日游"

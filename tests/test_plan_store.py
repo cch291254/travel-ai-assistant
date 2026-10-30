@@ -123,7 +123,7 @@ def test_submit_and_return_to_draft():
     assert a_result=={"ok":True,"status":"pending"}
     assert plan_store.get_plan(plan_id)["status"]=="pending"
 
-    b_result=plan_store.change_plan_status(plan_id,2,"draft")
+    b_result=plan_store.change_plan_status(plan_id,1,"draft")
     assert b_result=={"ok":True,"status":"draft"}
     assert plan_store.get_plan(plan_id)["status"]=="draft"
 
@@ -154,8 +154,72 @@ def  test_status_change_with_stale_version():
     draft=empty_draft()
     plan_id=plan_store.create_plan("user_a","杭州三日游",draft)
     base_version=plan_store.get_plan(plan_id)["current_version"]
-    new_version=plan_store.save_plan_version(plan_id,draft,base_version,"user_a")
+    plan_store.save_plan_version(plan_id,draft,base_version,"user_a")
     result=plan_store.change_plan_status(plan_id,1,"pending")
 
     assert result["error"]=="version_conflict"
     assert plan_store.get_plan(plan_id)["status"]=="draft"
+
+
+#用户隔离
+def test_list_plans_only_own():
+    draft=empty_draft()
+    a_plan_id=plan_store.create_plan("user_a","杭州三日游",draft)
+    a_plan_id_2=plan_store.create_plan("user_a","杭州一日游",draft)
+    b_plan_id=plan_store.create_plan("user_b","西湖游",draft)
+
+    a_results=plan_store.list_plans("user_a")
+
+    assert len(a_results)==2
+    assert a_results[0]["id"]==a_plan_id_2
+    ids=[p["id"]  for p in a_results]
+    assert b_plan_id not in ids
+
+
+def test_delete_plan_removes_versions():
+    draft=empty_draft()
+    plan_id=plan_store.create_plan("user_a","杭州三日游",draft)
+    plan=plan_store.get_plan(plan_id)
+    plan_store.save_plan_version(plan_id,draft,plan["current_version"],"user_a")
+    deleted=plan_store.delete_plan(plan_id)
+
+    assert deleted is True
+    now_plan=plan_store.get_plan(plan_id)
+    assert now_plan is None
+    conn = store.get_connection()
+    count = conn.execute(
+        "SELECT COUNT(*) FROM plan_versions WHERE plan_id=?", (plan_id,)
+    ).fetchone()[0]
+    conn.close()
+    assert count == 0
+
+
+def test_copy_plan():
+    draft=empty_draft()
+    plan_a_id=plan_store.create_plan("user_a","杭州三日游",draft)
+    edited = empty_draft()
+    edited["adults"]=5
+    plan_store.save_plan_version(plan_a_id, edited, 1, "user_a")   # 原方案变成第 2 版
+    plan_b_id=plan_store.copy_plan(plan_a_id,"user_b")
+
+    assert plan_a_id!=plan_b_id
+    plan_a=plan_store.get_plan(plan_a_id)
+    plan_b=plan_store.get_plan(plan_b_id)
+    assert plan_a["draft"]==plan_b["draft"]
+    assert plan_b["current_version"]==1
+    assert plan_b["status"]=="draft"
+    assert "副本"  in plan_b["title"]
+    assert plan_b["owner_id"] == "user_b"
+    assert plan_b["draft"]["adults"] == 5
+
+
+
+#保存时传标题就更新，不传就保留原标题
+def test_save_plan_version_updates_title():
+    plan_id=plan_store.create_plan("user_a","杭州三日游",empty_draft())
+
+    plan_store.save_plan_version(plan_id,empty_draft(),1,"user_a")
+    assert plan_store.get_plan(plan_id)["title"]=="杭州三日游"
+
+    plan_store.save_plan_version(plan_id,empty_draft(),2,"user_a",title="杭州四日游")
+    assert plan_store.get_plan(plan_id)["title"]=="杭州四日游"
