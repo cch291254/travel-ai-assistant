@@ -36,6 +36,11 @@ async def lifespan(app):    #应用生命周期的写法，聊天接口保持原
     #在这里启动日志  
     setup_logging()    # 初始化本地日志
     setup_tracing()   
+    try:
+        from app.rag_resources import get_rag_resources
+        get_rag_resources()
+    except Exception:  #这里提前加载模型
+        logger.exception("模型预加载失败，第一次检索时会重试")
     logger.info("后端启动，日志配置已就绪")
 
     try:

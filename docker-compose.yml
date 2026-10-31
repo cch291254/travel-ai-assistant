@@ -10,7 +10,20 @@ services:
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs
-      - ~/.cache/huggingface:/models:ro
+      - ${HF_CACHE:-~/.cache/huggingface}:/models:ro
+
+  # 首次运行：docker compose run --rm setup
+  setup:
+    build: .
+    image: travel-ai-assistant:v2
+    profiles: ["setup"]
+    command: ["python", "-m", "app.setup_data"]
+    environment:
+      HF_HUB_OFFLINE: "0"
+      HF_ENDPOINT: ${HF_ENDPOINT:-https://huggingface.co}
+    volumes:
+      - ./data:/app/data
+      - ${HF_CACHE:-~/.cache/huggingface}:/models
 
   workspace:
     image: travel-ai-assistant:v2
