@@ -90,8 +90,8 @@ def call_tool_model(messages, *, json_mode=False):
         "model":model,
         "messages":messages,
         "tools":build_model_tools(),
-        "thinking":{"type":"disabled"},
-        "max_tokens":2048,
+        "thinking":{"type":"enabled"},
+        "max_tokens":4048,
         "stream":False,
         "temperature":0.2
     }
@@ -276,6 +276,7 @@ def run_tool_chat(question,history=None,max_rounds=4,max_tool_calls=8):
                 return {
                     "answer": "",
                     "error": "知识库回答格式不正确",
+                    "raw_answer": final_text,  # 评测时保留原文，便于定位解析失败
                 }
 
             answer_data = parsed_answer["data"]

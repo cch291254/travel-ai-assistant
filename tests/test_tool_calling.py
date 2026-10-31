@@ -488,7 +488,11 @@ def test_run_tool_chat_logs_invalid_knowledge_answer(monkeypatch, caplog):
 
     result = run_tool_chat("示例线路几点集合？")
 
-    assert result == {"answer": "", "error": "知识库回答格式不正确"}
+    assert result == {
+        "answer": "",
+        "error": "知识库回答格式不正确",
+        "raw_answer": raw_answer,
+    }
     assert "知识库回答解析失败" in caplog.text
     # 验证仍有错误标识，但完整回答没有进入日志。
     assert "error_code=INVALID_ANSWER_FORMAT" in caplog.text
