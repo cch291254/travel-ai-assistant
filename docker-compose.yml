@@ -1,0 +1,23 @@
+services:
+  api:
+    build: .
+    image: travel-ai-assistant:v2
+    env_file: .env
+    environment:
+      LANGFUSE_ENABLED: "false"
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ~/.cache/huggingface:/models:ro
+
+  workspace:
+    image: travel-ai-assistant:v2
+    command: ["python", "-m", "streamlit", "run", "app/streamlit_workspace.py", "--server.address", "0.0.0.0", "--server.port", "8502"]
+    environment:
+      WORKSPACE_API_URL: http://api:8000
+    ports:
+      - "127.0.0.1:8502:8502"
+    depends_on:
+      - api

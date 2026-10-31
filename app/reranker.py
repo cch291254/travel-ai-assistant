@@ -1,16 +1,18 @@
 from sentence_transformers import CrossEncoder
+from app.device import MODEL_DEVICE
 
 
 #配置向量模型，配置gpu，本地运行
 def load_reranker():
     reranker=CrossEncoder(
         "BAAI/bge-reranker-v2-m3",
-        device="cuda",
+        device=MODEL_DEVICE,
         local_files_only=True,
     )
 
     reranker.max_seq_length=512
-    reranker.half()
+    if MODEL_DEVICE=="cuda":
+        reranker.half()
     return reranker
 
 

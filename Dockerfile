@@ -11,9 +11,9 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
+RUN python -m pip install --no-cache-dir torch==2.13.0 --index-url https://download.pytorch.org/whl/cu130
 COPY requirements.docker.txt .
 
-RUN python -m pip install --no-cache-dir torch==2.13.0 --index-url https://download.pytorch.org/whl/cu130
 RUN python -m pip install --no-cache-dir -r requirements.docker.txt
 
 COPY app ./app
