@@ -6,7 +6,8 @@
     python -m examples.build_eval_report --run 运行文件路径 --offline
 
 人工分的备注以“检索：”“重排：”“生成：”“工具：”开头时，报告会按这四类统计问题归因。
-每次还会生成 -review.md 问题清单，按问题类型列出每题的回答、失败原文和追踪链接。
+每次还会生成 -review.md 问题清单，按问题类型列出每题的回答、失败原文和追踪链接；
+以及 -scoring.md 打分清单，列出全部题目的标准、回答和引用的证据，配合 Langfuse 人工打分。
 """
 import argparse
 import json
@@ -23,6 +24,7 @@ HUMAN_COVERAGE = "human_answer_coverage"
 HUMAN_GROUNDEDNESS = "human_groundedness"
 ATTRIBUTIONS = ("检索", "重排", "生成", "工具")
 SCORE_FIELDS = "details"
+EVIDENCE_PREVIEW = 300
 TRACE_URL = "https://jp.cloud.langfuse.com/project/cmvpbwbvk000mad0emaw9f3ja/traces/"
 
 # 问题类型按定位顺序排列：先看有没有跑完，再看检索，最后看回答。
@@ -288,7 +290,7 @@ def build_report(run, langfuse_scores=None):
         "",
         "## 指标口径",
         "",
-        "- 人工分使用 travel-quality-v1 标准，分值为 0、0.5、1。",
+        "- 人工分使用 travel-quality-v1 标准，分值为 0、0.5、1；由模型初评后人工逐题复核。",
         "- 要点覆盖：多轮题取各轮平均。依据分：多轮题取最低一轮，任何一轮编造都不能被其他轮抵消。",
         "- 幻觉率按题统计，未评分的题不进入分母，也不当作 0 分。",
         "- 证据完整命中不等于 Hit Rate@k 或 Recall@k；只统计有预期来源、且不需要反问的轮次。",
@@ -334,6 +336,58 @@ def build_review(run, langfuse_scores=None):
         for summary in attention:
             if issue_type(summary) == name:
                 lines += review_case(cases[summary["case_id"]], summary)
+    return "\n".join(lines)
+
+
+def cited_evidence(result):
+    """只列回答实际引用的证据，打依据分时对照这些原文。"""
+    evidence = {item.get("chunk_id"): item for item in result.get("evidence") or []}
+    lines = []
+    for citation in result.get("citations") or []:
+        metadata = citation.get("metadata") or {}
+        item = evidence.get(citation.get("chunk_id")) or {}
+        content = " ".join((item.get("content") or "").split())
+        title = metadata.get("source_title") or metadata.get("source_id") or "未知来源"
+        url = f"（{metadata['url']}）" if metadata.get("url") else ""
+        lines.append(f"  - [{citation.get('citation_id')}] {title}{url}：{content[:EVIDENCE_PREVIEW]}")
+    return lines
+
+
+def build_score_sheet(run):
+    """全部题目的打分材料；分数填在 Langfuse，这里只负责集中查看。"""
+    lines = [
+        "# 人工打分清单",
+        "",
+        f"运行：{run.get('run_name', '未记录')}",
+        "",
+        "每题点追踪链接，用 Annotate 填 human_answer_coverage 和 human_groundedness。",
+        "分值：0、0.5、1。多轮题：要点覆盖取平均，依据分取最低一轮。",
+        "该反问没反问，这一轮要点覆盖记 0；价格算错，依据分记 0。",
+        "不是 1 分的题写备注，以“检索：”“重排：”“生成：”“工具：”开头。",
+        "",
+    ]
+    for case in sorted(run["results"], key=lambda item: item["case_id"]):
+        lines += [f"## {case['case_id']}（{group_of(case['case_id'])}）", "", f"追踪：{TRACE_URL}{case['trace_id']}", ""]
+        turns = (case.get("output") or {}).get("turns") or []
+        for index, expected in enumerate(case["expected_output"]["turns"]):
+            turn = turns[index] if index < len(turns) else {}
+            result = turn.get("result") or {}
+            lines += [
+                f"### 第 {index + 1} 轮",
+                "",
+                f"**问题**：{turn.get('question') or '未执行'}",
+                "",
+                f"- 应先反问：{'是' if expected.get('needs_clarification') else '否'}",
+                f"- 要点：{'；'.join(expected.get('points') or []) or '无'}",
+                f"- 禁止：{'；'.join(expected.get('forbidden_points') or []) or '无'}",
+                "",
+                f"**回答**：{result.get('answer') or '无'}",
+                "",
+            ]
+            if result.get("error"):
+                lines += [f"**错误**：{result['error']}", ""]
+            references = cited_evidence(result)
+            lines += (["**引用的证据**：", *references, ""] if references else ["**引用的证据**：无", ""])
     return "\n".join(lines)
 
 
@@ -392,6 +446,9 @@ def main():
     review_path.write_text(build_review(run, langfuse_scores), encoding="utf-8")
     print("报告已生成：", out_path)
     print("问题清单已生成：", review_path)
+    scoring_path = out_path.with_name(f"{run_path.stem}-scoring.md")
+    scoring_path.write_text(build_score_sheet(run), encoding="utf-8")
+    print("打分清单已生成：", scoring_path)
 
 
 if __name__ == "__main__":

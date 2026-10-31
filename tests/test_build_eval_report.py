@@ -133,3 +133,20 @@ def test_review_lists_raw_answer_and_trace():
     assert "## 回答格式（1 题）" in text
     assert "坏的原文" in text
     assert report.TRACE_URL + "trace-E16" in text
+
+
+def test_score_sheet_lists_every_case_with_cited_evidence():
+    case = make_case("E01")
+    case["output"]["turns"][0]["question"] = "问题"
+    case["output"]["turns"][0]["result"]["evidence"] = [
+        {"chunk_id": "c1", "content": "证据原文", "metadata": {"source_id": "S01"}},
+    ]
+    case["output"]["turns"][0]["result"]["citations"] = [
+        {"citation_id": "1", "chunk_id": "c1", "metadata": {"source_id": "S01"}},
+    ]
+
+    text = report.build_score_sheet({"run_name": "测试运行", "results": [make_case("E02"), case]})
+
+    assert text.index("## E01") < text.index("## E02")
+    assert "证据原文" in text
+    assert report.TRACE_URL + "trace-E01" in text
