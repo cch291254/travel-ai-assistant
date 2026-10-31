@@ -13,3 +13,8 @@ data/*.db-*
 /week6_chat_demo.db*
 /week6_chat_2_demo.db*
 /week_chat_demo.db*
+
+# Local evaluation output: full answers and generated previews.
+/examples/evaluation_runs/
+/examples/langfuse_history/
+/examples/rag_eval_results_2*.json

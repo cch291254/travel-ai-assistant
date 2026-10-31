@@ -267,7 +267,7 @@ DEEPSEEK_MODEL=deepseek-flash
 
 ## 效果评估与第三次提交
 
-已完成 `examples/rag_eval_cases.json` 中 E01—E30 共 30 题、40 轮的开发集评测，人工记录分别位于 `examples/eval_cases_01.md`、`examples/eval_cases_02.md` 和 `examples/eval_xases_03.md`（保留现有文件名）。第二轮原始结果保存在 `examples/rag_eval_all_questions_v2.json`，第三轮参照结果保存在 `examples/rag_eval_all_questions.json`。
+已完成 `examples/rag_eval_cases.json` 中 E01—E30 共 30 题、40 轮的开发集评测，人工记录分别位于 `docs/eval_cases_01.md`、`docs/eval_cases_02.md` 和 `docs/eval_xases_03.md`（保留现有文件名）。第二轮原始结果保存在 `docs/rag_eval_all_questions_v2.json`，第三轮参照结果保存在 `docs/rag_eval_all_questions.json`。
 
 第三轮按原评测标准完整通过 22/30 题（73.33%），最终证据完整命中 24/29 个适用检索轮（82.76%）；没有记录输出截断。E08 的题面上下文和澄清预期仍需复核；E18 首轮缺少套餐确认，不能把同商家拼团规则无条件套用于未确认订单。这里保留原评分，不因复核讨论改写原始结果。
 

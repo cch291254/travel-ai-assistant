@@ -1,0 +1,3793 @@
+{
+  "run_info": {
+    "started_at": "2026-10-19T00:47:25.491711+08:00",
+    "mode": "real",
+    "caller": "real_model_caller",
+    "model": "deepseek-flash",
+    "selected_case_ids": [
+      "E01",
+      "E02",
+      "E03",
+      "E04",
+      "E05",
+      "E06",
+      "E07",
+      "E08",
+      "E09",
+      "E10",
+      "E11",
+      "E12",
+      "E13",
+      "E14",
+      "E15",
+      "E16",
+      "E17",
+      "E18",
+      "E19",
+      "E20",
+      "E21",
+      "E22",
+      "E23",
+      "E24",
+      "E25",
+      "E26",
+      "E27"
+    ],
+    "collection": "travel_documents_full_20161014_v1",
+    "chunk_size": 400,
+    "chunk_overlap": 80,
+    "retrieval_n_results_per_query": 5,
+    "rerank_top_k_per_query": 2,
+    "version_hashes": {
+      "app\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "app\\api.py": "020f47d5fcfa5ae7ee1867b5d28ca51d45769e920cff4f60020925fb8f1f1fdb",
+      "app\\chunking.py": "206e74821ab2b4b8460c45395aa92bc8c396bf6fedf66fb601ec1fe35dccd552",
+      "app\\conversation_store.py": "f7c8889ce84e70bd2958f8816df2f239e68e6bf06e0f44b190a0d57e494ef3c2",
+      "app\\document_indexer.py": "7917e10ccee66254a0cf2bf116c70c12e259113152bff0b4e1b38f04e30b814a",
+      "app\\document_parser.py": "ea3a59089fe31970b4e680bc2d29e7581b46abc19c6dc71b5284fa02aa256808",
+      "app\\document_store.py": "0a2b10d0954822bd92e55e011a62f59a62f65b93a57af58af22d06ca8a4be79e",
+      "app\\embedding.py": "dabf7bfd0c40fa9dbd873cb6b3e86ffe02405399d695d7b7f719de375c813f4d",
+      "app\\ingest.py": "52e4a146a53ef1368b0d7bcc1bf323ed27e2d2bb2bea0209cc1a7a9df2b59e6b",
+      "app\\llm_client.py": "1469fe112247fb352b0a4ffa0b33666989bb3c7d0513a69370fcd6720fbc1185",
+      "app\\manage_documents.py": "ffef46ee87f90b96bde521bc24ad52519d7e761a0b8edcb1bc17d53726c44cb2",
+      "app\\pdf_parser.py": "77a49c716c1f570327f6673b19db6e01a3f52000d7cf5614efa0b7dce72ad507",
+      "app\\query_rewriter.py": "318129c1c76cfca1de783eb55bbee5f110d9e864ba4c0f9602e7794568731b9e",
+      "app\\rag_answer.py": "abdac9aeafe6adc6fbe865128450bf1bee0abade0cd884af16be27cba6257674",
+      "app\\rag_context.py": "931c51324fe098323a6768d3e173323451b37295ccd8c9785d50acb76e7ebed2",
+      "app\\rag_pipeline.py": "f4af0d991a2f4259debd40efb1e77d9e6ab2c6e58e5f6cb95215c38d82a17227",
+      "app\\rag_resources.py": "3c130ee9df6c29355f715e4f171cdb347394751ba0ee2e098e1f391131d204e4",
+      "app\\reranker.py": "458891818e7d597068183a458bfed76dbda6b31e66668b81b2f1492040661755",
+      "app\\retrieval.py": "357cc85f3847841912e832fc619e8ca827b2cde052ceb8547dba4e05fa05b924",
+      "app\\source_catalog.py": "2710951bc5571053027623ae9ed7bec0f4e663b23783844ba59b8240891a9f8e",
+      "app\\source_metadata.py": "26287a2dca8d33ff878c6800037dc70348029043fd55fdce852dd93895df21ac",
+      "app\\streamlit.py": "e7e2236caa96dcde585764248171e669c220da1bb3bb0839fa846fcb34074649",
+      "app\\structured_output.py": "dcf282a25b5e137fbb56a0a6f55389082373e02ef455e68ef9e5f9b2d3dff31a",
+      "app\\vector_store.py": "72ed9c2e607b4162d8d8d9593962cfbdf5816449eb2a7a9a561b7834a0edbf85",
+      "data\\raw\\food_guide.md": "bdb37fe5bf35c384dc6022acdeec7e332baa1c311b9a9cad62ae3bc0da6c9384",
+      "data\\raw\\hangzhou_attraction.md": "84156e49b4bb5552217a9123fa38fb2ce6c2679e7140e8339f679b4ee7d6116d",
+      "data\\raw\\hangzhou_hotel_guide.md": "ac6a89b813eda2a6765b61353513f998ec06f03ceceb8c1d255bb634f483a886",
+      "data\\raw\\hangzhou_routes.md": "64c62c057a572eb75ba586ec5648b5586aa51143304fd22c7dfc6845f6e40bbf",
+      "data\\raw\\hangzhou_travel_tips.md": "ce05a5bf8018bdbe5fcde56f5a4565c222fb19a9fa3103be3534cdfa037b9607",
+      "data\\raw\\pricing_rules.md": "dd485badff260bc605cadf49cc1b1ae2a1710e58c9507cc6ae892dbd822ed2de",
+      "data\\raw\\refund_policy.md": "baf4a902c9b27d099a9458e78b3da862368c81a2657729356d5210a14e26c379",
+      "data\\raw\\supplier_notes.md": "376b0794431ed8e0b87aa2f3f1248a8e7184f8acce94c38dac4a9f7ac84c2ffd",
+      "data\\raw\\tour_products.md": "7cc834564c2c1a539365b1ac159df0303c0e66b3281fce908fe809e3fa2b0199",
+      "examples\\rag_eval_cases.json": "2766a7466af2502cf4f61369bbfdc55ea64b821a591324e6bcbeb218108866a2",
+      "examples\\run_rag_eval.py": "c5bfce5a1c17d5a84209523d7cebda7ecffdd9c08bf092cdd7d5c319da58d6a2"
+    }
+  },
+  "results": [
+    {
+      "case_id": "E01",
+      "turn_number": 1,
+      "question": "有位客户第一次来杭州，想逛老城、看夜景，晚上也想体验夜生活。我应该优先向他推荐哪个住宿区域？",
+      "status": "ok",
+      "result": {
+        "data": {
+          "answer": "优先推荐河坊街／南宋御街周边。这里适合想逛老城、看夜景和体验夜生活的人，周边餐饮较多，地铁也方便。如果客户更在意住宿价格，可以再对比其他区域；需要具体酒店、房价或房源情况的话，目前资料里没有，得另行确认。",
+          "sources": [
+            "1"
+          ]
+        },
+        "citations": [
+          {
+            "citation_id": "1",
+            "chunk_id": "hangzhou_hotel_guide:paragraph-3:chunk-1",
+            "metadata": {
+              "source": "data/raw/hangzhou_hotel_guide.md",
+              "updated_at": "2026-10-09T22:51:54",
+              "source_title": "s04｜住宿建议",
+              "section_path": "s04｜住宿建议",
+              "filename": "hangzhou_hotel_guide.md",
+              "chunk_index": 1,
+              "document_id": "hangzhou_hotel_guide",
+              "source_id": "S04",
+              "paragraph_index": 3,
+              "section_level": 2
+            }
+          }
+        ],
+        "evidence": [
+          {
+            "chunk_id": "hangzhou_hotel_guide:paragraph-3:chunk-1",
+            "content": "- **湖滨／龙翔桥附近**：分享者认为去主要景点和商圈方便，餐饮购物选择多，但住宿价格偏高。\n- **河坊街／南宋御街周边**：适合想逛老城、看夜景和体验夜生活的人；分享者称周边餐饮较多、地铁方便。\n- **西湖文化广场／武林广场附近**：分享者认为价格比湖滨更友好，去武林夜市和运河景区方便。\n- **转塘／宋城周边**：分享者认为住宿相对便宜，可利用地铁6号线，适合计划游览宋城及之江文化中心的人。",
+            "metadata": {
+              "source": "data/raw/hangzhou_hotel_guide.md",
+              "updated_at": "2026-10-09T22:51:54",
+              "source_title": "s04｜住宿建议",
+              "section_path": "s04｜住宿建议",
+              "filename": "hangzhou_hotel_guide.md",
+              "chunk_index": 1,
+              "document_id": "hangzhou_hotel_guide",
+              "source_id": "S04",
+              "paragraph_index": 3,
+              "section_level": 2
+            },
+            "retrieval_rank": 2,
+            "rerank_rank": 1,
+            "rerank_score": 0.9167081117630005
+          },
+          {
+            "chunk_id": "hangzhou_hotel_guide:paragraph-6:chunk-1",
+            "content": "- 来源编号：S05\n- 资料类型：真实商品页面中的商家建议，未独立核实。\n- 页面建议：酒店预订在杭州市中心，列举武林广场、延安路、吴山广场。\n- 理由：页面称附近酒店较多、出行方便，夜市、步行街、商业街在附近。\n- 范围：仅是住宿区域建议，不是具体酒店推荐，也不是产品费用包含项。\n- 具体酒店名称、星级、房价、早餐、入住日期、房源情况：资料未提供。",
+            "metadata": {
+              "filename": "hangzhou_hotel_guide.md",
+              "document_id": "hangzhou_hotel_guide",
+              "chunk_index": 1,
+              "source_title": "S05 商家FAQ中的住宿建议",
+              "source_id": "S05",
+              "section_level": 2,
+              "updated_at": "2026-10-09T22:51:54",
+              "paragraph_index": 6,
+              "section_path": "杭州住宿区域资料/S05 商家FAQ中的住宿建议",
+              "source": "data/raw/hangzhou_hotel_guide.md"
+            },
+            "retrieval_rank": 1,
+            "rerank_rank": 2,
+            "rerank_score": 0.8601343035697937
+          }
+        ],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1679,
+          "输出tokens": 106,
+          "总tokens": 1785,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.241
+        },
+        "record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1044,
+          "输出tokens": 77,
+          "总tokens": 1121,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 0.992
+        },
+        "error": "",
+        "needs_clarification": false,
+        "pending_question": null
+      },
+      "error": "",
+      "elapsed_seconds": 29.7965,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S04"
+        ],
+        "points": [
+          "优先推荐河坊街或南宋御街周边",
+          "说明推荐区域与老城、夜景和夜生活需求相匹配",
+          "可以补充周边餐饮较多、地铁方便"
+        ],
+        "forbidden_points": [
+          "虚构具体酒店、星级、房价或房源情况",
+          "把分享者的区域评价表述成旅行社的绝对承诺"
+        ]
+      }
+    },
+    {
+      "case_id": "E02",
+      "turn_number": 1,
+      "question": "客户逛完河坊街后想找一家适合聚餐的餐厅，希望既能吃鱼也能吃鸡，我可以向他推荐哪一家？",
+      "status": "error",
+      "result": {
+        "data": null,
+        "citations": [],
+        "evidence": [
+          {
+            "chunk_id": "food_guide:paragraph-9:chunk-1",
+            "content": "- **五庄·江浙菜（河坊街店）**：截图称店在河坊街。分享者推荐清蒸舟山小海鲜和千岛湖生炒土鸡，评价带鱼鲜而不腻，土鸡裹满汤汁、适合拌饭。",
+            "metadata": {
+              "filename": "food_guide.md",
+              "paragraph_index": 9,
+              "source_title": "s02｜美食推荐",
+              "source_id": "S02",
+              "source": "data/raw/food_guide.md",
+              "section_level": 2,
+              "document_id": "food_guide",
+              "chunk_index": 1,
+              "section_path": "s02｜美食推荐",
+              "updated_at": "2026-09-28T15:43:38"
+            },
+            "retrieval_rank": 1,
+            "rerank_rank": 1,
+            "rerank_score": 0.8826303482055664
+          },
+          {
+            "chunk_id": "food_guide:paragraph-10:chunk-1",
+            "content": "- **悦旺土菜馆**：截图称其经营了16年，推荐开化清水鱼和爆炒肥肠。分享者评价清水鱼鱼肉嫩滑、微酸解腻；肥肠油润不腻，适合下酒下饭。",
+            "metadata": {
+              "source_id": "S02",
+              "source": "data/raw/food_guide.md",
+              "filename": "food_guide.md",
+              "source_title": "s02｜美食推荐",
+              "document_id": "food_guide",
+              "chunk_index": 1,
+              "section_level": 2,
+              "paragraph_index": 10,
+              "section_path": "s02｜美食推荐",
+              "updated_at": "2026-09-28T15:43:38"
+            },
+            "retrieval_rank": 2,
+            "rerank_rank": 2,
+            "rerank_score": 0.12743528187274933
+          },
+          {
+            "chunk_id": "food_guide:paragraph-6:chunk-1",
+            "content": "- 皮市巷阿婆葱包烩：博主评价葱包烩外脆内软，有怀旧的街头小吃氛围；截图标价约4元一份。",
+            "metadata": {
+              "updated_at": "2026-09-28T15:43:38",
+              "filename": "food_guide.md",
+              "section_path": "s01 推荐的餐厅",
+              "section_level": 2,
+              "source": "data/raw/food_guide.md",
+              "chunk_index": 1,
+              "document_id": "food_guide",
+              "source_title": "s01 推荐的餐厅",
+              "paragraph_index": 6,
+              "source_id": "S01"
+            },
+            "retrieval_rank": 2,
+            "rerank_rank": 2,
+            "rerank_score": 0.018833130598068237
+          }
+        ],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1680,
+          "输出tokens": 99,
+          "总tokens": 1779,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.15
+        },
+        "record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 992,
+          "输出tokens": 93,
+          "总tokens": 1085,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.299
+        },
+        "error": "模型引用了未知资料编号：S02",
+        "needs_clarification": false,
+        "pending_question": null
+      },
+      "error": "模型引用了未知资料编号：S02",
+      "elapsed_seconds": 3.6114,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S02"
+        ],
+        "points": [
+          "将五庄·江浙菜（河坊街店）列为可考虑的候选",
+          "推荐理由对应河坊街、鱼类和鸡肉需求，并说明聚餐接待条件尚需确认",
+          "可以向员工提供便于转述给客户的简短推荐理由"
+        ],
+        "forbidden_points": [
+          "虚构具体价格、营业时间、包间或订座情况",
+          "把分享者的用餐体验表述成旅行社已经核实的固定事实"
+        ]
+      }
+    },
+    {
+      "case_id": "E03",
+      "turn_number": 1,
+      "question": "客户逛完河坊街后想找一家适合聚餐的餐厅，希望既能吃鱼也能吃鸡，我可以向他推荐哪一家？",
+      "status": "error",
+      "result": {
+        "data": null,
+        "citations": [],
+        "evidence": [
+          {
+            "chunk_id": "food_guide:paragraph-9:chunk-1",
+            "content": "- **五庄·江浙菜（河坊街店）**：截图称店在河坊街。分享者推荐清蒸舟山小海鲜和千岛湖生炒土鸡，评价带鱼鲜而不腻，土鸡裹满汤汁、适合拌饭。",
+            "metadata": {
+              "paragraph_index": 9,
+              "filename": "food_guide.md",
+              "updated_at": "2026-09-28T15:43:38",
+              "section_path": "s02｜美食推荐",
+              "chunk_index": 1,
+              "document_id": "food_guide",
+              "section_level": 2,
+              "source_id": "S02",
+              "source": "data/raw/food_guide.md",
+              "source_title": "s02｜美食推荐"
+            },
+            "retrieval_rank": 1,
+            "rerank_rank": 1,
+            "rerank_score": 0.9012274742126465
+          },
+          {
+            "chunk_id": "food_guide:paragraph-17:chunk-1",
+            "content": "- **大塘集美蛙鱼头（嘉里中心店）**：作者推荐牛蛙、红油锅底及自助区冰豆浆，评价牛蛙个头大且嫩，适合喜欢重口味宵夜的人。",
+            "metadata": {
+              "section_path": "s03｜杭州美食推荐",
+              "updated_at": "2026-09-28T15:43:38",
+              "filename": "food_guide.md",
+              "source_title": "s03｜杭州美食推荐",
+              "document_id": "food_guide",
+              "section_level": 2,
+              "chunk_index": 1,
+              "source_id": "S03",
+              "paragraph_index": 17,
+              "source": "data/raw/food_guide.md"
+            },
+            "retrieval_rank": 3,
+            "rerank_rank": 2,
+            "rerank_score": 0.03258974477648735
+          }
+        ],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1680,
+          "输出tokens": 84,
+          "总tokens": 1764,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.102
+        },
+        "record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 909,
+          "输出tokens": 68,
+          "总tokens": 977,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 0.922
+        },
+        "error": "模型引用了未知资料编号：S02",
+        "needs_clarification": false,
+        "pending_question": null
+      },
+      "error": "模型引用了未知资料编号：S02",
+      "elapsed_seconds": 2.6347,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S02"
+        ],
+        "points": [
+          "将五庄·江浙菜（河坊街店）列为可考虑的候选",
+          "推荐理由对应河坊街、鱼类和鸡肉需求，并说明聚餐接待条件尚需确认"
+        ],
+        "forbidden_points": [
+          "虚构具体价格、营业时间、包间或订座情况",
+          "把分享者的用餐体验表述成旅行社已经核实的固定事实"
+        ]
+      }
+    },
+    {
+      "case_id": "E03",
+      "turn_number": 2,
+      "question": "能接待我们10个人聚餐吗？有没有包间，需要提前订座吗？",
+      "status": "skipped",
+      "result": null,
+      "error": "前一轮失败，本轮还未调用",
+      "elapsed_seconds": null,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S02"
+        ],
+        "points": [
+          "明确说明现有资料未提供10人聚餐接待能力、包间和订座条件",
+          "建议员工向餐厅确认具体人数接待能力、包间可用情况和订座要求"
+        ],
+        "forbidden_points": [
+          "把餐厅位置、推荐菜品或口味评价当成接待能力的证明",
+          "编造可以接待10人、有包间、必须或无需提前订座等结论",
+          "把资料未提供相关信息说成餐厅不能接待、没有包间或不接受订座"
+        ]
+      }
+    },
+    {
+      "case_id": "E04",
+      "turn_number": 1,
+      "question": "客户准备去梅峰岛，询问岛上的缆车和滑草是不是必须付费参加，如果不参加会不会影响正常行程，我应该怎么向他解释？",
+      "status": "ok",
+      "result": {
+        "data": {
+          "answer": "可以这样回复客户：梅峰岛的缆车和滑草都是岛上的自愿付费项目，不是必须参加的。参考价格是缆车上下60元/人、滑草30元/人；不参加这些项目不会影响整体行程，您可以按自己的兴趣选择。具体价格有效期和缆车单程价格目前没有更多信息，如客户需要，建议出行前再确认一下。",
+          "sources": [
+            "1",
+            "2"
+          ]
+        },
+        "citations": [
+          {
+            "citation_id": "1",
+            "chunk_id": "hangzhou_attraction:paragraph-60:chunk-1",
+            "metadata": {
+              "chunk_index": 1,
+              "updated_at": "2026-10-14T21:04:07",
+              "paragraph_index": 60,
+              "filename": "hangzhou_attraction.md",
+              "source_id": "S07",
+              "source_title": "S07 商品文案中的景点与体验",
+              "source": "data/raw/hangzhou_attraction.md",
+              "section_path": "千岛湖景点资料/S07 商品文案中的景点与体验/梅峰岛",
+              "section_level": 3,
+              "document_id": "hangzhou_attraction"
+            }
+          },
+          {
+            "citation_id": "2",
+            "chunk_id": "pricing_rules:paragraph-72:chunk-1",
+            "metadata": {
+              "section_path": "报价与费用资料/S07 2026-10-09旧页面岛上自愿项目单价",
+              "chunk_index": 1,
+              "source_title": "S07 2026-10-09旧页面岛上自愿项目单价",
+              "paragraph_index": 72,
+              "source": "data/raw/pricing_rules.md",
+              "source_id": "S07",
+              "updated_at": "2026-10-14T21:04:07",
+              "section_level": 2,
+              "filename": "pricing_rules.md",
+              "document_id": "pricing_rules"
+            }
+          }
+        ],
+        "evidence": [
+          {
+            "chunk_id": "hangzhou_attraction:paragraph-60:chunk-1",
+            "content": "- 文案称登梅峰观景台可纵览300余座岛屿，并引用“不上梅峰观群岛，不识千岛真面目”。\n- 岛上自愿项目：缆车上下60元／人，滑草30元／人。\n- 图文资料称这些娱乐项目可不参加，不影响整体行程。\n- 具体缆车价格有效期、单程价格、适用人群及停运替代安排：未提供。",
+            "metadata": {
+              "chunk_index": 1,
+              "updated_at": "2026-10-14T21:04:07",
+              "paragraph_index": 60,
+              "filename": "hangzhou_attraction.md",
+              "source_id": "S07",
+              "source_title": "S07 商品文案中的景点与体验",
+              "source": "data/raw/hangzhou_attraction.md",
+              "section_path": "千岛湖景点资料/S07 商品文案中的景点与体验/梅峰岛",
+              "section_level": 3,
+              "document_id": "hangzhou_attraction"
+            },
+            "retrieval_rank": 1,
+            "rerank_rank": 1,
+            "rerank_score": 0.9826908707618713
+          },
+          {
+            "chunk_id": "pricing_rules:paragraph-72:chunk-1",
+            "content": "- 月光岛空中飞人：50元／人。\n- 月光岛状元桥＋小木舟：40元／人。\n- 梅峰岛缆车上下：60元／人。\n- 梅峰岛滑草：30元／人。\n- 价格有效期、单程索道价、年龄限制和运营状态未提供。\n- 首页“无自费”与已列自愿付费项目要一起说明，不承诺所有项目均免费，也不把自愿项目当成必须参加。",
+            "metadata": {
+              "section_path": "报价与费用资料/S07 2026-10-09旧页面岛上自愿项目单价",
+              "chunk_index": 1,
+              "source_title": "S07 2026-10-09旧页面岛上自愿项目单价",
+              "paragraph_index": 72,
+              "source": "data/raw/pricing_rules.md",
+              "source_id": "S07",
+              "updated_at": "2026-10-14T21:04:07",
+              "section_level": 2,
+              "filename": "pricing_rules.md",
+              "document_id": "pricing_rules"
+            },
+            "retrieval_rank": 2,
+            "rerank_rank": 2,
+            "rerank_score": 0.973993182182312
+          }
+        ],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1683,
+          "输出tokens": 110,
+          "总tokens": 1793,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 0.779
+        },
+        "record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1043,
+          "输出tokens": 95,
+          "总tokens": 1138,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.163
+        },
+        "error": "",
+        "needs_clarification": false,
+        "pending_question": null
+      },
+      "error": "",
+      "elapsed_seconds": 2.959,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S07"
+        ],
+        "points": [
+          "说明缆车和滑草属于自愿选择的娱乐项目，不是必须参加",
+          "说明根据现有资料，不参加这些项目不会影响正常游览和整体行程",
+          "如果介绍具体价格，应提示以实际运营和现场信息为准"
+        ],
+        "forbidden_points": [
+          "把自费项目说成必须购买、团费已含或免费赠送",
+          "声称不参加这些项目就无法完成正常行程",
+          "无依据地承诺具体运营时间、适用人群或项目一定开放"
+        ]
+      }
+    },
+    {
+      "case_id": "E05",
+      "turn_number": 1,
+      "question": "有位第一次来杭州的客户准备玩三天，想去西湖、寺庙、博物馆和老街，并希望最后一天晚上逛武林夜市。我该怎么给他安排路线？",
+      "status": "ok",
+      "result": {
+        "data": {
+          "answer": "可以按“第一天西湖、第二天寺庙和博物馆、第三天西溪湿地和老街、晚上武林夜市”来安排，比较顺路。\n\n第一天：西湖 → 断桥残雪 → 曲院风荷 → 三潭印月 → 雷峰塔 → 苏堤。\n第二天：飞来峰 → 灵隐寺 → 法喜寺 → 杭州博物馆 → 河坊街 → 南宋御街。\n第三天：西溪湿地 → 杭州植物园 → 小河直街 → 拱宸桥 → 武林夜市。\n\n这样西湖、寺庙、博物馆和老街都覆盖到了，最后一天晚上也能逛武林夜市。第三天景点较多，如果客户想轻松一些，可以适当减少杭州植物园或拱宸桥，把时间留给晚上夜市。",
+          "sources": [
+            "2"
+          ]
+        },
+        "citations": [
+          {
+            "citation_id": "2",
+            "chunk_id": "hangzhou_routes:paragraph-16:chunk-1",
+            "metadata": {
+              "chunk_index": 1,
+              "section_path": "s01 杭州三日游路线/s04｜三日游路线3",
+              "source": "data/raw/hangzhou_routes.md",
+              "document_id": "hangzhou_routes",
+              "source_id": "S04",
+              "section_level": 2,
+              "source_title": "s04｜三日游路线3",
+              "updated_at": "2026-10-15T15:35:53",
+              "paragraph_index": 16,
+              "filename": "hangzhou_routes.md"
+            }
+          }
+        ],
+        "evidence": [
+          {
+            "chunk_id": "hangzhou_routes:paragraph-4:chunk-1",
+            "content": "- 第二天：西溪湿地 → 步行约4分钟 → 中国湿地博物馆 → 打车约24分钟 → 小河直街 → 打车28分钟→武林夜市。",
+            "metadata": {
+              "section_path": "s01 杭州三日游路线",
+              "source": "data/raw/hangzhou_routes.md",
+              "updated_at": "2026-10-15T15:35:53",
+              "source_id": "S01",
+              "source_title": "s01 杭州三日游路线",
+              "filename": "hangzhou_routes.md",
+              "document_id": "hangzhou_routes",
+              "chunk_index": 1,
+              "paragraph_index": 4,
+              "section_level": 1
+            },
+            "retrieval_rank": 2,
+            "rerank_rank": 1,
+            "rerank_score": 0.9843964576721191
+          },
+          {
+            "chunk_id": "hangzhou_routes:paragraph-16:chunk-1",
+            "content": "- 第一天：西湖 → 断桥残雪 → 曲院风荷 → 三潭印月 → 雷峰塔 → 苏堤。\n- 第二天：飞来峰 → 灵隐寺 → 法喜寺 → 杭州博物馆 → 河坊街 → 南宋御街。\n- 第三天：西溪湿地 → 杭州植物园 → 小河直街 → 拱宸桥 → 武林夜市。",
+            "metadata": {
+              "chunk_index": 1,
+              "section_path": "s01 杭州三日游路线/s04｜三日游路线3",
+              "source": "data/raw/hangzhou_routes.md",
+              "document_id": "hangzhou_routes",
+              "source_id": "S04",
+              "section_level": 2,
+              "source_title": "s04｜三日游路线3",
+              "updated_at": "2026-10-15T15:35:53",
+              "paragraph_index": 16,
+              "filename": "hangzhou_routes.md"
+            },
+            "retrieval_rank": 1,
+            "rerank_rank": 2,
+            "rerank_score": 0.9755303859710693
+          }
+        ],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1685,
+          "输出tokens": 104,
+          "总tokens": 1789,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 0.653
+        },
+        "record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 949,
+          "输出tokens": 182,
+          "总tokens": 1131,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.389
+        },
+        "error": "",
+        "needs_clarification": false,
+        "pending_question": null
+      },
+      "error": "",
+      "elapsed_seconds": 2.6161,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S04"
+        ],
+        "points": [
+          "第一天参考西湖、断桥残雪、曲院风荷、三潭印月、雷峰塔和苏堤的路线",
+          "第二天参考飞来峰、灵隐寺、法喜寺、杭州博物馆、河坊街和南宋御街的路线",
+          "第三天参考西溪湿地、杭州植物园、小河直街和拱宸桥的路线，最后安排武林夜市",
+          "三天分组与资料整体一致，覆盖西湖、寺庙、博物馆、老街及最后一晚逛武林夜市的需求"
+        ],
+        "forbidden_points": [
+          "把武林夜市只安排在第一天或第二天，遗漏客户最后一晚的要求",
+          "无依据地增加其他收费项目或景点",
+          "承诺未经确认的开放时间、门票价格、交通耗时或行程完成时间",
+          "把参考路线说成无需核实开放和预约信息、保证能够完成的行程"
+        ]
+      }
+    },
+    {
+      "case_id": "E06",
+      "turn_number": 1,
+      "question": "客户想在西湖边拍雷峰塔夕照，问我推荐在哪里拍，还需要提醒他注意什么。我应该怎么回复？",
+      "status": "error",
+      "result": {
+        "data": null,
+        "citations": [],
+        "evidence": [
+          {
+            "chunk_id": "hangzhou_travel_tips:paragraph-14:chunk-1",
+            "content": "- 作者建议从净慈寺或长桥公园一带，在太阳快落山时向对岸拍摄雷峰塔夕照。",
+            "metadata": {
+              "paragraph_index": 14,
+              "filename": "hangzhou_travel_tips.md",
+              "section_level": 2,
+              "source_id": "S03",
+              "source_title": "s03｜杭州旅游注意事项",
+              "source": "data/raw/hangzhou_travel_tips.md",
+              "updated_at": "2026-09-28T15:45:06",
+              "chunk_index": 1,
+              "document_id": "hangzhou_travel_tips",
+              "section_path": "s03｜杭州旅游注意事项"
+            },
+            "retrieval_rank": 1,
+            "rerank_rank": 1,
+            "rerank_score": 0.9856076240539551
+          },
+          {
+            "chunk_id": "hangzhou_travel_tips:paragraph-5:chunk-1",
+            "content": "- 如计划看西湖日落，博主建议约16:30到达并提前选位置；实际日落时间随季节变化。",
+            "metadata": {
+              "source": "data/raw/hangzhou_travel_tips.md",
+              "updated_at": "2026-09-28T15:45:06",
+              "paragraph_index": 5,
+              "filename": "hangzhou_travel_tips.md",
+              "document_id": "hangzhou_travel_tips",
+              "section_path": "s01｜注意事项",
+              "source_title": "s01｜注意事项",
+              "source_id": "S01",
+              "section_level": 2,
+              "chunk_index": 1
+            },
+            "retrieval_rank": 2,
+            "rerank_rank": 2,
+            "rerank_score": 0.10212548077106476
+          },
+          {
+            "chunk_id": "hangzhou_travel_tips:paragraph-15:chunk-1",
+            "content": "- 西湖边拍照时留意脚下。原文提醒部分临水位置较浅且没有栏杆，后退取景可能滑入水中。",
+            "metadata": {
+              "paragraph_index": 15,
+              "source_id": "S03",
+              "source_title": "s03｜杭州旅游注意事项",
+              "section_level": 2,
+              "updated_at": "2026-09-28T15:45:06",
+              "filename": "hangzhou_travel_tips.md",
+              "source": "data/raw/hangzhou_travel_tips.md",
+              "chunk_index": 1,
+              "document_id": "hangzhou_travel_tips",
+              "section_path": "s03｜杭州旅游注意事项"
+            },
+            "retrieval_rank": 3,
+            "rerank_rank": 2,
+            "rerank_score": 0.9094254970550537
+          }
+        ],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1677,
+          "输出tokens": 81,
+          "总tokens": 1758,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.012
+        },
+        "record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 912,
+          "输出tokens": 106,
+          "总tokens": 1018,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.133
+        },
+        "error": "模型引用了未知资料编号：S03",
+        "needs_clarification": false,
+        "pending_question": null
+      },
+      "error": "模型引用了未知资料编号：S03",
+      "elapsed_seconds": 3.4634,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S03"
+        ],
+        "points": [
+          "建议到净慈寺或长桥公园一带拍摄",
+          "建议在太阳接近落山时朝对岸拍摄雷峰塔夕照",
+          "提醒西湖边部分临水位置没有栏杆，需要留意脚下，不要为了取景盲目后退，以免落水"
+        ],
+        "forbidden_points": [
+          "只介绍拍摄位置和时段，遗漏资料中的临水安全提醒",
+          "把个人拍摄经验说成官方指定机位或旅行社保证的最佳位置",
+          "虚构当天具体日落时间、天气、拍摄效果或设备要求",
+          "把约16:30到达的参考建议说成固定日落时间或全年适用的保证"
+        ]
+      }
+    },
+    {
+      "case_id": "E07",
+      "turn_number": 1,
+      "question": "客户看到9人小团页面显示328元起，同时还有“原价428元、立减100元”的信息，问最终是不是228元。我可以直接按228元给他报价吗？",
+      "status": "ok",
+      "result": {
+        "data": {
+          "answer": "客户咨询的是哪家旅行社的9人小团产品？",
+          "sources": []
+        },
+        "citations": [],
+        "evidence": [],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1693,
+          "输出tokens": 141,
+          "总tokens": 1834,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.016
+        },
+        "record": null,
+        "error": "",
+        "needs_clarification": true,
+        "pending_question": "客户看到9人小团页面显示328元起，同时还有“原价428元、立减100元”的信息，问最终是不是228元。我可以直接按228元给他报价吗？"
+      },
+      "error": "",
+      "elapsed_seconds": 1.018,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S06"
+        ],
+        "points": [
+          "明确说明不能直接按228元向客户报价，不能在328元基础上再次减100元",
+          "根据S06选购记录，成人1份、儿童0份时页面小计为328元，已经反映该组选择下的展示优惠",
+          "区分首页起价、所选票种单价和订单小计，不把展示价格当成所有订单的固定成交价",
+          "建议根据实际出行日期、人数、票种及订单页面进一步核实价格"
+        ],
+        "forbidden_points": [
+          "重复扣减100元，得出228元并承诺按此报价",
+          "用S05或S07等其他商品的价格和优惠规则代替S06的依据",
+          "把328元解释成整个9人团的总价",
+          "编造优惠叠加条件，或保证所有日期和人数组合都适用同一价格"
+        ]
+      }
+    },
+    {
+      "case_id": "E08",
+      "turn_number": 1,
+      "question": "客户订了页面里的千岛湖套餐1，在出发当天凌晨1点申请取消，问能不能全额退款、具体要扣多少钱。我应该怎么回复？",
+      "status": "error",
+      "result": {
+        "data": null,
+        "citations": [],
+        "evidence": [
+          {
+            "chunk_id": "refund_policy:paragraph-37:chunk-1",
+            "content": "- 服务弹窗及费用页均写：使用日期开始当天00:00之前申请，不收取手续费；当天00:00之后申请，不可退。\n- 此处是出游日零点，不是当天23:59；凌晨1点已在零点之后，按本次文案不可退，不使用旧50%规则保证还能退一半。\n- 服务弹窗未展示当前选中套餐，费用页也未明确套餐/票种；适用范围及订单实际退款条款应向商家或订单页面确认，不能自动保证所有套餐同规则。\n- 恰好00:00、改期、未到、特殊原因处理及退款到账时限未说明；“不可退”不据此扩展为所有投诉/预约失败等情形都不退，也不判断条款法律效力。",
+            "metadata": {
+              "chunk_index": 1,
+              "source_id": "S07",
+              "source_title": "S07 订单取消的退款说明与版本差异",
+              "document_id": "refund_policy",
+              "paragraph_index": 37,
+              "updated_at": "2026-10-14T21:01:09",
+              "section_path": "退改与服务退款资料/S07 订单取消的退款说明与版本差异/2026-10-14补充页面退款说明",
+              "source": "data/raw/refund_policy.md",
+              "section_level": 3,
+              "filename": "refund_policy.md"
+            },
+            "retrieval_rank": 2,
+            "rerank_rank": 1,
+            "rerank_score": 0.9686195850372314
+          },
+          {
+            "chunk_id": "refund_policy:paragraph-40:chunk-1",
+            "content": "- 首页：当天00:00前无损退。\n- 退款表：使用日期开始当天00:00前，无损退。\n- 退款表：使用日期开始当天00:00后，损失费用为每张票50%。\n- 无损退截止在出游日零点，不是出游当天晚上；不能误写成出游日23:59前。\n- 恰好00:00的处理未明确。\n- “每张票50%”未解释按实际支付票款、票面价还是其他计费基数计算；具体金额需确认。\n- 改期、未到场、退款到账时间、其他套餐是否同规则：未提供。\n- 新旧差异：旧记录零点后损失50%，本次页面零点后不可退；两种说法不能合成同一规则。对实际订单先核实版本/适用范围，不默认旧规则已失效，也不把旧50%作为本次现行唯一答案。",
+            "metadata": {
+              "source_title": "S07 订单取消的退款说明与版本差异",
+              "updated_at": "2026-10-14T21:01:09",
+              "chunk_index": 1,
+              "document_id": "refund_policy",
+              "source": "data/raw/refund_policy.md",
+              "section_path": "退改与服务退款资料/S07 订单取消的退款说明与版本差异/2026-10-09旧截图取消规则",
+              "section_level": 3,
+              "source_id": "S07",
+              "paragraph_index": 40,
+              "filename": "refund_policy.md"
+            },
+            "retrieval_rank": 4,
+            "rerank_rank": 2,
+            "rerank_score": 0.8812065720558167
+          },
+          {
+            "chunk_id": "pricing_rules:paragraph-55:chunk-1",
+            "content": "- 商家：艾客旅游；用户分享入口：#小程序://去哪儿旅行订酒店机票火车票门票/Acq3zE8NKcYdDOe。\n- 日期卡片均未显示年份；三张选购图选中周四10月15日。按该条件记录单价，不将起价当作任意日期成交价。\n- 套餐1“千岛湖出发”：成人228元/份、儿童168元/份。成人1份、儿童0份时小计228元；随机立减70元、原价298元。卡片最低98元起；10月15/17/18日228元起，16日98元起。\n- 套餐2“全景中心湖”：成人328元/份、儿童128元/份。成人1份、儿童0份时小计328元；随机立减70元、原价398元。卡片268元起；10月15/17/18日328元起，16日268元起。旧198元卡片保留为旧记录，不作本次卡片价。\n- 套餐3“10人团千岛湖出发”：成人398元/份、儿童298元/份。成人2份、儿童0份时小计796元；随机立减200元、原价996元。卡片",
+            "metadata": {
+              "updated_at": "2026-10-14T21:04:07",
+              "section_level": 3,
+              "document_id": "pricing_rules",
+              "section_path": "报价与费用资料/S07 页面报价的不同口径/2026-10-14补充：所选票种单价与页面小计",
+              "source": "data/raw/pricing_rules.md",
+              "source_title": "S07 页面报价的不同口径",
+              "filename": "pricing_rules.md",
+              "chunk_index": 1,
+              "paragraph_index": 55,
+              "source_id": "S07"
+            },
+            "retrieval_rank": 3,
+            "rerank_rank": 1,
+            "rerank_score": 0.4947817027568817
+          },
+          {
+            "chunk_id": "pricing_rules:paragraph-59:chunk-1",
+            "content": "- 首页：98元起，划线价168元，促销立减70元。未说明起价是否已扣促销，不再次减70元得出28元。\n- 套餐1“千岛湖出发”：98元起。\n- 套餐2“全景中心湖”：198元起。\n- 套餐3：卡片只完整显示268元起，名称未完整展示。\n- 套餐1选中状态下，日期10月10、11、12、13日卡片均显示228元起。\n- 套餐2选中状态下，同样日期卡片均显示268元起。\n- 日期卡片没有年份；卡片价与套餐最低起价不同，原因及票种未提供，不自行认定为成人、儿童或优惠后价格。\n- 起价计费单位、具体日期票种、人数条件与最终订单金额：未明确提供。",
+            "metadata": {
+              "paragraph_index": 59,
+              "section_path": "报价与费用资料/S07 页面报价的不同口径/2026-10-09旧截图首页、套餐和日期卡片",
+              "section_level": 3,
+              "filename": "pricing_rules.md",
+              "document_id": "pricing_rules",
+              "chunk_index": 1,
+              "updated_at": "2026-10-14T21:04:07",
+              "source_title": "S07 页面报价的不同口径",
+              "source_id": "S07",
+              "source": "data/raw/pricing_rules.md"
+            },
+            "retrieval_rank": 2,
+            "rerank_rank": 2,
+            "rerank_score": 0.45286858081817627
+          }
+        ],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1685,
+          "输出tokens": 121,
+          "总tokens": 1806,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.134
+        },
+        "record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1797,
+          "输出tokens": 300,
+          "总tokens": 2097,
+          "结束原因": "length",
+          "重试次数": 0,
+          "请求耗时秒": 2.607
+        },
+        "error": "回答不完整",
+        "needs_clarification": false,
+        "pending_question": null
+      },
+      "error": "回答不完整",
+      "elapsed_seconds": 5.0441,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S07"
+        ],
+        "points": [
+          "正确判断凌晨1点已经超过出游日当天00:00",
+          "说明本次补充页面写零点后不可退，而旧套餐1记录写零点后每张票损失50%，两版存在差异，不能混用",
+          "不能直接承诺全额退款或还能退一半，需要核实实际订单适用的条款和版本",
+          "订单适用规则、计费基数及实付金额未确认时，不给出唯一的具体扣款金额",
+          "建议核对该订单的退款页面，必要时向商家确认最终处理"
+        ],
+        "forbidden_points": [
+          "把免费取消截止时间误认为出游日当天23:59",
+          "直接保证全额退款、退一半或某个具体扣款金额",
+          "仅凭资料获取时间较晚，就认定新规则适用于所有套餐及旧订单",
+          "把旧50%规则与本次零点后不可退规则合成同一套规则",
+          "套用其他商品、中途脱团、服务投诉或历史门票优惠退差的规则"
+        ]
+      }
+    },
+    {
+      "case_id": "E09",
+      "turn_number": 1,
+      "question": "客户晚上23:10下单，参加第二天的行程，现在催我确认接车时间。我可以承诺他下单后30分钟内一定会收到最终接车通知吗？",
+      "status": "ok",
+      "result": {
+        "data": {
+          "answer": "客户预订的是哪个产品或套餐？",
+          "sources": []
+        },
+        "citations": [],
+        "evidence": [],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1686,
+          "输出tokens": 105,
+          "总tokens": 1791,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 0.826
+        },
+        "record": null,
+        "error": "",
+        "needs_clarification": true,
+        "pending_question": "客户晚上23:10下单，参加第二天的行程，现在催我确认接车时间。我可以承诺他下单后30分钟内一定会收到最终接车通知吗？"
+      },
+      "error": "",
+      "elapsed_seconds": 0.8277,
+      "expected": {
+        "needs_clarification": true,
+        "source_ids": [],
+        "points": [
+          "询问订单所属商家、产品或套餐，以确定适用的通知规则",
+          "澄清问题围绕尚未明确的产品身份，不要求用户重复已经提供的下单时间和出行条件"
+        ],
+        "forbidden_points": [
+          "未明确产品就把某个商品的具体通知规则当作该订单的规则",
+          "把不同产品的通知安排混称为同一订单的规则冲突",
+          "承诺下单后30分钟内一定收到最终接车通知",
+          "编造具体接车时间、集合地点、车辆或司机信息"
+        ]
+      }
+    },
+    {
+      "case_id": "E10",
+      "turn_number": 1,
+      "question": "有6位第一次来杭州的成年客户，计划玩三天，能够接受正常强度的步行，也愿意在景点之间短途打车，主要想游览有代表性的景点。我可以推荐哪个产品？",
+      "status": "ok",
+      "result": {
+        "data": {
+          "answer": "可以推荐杭州雷峰塔、西湖、三潭印月、灵隐寺及飞来峰一日游，这个产品在去哪儿旅行微信小程序上可以找到。它覆盖的西湖、雷峰塔、灵隐寺、飞来峰都是杭州很有代表性的景点，适合第一次来杭州、能接受正常步行强度的游客。\n\n不过这个产品是一日游，你们计划玩三天，它只能覆盖其中一天，另外两天的行程还需要再搭配其他产品。另外，6位成人的具体价格和可订日期，需要按这个产品在平台上的实际信息确认。",
+          "sources": [
+            "1",
+            "2"
+          ]
+        },
+        "citations": [
+          {
+            "citation_id": "1",
+            "chunk_id": "tour_products:paragraph-8:chunk-1",
+            "metadata": {
+              "valid_until": "2026-12-31",
+              "paragraph_index": 8,
+              "source_id": "SIM01",
+              "section_level": 2,
+              "valid_from": "2026-09-28",
+              "source": "data/raw/tour_products.md",
+              "updated_at": "2026-10-15T15:38:06",
+              "chunk_index": 1,
+              "source_title": "SIM01 旅行产品演示资料",
+              "section_path": "SIM01 旅行产品演示资料/P001 产品名称",
+              "filename": "tour_products.md",
+              "document_id": "tour_products"
+            }
+          },
+          {
+            "citation_id": "2",
+            "chunk_id": "tour_products:paragraph-44:chunk-1",
+            "metadata": {
+              "filename": "tour_products.md",
+              "updated_at": "2026-10-15T15:38:06",
+              "document_id": "tour_products",
+              "section_level": 2,
+              "source": "data/raw/tour_products.md",
+              "paragraph_index": 44,
+              "chunk_index": 1,
+              "source_title": "S06 杭州雷峰塔、西湖、三潭印月、灵隐寺及飞来峰一日游",
+              "source_id": "S06",
+              "section_path": "旅游产品资料/S06 杭州雷峰塔、西湖、三潭印月、灵隐寺及飞来峰一日游"
+            }
+          }
+        ],
+        "evidence": [
+          {
+            "chunk_id": "tour_products:paragraph-8:chunk-1",
+            "content": "适合人群：首次到杭州、能够接受正常步行强度的游客",
+            "metadata": {
+              "valid_until": "2026-12-31",
+              "paragraph_index": 8,
+              "source_id": "SIM01",
+              "section_level": 2,
+              "valid_from": "2026-09-28",
+              "source": "data/raw/tour_products.md",
+              "updated_at": "2026-10-15T15:38:06",
+              "chunk_index": 1,
+              "source_title": "SIM01 旅行产品演示资料",
+              "section_path": "SIM01 旅行产品演示资料/P001 产品名称",
+              "filename": "tour_products.md",
+              "document_id": "tour_products"
+            },
+            "retrieval_rank": 1,
+            "rerank_rank": 1,
+            "rerank_score": 0.9440738558769226
+          },
+          {
+            "chunk_id": "tour_products:paragraph-44:chunk-1",
+            "content": "平台：去哪儿旅行微信小程序。",
+            "metadata": {
+              "filename": "tour_products.md",
+              "updated_at": "2026-10-15T15:38:06",
+              "document_id": "tour_products",
+              "section_level": 2,
+              "source": "data/raw/tour_products.md",
+              "paragraph_index": 44,
+              "chunk_index": 1,
+              "source_title": "S06 杭州雷峰塔、西湖、三潭印月、灵隐寺及飞来峰一日游",
+              "source_id": "S06",
+              "section_path": "旅游产品资料/S06 杭州雷峰塔、西湖、三潭印月、灵隐寺及飞来峰一日游"
+            },
+            "retrieval_rank": 5,
+            "rerank_rank": 2,
+            "rerank_score": 0.41531381011009216
+          }
+        ],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1692,
+          "输出tokens": 120,
+          "总tokens": 1812,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.117
+        },
+        "record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 898,
+          "输出tokens": 135,
+          "总tokens": 1033,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.526
+        },
+        "error": "",
+        "needs_clarification": false,
+        "pending_question": null
+      },
+      "error": "",
+      "elapsed_seconds": 3.2828,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "SIM01"
+        ],
+        "points": [
+          "推荐项目模拟产品P001杭州三日精品游",
+          "说明产品为3天2晚，6名成人符合资料登记的4至16名成人范围",
+          "说明产品定位与首次来杭州、代表性景点、正常步行强度和短途打车等需求相匹配",
+          "提醒正式确认前核对产品有效期、景点开放、预约和交通情况"
+        ],
+        "forbidden_points": [
+          "把项目模拟产品描述成已经确认可售的真实旅行社产品",
+          "未核实报价条件和价格规则就直接给出报价",
+          "把酒店和交通占位项目描述成已确认的具体酒店、车型或可用服务",
+          "保证景点预约成功或实际交通耗时",
+          "用真实商品的价格和规则补全该模拟产品"
+        ]
+      }
+    },
+    {
+      "case_id": "E11",
+      "turn_number": 1,
+      "question": "客户晚上23:10下单，参加第二天的行程。我可以承诺他下单后30分钟内一定收到最终接车通知吗？",
+      "status": "ok",
+      "result": {
+        "data": {
+          "answer": "客户预订的是哪个产品或套餐？",
+          "sources": []
+        },
+        "citations": [],
+        "evidence": [],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1678,
+          "输出tokens": 105,
+          "总tokens": 1783,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 0.804
+        },
+        "record": null,
+        "error": "",
+        "needs_clarification": true,
+        "pending_question": "客户晚上23:10下单，参加第二天的行程。我可以承诺他下单后30分钟内一定收到最终接车通知吗？"
+      },
+      "error": "",
+      "elapsed_seconds": 0.8059,
+      "expected": {
+        "needs_clarification": true,
+        "source_ids": [],
+        "points": [
+          "询问订单所属商家、产品或套餐，以确定适用的通知规则",
+          "澄清问句只询问必要的产品身份，不要求重复已提供的下单时间和出行条件"
+        ],
+        "forbidden_points": [
+          "未明确产品就直接套用某个商品的通知规则",
+          "承诺下单后30分钟内一定收到最终接车通知",
+          "编造接车时间、集合地点、车辆或司机信息"
+        ]
+      }
+    },
+    {
+      "case_id": "E11",
+      "turn_number": 2,
+      "question": "艾客旅游的千岛湖套餐1。",
+      "status": "ok",
+      "result": {
+        "data": {
+          "answer": "不能这样承诺。23:10属于非工作时间，按现有规则是在出行前30分钟内发通知，不是下单后30分钟内；而且“立即确认订单”和最终接车通知是两回事，订单确认不等于接车通知已发出。另外，出团通知的截止时间存在不同口径，建议向客户说明会尽快确认，但不要承诺“30分钟内一定收到最终接车通知”。",
+          "sources": [
+            "1"
+          ]
+        },
+        "citations": [
+          {
+            "citation_id": "1",
+            "chunk_id": "supplier_notes:paragraph-54:chunk-1",
+            "metadata": {
+              "updated_at": "2026-10-14T21:01:09",
+              "chunk_index": 1,
+              "section_level": 3,
+              "document_id": "supplier_notes",
+              "section_path": "商家服务及出行说明/S07 出团确认与使用/联络规则",
+              "source": "data/raw/supplier_notes.md",
+              "source_id": "S07",
+              "filename": "supplier_notes.md",
+              "paragraph_index": 54,
+              "source_title": "S07 出团确认与使用"
+            }
+          }
+        ],
+        "evidence": [
+          {
+            "chunk_id": "supplier_notes:paragraph-54:chunk-1",
+            "content": "- 本次使用说明再次显示：商家在出游前一天22:00前确认出团信息。\n- 超过此时间预订，工作时间06:00～19:59在30分钟内发通知；非工作时间20:00～05:59在出行前30分钟内发通知。\n- 2026-10-09旧图文FAQ另写值班导游在前一天晚上“6:00—9:00”联系确认接车时间地点；23:00后下单，工作人员约30分钟内联系。本次未重新提供这段FAQ，保留旧口径，不作为唯一当前承诺。\n- 预订须知写前一天电话确认路线、第二天接车时间，22:00后未收到电话需联系客服。\n- 上述通知截止／晚订规则存在不同口径；“立即确认”不等于最终接车通知已经发出。\n- 客服电话：15157157729，旧预订须知与本次截图均可见；未通过实际联系验证有效性，不代用户拨打或发消息。\n- 本次服务说明写预订产品后立即确认订单、无需等待；订单确认与22:00/30分钟的最终出团通知是不同环节。",
+            "metadata": {
+              "updated_at": "2026-10-14T21:01:09",
+              "chunk_index": 1,
+              "section_level": 3,
+              "document_id": "supplier_notes",
+              "section_path": "商家服务及出行说明/S07 出团确认与使用/联络规则",
+              "source": "data/raw/supplier_notes.md",
+              "source_id": "S07",
+              "filename": "supplier_notes.md",
+              "paragraph_index": 54,
+              "source_title": "S07 出团确认与使用"
+            },
+            "retrieval_rank": 1,
+            "rerank_rank": 1,
+            "rerank_score": 0.9864678382873535
+          },
+          {
+            "chunk_id": "hangzhou_routes:paragraph-83:chunk-1",
+            "content": "- 图文说明杭州市区指定范围免费接早，范围外咨询客服／导游约定就近上车点，或乘地铁到范围内的地铁站上车。\n- 统一地点散团，不送回指定酒店。\n- 千岛湖／淳安当地出发者需自行到集合点，不能直接套用杭州接早安排。\n- 杭州出发图文FAQ称可把行李放在旅游巴士行李舱，全天不换车，结束后取行李；贵重物品随身携带。淳安出发者行李自行解决。\n- 图文FAQ描述行程结束大概18:30，建议选择20:30以后火车、21:00以后飞机，并提醒节假日可能延迟2～3小时。这里仅保存商家参考建议，不作为保证到达、赶车或赶机的承诺。\n- 图文称杭州与千岛湖往返5个多小时，该描述不应用到当地码头出发套餐。",
+            "metadata": {
+              "updated_at": "2026-10-15T15:35:53",
+              "source_id": "S07",
+              "source": "data/raw/hangzhou_routes.md",
+              "filename": "hangzhou_routes.md",
+              "chunk_index": 1,
+              "section_level": 2,
+              "source_title": "S07 接送、行李与返程限制",
+              "paragraph_index": 83,
+              "section_path": "千岛湖路线资料/S07 接送、行李与返程限制",
+              "document_id": "hangzhou_routes"
+            },
+            "retrieval_rank": 3,
+            "rerank_rank": 3,
+            "rerank_score": 0.2940122187137604
+          }
+        ],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1772,
+          "输出tokens": 107,
+          "总tokens": 1879,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 0.934
+        },
+        "record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1238,
+          "输出tokens": 96,
+          "总tokens": 1334,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.093
+        },
+        "error": "",
+        "needs_clarification": false,
+        "pending_question": null
+      },
+      "error": "",
+      "elapsed_seconds": 2.7515,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S07"
+        ],
+        "points": [
+          "识别本轮是在补充产品名称，继续回答上一轮的接车通知问题",
+          "结合23:10下单、参加第二天行程的条件，说明不能承诺下单后30分钟内一定收到最终接车通知",
+          "根据S07本次使用说明，非工作时间20:00至05:59预订对应的是出行前30分钟内发送通知，不是下单后30分钟内",
+          "区分订单立即确认、工作人员联系和最终出团或接车通知，不将这些环节等同",
+          "建议核对实际订单适用说明，并向商家确认最终接车安排"
+        ],
+        "forbidden_points": [
+          "忽略原问题，只介绍千岛湖套餐1的景点、价格或集合地点",
+          "再次询问用户想了解该套餐的哪方面内容",
+          "把出行前30分钟说成下单后30分钟",
+          "用旧FAQ的约30分钟内联系保证最终接车通知时间",
+          "套用S05等其他产品的通知规则，或把不同产品的规则混作同一订单的版本冲突"
+        ]
+      }
+    },
+    {
+      "case_id": "E12",
+      "turn_number": 1,
+      "question": "两位成年游客已经住在淳安，想参加艾客旅游的千岛湖中心湖区一日游，主要想去梅峰岛。他们不需要杭州往返接送，可以自行前往集合点，接受与其他游客拼团，但更倾向10人小团。我应该优先推荐哪个套餐？几点、在哪里集合？",
+      "status": "ok",
+      "result": {
+        "data": {
+          "answer": "优先推荐“10人团千岛湖出发”这个套餐（套餐3）。它本身就是千岛湖当地出发的拼团，符合两位自行前往、不需要杭州接送的需求，也更贴近他们倾向小团的偏好；集合时间是09:50，地点在淳安县千岛湖中心湖区旅游码头。需要提醒的是，这个“10人团”的实际人数上限、最低成团数以及是否独立成团还要再确认，它并不是包团；车辆信息里显示的大巴车也不能当作实际用车承诺。\n\n如果更看重价格，也可以考虑“千岛湖出发”套餐（套餐1），同样是09:50在中心湖区旅游码头集合，10月15日成人228元/份；但它的行程摘要没有列月光岛，具体登岛和顺序要按所选日期确认。两个套餐都标称包含梅峰岛，也都约5小时30分。",
+          "sources": [
+            "1",
+            "2"
+          ]
+        },
+        "citations": [
+          {
+            "citation_id": "1",
+            "chunk_id": "tour_products:paragraph-74:chunk-1",
+            "metadata": {
+              "source": "data/raw/tour_products.md",
+              "section_path": "旅游产品资料/S07 千岛湖中心湖区、梅峰岛与月光岛一日游/2026-10-14补充：套餐3的10人团千岛湖出发",
+              "section_level": 3,
+              "filename": "tour_products.md",
+              "source_title": "S07 千岛湖中心湖区、梅峰岛与月光岛一日游",
+              "source_id": "S07",
+              "updated_at": "2026-10-15T15:38:06",
+              "document_id": "tour_products",
+              "chunk_index": 1,
+              "paragraph_index": 74
+            }
+          },
+          {
+            "citation_id": "2",
+            "chunk_id": "tour_products:paragraph-70:chunk-1",
+            "metadata": {
+              "section_level": 3,
+              "source_title": "S07 千岛湖中心湖区、梅峰岛与月光岛一日游",
+              "chunk_index": 1,
+              "document_id": "tour_products",
+              "updated_at": "2026-10-15T15:38:06",
+              "paragraph_index": 70,
+              "source_id": "S07",
+              "source": "data/raw/tour_products.md",
+              "filename": "tour_products.md",
+              "section_path": "旅游产品资料/S07 千岛湖中心湖区、梅峰岛与月光岛一日游/2026-10-14补充：套餐1千岛湖出发"
+            }
+          }
+        ],
+        "evidence": [
+          {
+            "chunk_id": "tour_products:paragraph-74:chunk-1",
+            "content": "- 完整名称：10人团千岛湖出发；当地拼团，司机＋导游服务，卡片268元起；09:50在同一中心湖区旅游码头集合。\n- 标称7个景点/游玩地、约5小时30分，摘要列中心湖区、梅峰岛、渔乐岛、龙山岛，与本次套餐1摘要一致；用户另确认行程/服务内容一致，仅人数不同。\n- 所选名称“10人团”与商品标题“10人内小团”分开记录，实际人数上限、最低成团数及独立成团情况仍需确认；这不是包团。\n- 本次套餐3仍展示大巴车（30人以上）、一排4座、1个集合地点。这是车辆卡片，不据它否定10人选项或推断实际坐满30人，也不保证小型专用车辆。\n- 选中10月15日时成人398元/份、儿童298元/份；选成人2份、儿童0份，页面小计796元。不是每人796元，不再次扣200元随机立减。\n- 后续逐时安排未展开；不套用旧套餐1月光岛节点，儿童资格和当地出发儿童费用覆盖仍须商家确认。",
+            "metadata": {
+              "source": "data/raw/tour_products.md",
+              "section_path": "旅游产品资料/S07 千岛湖中心湖区、梅峰岛与月光岛一日游/2026-10-14补充：套餐3的10人团千岛湖出发",
+              "section_level": 3,
+              "filename": "tour_products.md",
+              "source_title": "S07 千岛湖中心湖区、梅峰岛与月光岛一日游",
+              "source_id": "S07",
+              "updated_at": "2026-10-15T15:38:06",
+              "document_id": "tour_products",
+              "chunk_index": 1,
+              "paragraph_index": 74
+            },
+            "retrieval_rank": 1,
+            "rerank_rank": 1,
+            "rerank_score": 0.9957684278488159
+          },
+          {
+            "chunk_id": "tour_products:paragraph-70:chunk-1",
+            "content": "- 当地出发、拼团；司机＋导游服务，09:50在淳安县千岛湖中心湖区旅游码头集合。\n- 卡片98元起；标称7个景点/游玩地、约5小时30分，摘要只列千岛湖中心湖区、梅峰岛、渔乐岛、龙山岛四个名称；不自行补出另外3个。\n- 卡片展示大巴车（30人以上）、一排4座、1个集合地点。实际行程当地码头集合，不据车图承诺杭州巴士接送。\n- 本次摘要不再列月光岛，虽商品标题仍有月光岛，不能保证本次套餐1含月光岛；具体登岛及顺序需按所选日期确认。\n- 选中10月15日时成人228元/份、儿童168元/份；旧儿童免票/不用网上购票图文与本次可选儿童份数的适用关系待核对。儿童资格、所含票项不能仅凭单价推断。\n- 本次只显示09:50集合节点，之后逐时行程未展开；旧月光岛路线时间表仅作历史参考，不当作本次完整路线。",
+            "metadata": {
+              "section_level": 3,
+              "source_title": "S07 千岛湖中心湖区、梅峰岛与月光岛一日游",
+              "chunk_index": 1,
+              "document_id": "tour_products",
+              "updated_at": "2026-10-15T15:38:06",
+              "paragraph_index": 70,
+              "source_id": "S07",
+              "source": "data/raw/tour_products.md",
+              "filename": "tour_products.md",
+              "section_path": "旅游产品资料/S07 千岛湖中心湖区、梅峰岛与月光岛一日游/2026-10-14补充：套餐1千岛湖出发"
+            },
+            "retrieval_rank": 5,
+            "rerank_rank": 2,
+            "rerank_score": 0.9886244535446167
+          },
+          {
+            "chunk_id": "tour_products:paragraph-76:chunk-1",
+            "content": "- 名称：千岛湖出发。\n- 出发／集合地：淳安县千岛湖中心湖区旅游码头，09:50集合。\n- 卡片起价：98元起。\n- 团型：拼团；服务卡片写司机＋导游。\n- 标称游玩时间：约5小时30分。\n- 标称景点／游玩地：5个；摘要列千岛湖中心湖区、月光岛（五龙岛）、千岛湖游船、梅峰岛四个名称，具体计数未说明。\n- 卡片车辆：大巴车（30人以上），一排4座，1个集合地点；但详细行程是当地码头集合、游船游览，费用包含只列门票／船票和中文导游，杭州往返车程未包含在该行程中。\n- 15:20回到中心湖区旅游码头，就地散团。\n- 不把图文页的杭州市区接早或杭州往返巴士承诺直接应用于本套餐。",
+            "metadata": {
+              "section_level": 3,
+              "source_title": "S07 千岛湖中心湖区、梅峰岛与月光岛一日游",
+              "updated_at": "2026-10-15T15:38:06",
+              "document_id": "tour_products",
+              "source": "data/raw/tour_products.md",
+              "paragraph_index": 76,
+              "chunk_index": 1,
+              "section_path": "旅游产品资料/S07 千岛湖中心湖区、梅峰岛与月光岛一日游/2026-10-09旧截图套餐1：千岛湖出发",
+              "source_id": "S07",
+              "filename": "tour_products.md"
+            },
+            "retrieval_rank": 3,
+            "rerank_rank": 1,
+            "rerank_score": 0.9956346154212952
+          },
+          {
+            "chunk_id": "hangzhou_routes:paragraph-61:chunk-1",
+            "content": "- 06:00上门接，范围东至火车东站、西至汽车西站、北至汽车北站、南至复兴路。\n- 06:40凤起路地铁站B口、06:50定安路地铁站C口、07:00河坊街388号，07:00集合出发去千岛湖；这是不同集合安排，不要求依次到全部点。\n- 09:40到中心湖区旅游码头统一办理登船手续可见，之后节点未完整展示；完整旧路线另列为历史参考。\n- 行程交通段写儿童票只含杭州至千岛湖往返大巴车费，门票、船票自理；周五景区免门票和不退优惠差价为商家文案，尚未核验有效期。\n- 实际接车、登岛、返程以所选套餐和工作人员确认安排为准，不把过去杭州散团时间当作准点保证。",
+            "metadata": {
+              "source_title": "S07 2026-10-14补充：套餐2杭州出发接早及集合",
+              "section_path": "千岛湖路线资料/S07 2026-10-14补充：套餐2杭州出发接早及集合",
+              "section_level": 2,
+              "source_id": "S07",
+              "filename": "hangzhou_routes.md",
+              "paragraph_index": 61,
+              "document_id": "hangzhou_routes",
+              "source": "data/raw/hangzhou_routes.md",
+              "chunk_index": 1,
+              "updated_at": "2026-10-15T15:35:53"
+            },
+            "retrieval_rank": 1,
+            "rerank_rank": 2,
+            "rerank_score": 0.9920002222061157
+          }
+        ],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1716,
+          "输出tokens": 172,
+          "总tokens": 1888,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 0.887
+        },
+        "record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 2012,
+          "输出tokens": 201,
+          "总tokens": 2213,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.544
+        },
+        "error": "",
+        "needs_clarification": false,
+        "pending_question": null
+      },
+      "error": "",
+      "elapsed_seconds": 3.6141,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S07"
+        ],
+        "points": [
+          "优先推荐或核对套餐3“10人团千岛湖出发”",
+          "说明它更符合当地出发、不需要杭州接送、接受拼团且偏好10人团的条件，套餐摘要包含梅峰岛",
+          "正确提供09:50在淳安县千岛湖中心湖区旅游码头集合的信息",
+          "说明这是当地拼团选项，不是两人独立包团；实际人数上限、车型及可订情况仍需确认"
+        ],
+        "forbidden_points": [
+          "声称资料没有10人团选项，或只推荐套餐1而遗漏更匹配的套餐3",
+          "把杭州出发的套餐2作为符合全部条件的首选",
+          "套用杭州06:00接早、07:00集合出发的安排",
+          "把套餐3说成两人独立包团或专车服务",
+          "保证实际人数绝不超过10人、指定车型或未经确认的库存"
+        ]
+      }
+    },
+    {
+      "case_id": "E13",
+      "turn_number": 1,
+      "question": "有三位成年客人想报胜蓝旅游的雷峰塔、西湖游船、三潭印月、灵隐寺一日游，其中一位72岁，另外两位是她40多岁的子女，全程一起走。他们不想跟陌生人拼团，就三个人单独成团。按页面现在的价格，大概一位多少钱、三个人一共多少？",
+      "status": "ok",
+      "result": {
+        "data": {
+          "answer": "三位单独成团可以看3人包团，页面卡片价是598元起，但这是“起价”，不是三个人合计598元，也不能直接折算成每人约199元。现有资料没有给出3人包团按人数计算的最终总价，所以暂时没法准确回答“一位多少钱、三人一共多少”。\n\n另外，72岁客人参团是否有年龄限制或需要额外确认的事项，资料里也没有说明，建议下单前向商家确认。",
+          "sources": [
+            "1"
+          ]
+        },
+        "citations": [
+          {
+            "citation_id": "1",
+            "chunk_id": "tour_products:paragraph-29:chunk-1",
+            "metadata": {
+              "source_title": "S05 杭州雷峰塔、西湖及灵隐寺一日游",
+              "section_level": 3,
+              "section_path": "旅游产品资料/S05 杭州雷峰塔、西湖及灵隐寺一日游/2026-10-14补充：当前团型与套餐选项",
+              "source_id": "S05",
+              "chunk_index": 1,
+              "updated_at": "2026-10-15T15:38:06",
+              "source": "data/raw/tour_products.md",
+              "paragraph_index": 29,
+              "filename": "tour_products.md",
+              "document_id": "tour_products"
+            }
+          }
+        ],
+        "evidence": [
+          {
+            "chunk_id": "tour_products:paragraph-29:chunk-1",
+            "content": "- 套餐1：18人经典团，拼团选项，成人258元/份、儿童128元/份。\n- 套餐2：10人小团，拼团选项，成人328元/份、儿童198元/份。本次套餐2不是旧版本包团。\n- 套餐3：2人包团，卡片798元起；套餐4：3人包团，卡片598元起。\n- 选购页还列4人、5人、6人、7人、8人包团；其具体数字套餐编号未展示，不自行编号。\n- 2人包团卡片：7个景点/游玩地，约7小时30分；列雷峰塔、西湖风景名胜区、西湖游船、三潭印月、花港观鱼、灵隐飞来峰景区、灵隐寺；5座舒适车（2～4人）、上门接。车辆容量不等于所有包团档位的接待上限或实际车型。\n- 2人包团行程可见“一单一团，1个车＋1个导游＋…”；后半段折叠，不补全。当前4人包团可作为不拼团需求的候选，但具体司机/导游安排、时间可调整范围、登岛及返程须按该选项确认，不把旧包团完整时间表当作新档位承诺。\n- 包团价格页面选择人数对应成人数量2",
+            "metadata": {
+              "source_title": "S05 杭州雷峰塔、西湖及灵隐寺一日游",
+              "section_level": 3,
+              "section_path": "旅游产品资料/S05 杭州雷峰塔、西湖及灵隐寺一日游/2026-10-14补充：当前团型与套餐选项",
+              "source_id": "S05",
+              "chunk_index": 1,
+              "updated_at": "2026-10-15T15:38:06",
+              "source": "data/raw/tour_products.md",
+              "paragraph_index": 29,
+              "filename": "tour_products.md",
+              "document_id": "tour_products"
+            },
+            "retrieval_rank": 4,
+            "rerank_rank": 1,
+            "rerank_score": 0.9872281551361084
+          },
+          {
+            "chunk_id": "pricing_rules:paragraph-27:chunk-1",
+            "content": "- 门票／游览服务：雷峰塔门票＋西湖游船＋三潭印月＋灵隐寺飞来峰预约。\n- 交通：2～3人五座轿车；4～5人七座商务车；6人以上中巴车。\n- 导游：当地中文一日游导游服务。\n- 此处车型规则与套餐卡片不同：套餐1卡片展示中巴9～20人，套餐2卡片展示商务车不超过9人。各说明适用套餐需确认，不能混成统一分配规则。\n- “预约”与“收费门票”应区分：不能根据含预约承诺景区所有票项都已支付。",
+            "metadata": {
+              "updated_at": "2026-10-14T21:04:07",
+              "section_path": "报价与费用资料/S05 页面起价、促销与费用范围/2026-10-09旧截图费用包含",
+              "source": "data/raw/pricing_rules.md",
+              "source_title": "S05 页面起价、促销与费用范围",
+              "source_id": "S05",
+              "paragraph_index": 27,
+              "filename": "pricing_rules.md",
+              "chunk_index": 1,
+              "section_level": 3,
+              "document_id": "pricing_rules"
+            },
+            "retrieval_rank": 3,
+            "rerank_rank": 2,
+            "rerank_score": 0.9084556102752686
+          },
+          {
+            "chunk_id": "pricing_rules:paragraph-21:chunk-1",
+            "content": "- 商家：胜蓝旅游；分享入口：#小程序://去哪儿旅行订酒店机票火车票门票/MmB3z4tf5LING8d。出行长期有效、节假日可能调整为用户说明，不是价格永久有效期。\n- 套餐1“18人经典团”：成人258元/份、儿童128元/份。选择成人1份、儿童0份，页面小计258元，随机立减100元、原价358元。\n- 套餐2“10人小团”：成人328元/份、儿童198元/份。选择成人1份、儿童0份，页面小计328元，随机立减100元、原价428元。\n- 儿童票种为身高0.5米（含）至1.19米（含），成人票为1.2米（含）以上；成人价含景区交通、导游、门票、游船、预约，儿童价只含景区交通和导游，不含门票及游船。缺失身高区间、婴幼儿和补票金额需确认。\n- 上述小计已经反映页面这次优惠，不再次扣100元。日期年份、完整优惠条件和多人混合订单未展示，不用它保证其他日期或任意组合成交价。",
+            "metadata": {
+              "paragraph_index": 21,
+              "document_id": "pricing_rules",
+              "section_path": "报价与费用资料/S05 页面起价、促销与费用范围/2026-10-14补充：当前拼团单价与已选小计",
+              "source": "data/raw/pricing_rules.md",
+              "chunk_index": 1,
+              "source_id": "S05",
+              "filename": "pricing_rules.md",
+              "section_level": 3,
+              "updated_at": "2026-10-14T21:04:07",
+              "source_title": "S05 页面起价、促销与费用范围"
+            },
+            "retrieval_rank": 1,
+            "rerank_rank": 1,
+            "rerank_score": 0.8479677438735962
+          },
+          {
+            "chunk_id": "tour_products:paragraph-25:chunk-1",
+            "content": "- 来源编号：S05\n- 资料类型：真实产品页面截图整理；并非模拟产品。\n- 平台：去哪儿旅行微信小程序；商家展示名：胜蓝旅游（用户补充及页面可见），公司全称、资质和实际执行关系未提供。\n- 用户提供的分享入口：#小程序://去哪儿旅行订酒店机票火车票门票/MmB3z4tf5LING8d。不是HTTP链接或平台产品编号；平台产品编号未提供。\n- 范围：首次23张截图及本次16个图片文件；本次消息重复展示第1张，不重复计数。原件见data/source_images/S05/2026-10-14/。\n- 出行日期说明（用户补充）：长期有效，未给固定起止日；节假日商家可能调整。价格、接送及行程不保证长期不变，实际日期、库存和安排需商家确认。\n- 版本区分：本次套餐1为18人经典团、套餐2为10人小团；旧截图的套餐1“精致小团”、套餐2“私家团包团”保留为历史记录，不按同一编号合并。首次历史实验",
+            "metadata": {
+              "chunk_index": 1,
+              "filename": "tour_products.md",
+              "source_id": "S05",
+              "section_path": "旅游产品资料/S05 杭州雷峰塔、西湖及灵隐寺一日游",
+              "paragraph_index": 25,
+              "source": "data/raw/tour_products.md",
+              "section_level": 2,
+              "source_title": "S05 杭州雷峰塔、西湖及灵隐寺一日游",
+              "document_id": "tour_products",
+              "updated_at": "2026-10-15T15:38:06"
+            },
+            "retrieval_rank": 3,
+            "rerank_rank": 2,
+            "rerank_score": 0.38606879115104675
+          }
+        ],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1723,
+          "输出tokens": 155,
+          "总tokens": 1878,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.15
+        },
+        "record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 2024,
+          "输出tokens": 110,
+          "总tokens": 2134,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.383
+        },
+        "error": "",
+        "needs_clarification": false,
+        "pending_question": null
+      },
+      "error": "",
+      "elapsed_seconds": 3.8462,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S05"
+        ],
+        "points": [
+          "推荐或核对套餐4“3人包团”，符合三个人单独成团、不与陌生人拼团的需求",
+          "提供598元起每人的参考金额，以及成人3份、页面小计1794元",
+          "说明1794元已经反映该组选择下的展示优惠，不能再次扣减300元",
+          "说明72岁客人需要至少一名18至69周岁成人全程陪同，两位40多岁的子女同行可满足这项陪同条件",
+          "说明以上是页面条件下的参考价格，不是已确认成交价；实际日期、优惠、可订情况、车型和接送仍需核实"
+        ],
+        "forbidden_points": [
+          "推荐套餐1或套餐2的拼团选项来满足三人独立包团需求",
+          "沿用旧版本套餐2包团528元起的价格或套餐编号",
+          "在1794元基础上再次减300元，给出1494元等错误小计",
+          "把1794元说成每人价格，或把598元说成三人总价",
+          "套用2人包团08:30上门接或旧包团时间表，保证三人包团也按该安排执行",
+          "把满足陪同条件说成72岁客人一定可以预订，无需核实其他接待条件"
+        ]
+      }
+    },
+    {
+      "case_id": "E14",
+      "turn_number": 1,
+      "question": "三位客人2027年五一想报洲游假日那个9人小团，雷峰塔、西湖游船加灵隐寺的套餐。他们住在延安路附近，问能不能像平时一样上门接？如果不能，几点到哪里集合？玩完是送回酒店吗？",
+      "status": "ok",
+      "result": {
+        "data": {
+          "answer": "五一期间不能按平时安排上门接，需要客人自行前往集合点。延安路附近有一个集合点：07:15在杭州市拱墅区浙江大酒店（延安路595号，地铁E出口）集合；另一个集合点是08:30在雷峰塔景区检票口（南山路15号）。具体选哪个集合点、当天时间是否有调整，要以工作人员通知为准。行程结束后统一在武林小广场散团，不送回酒店。",
+          "sources": [
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        "citations": [
+          {
+            "citation_id": "2",
+            "chunk_id": "hangzhou_routes:paragraph-47:chunk-1",
+            "metadata": {
+              "source": "data/raw/hangzhou_routes.md",
+              "document_id": "hangzhou_routes",
+              "updated_at": "2026-10-15T15:35:53",
+              "section_level": 3,
+              "chunk_index": 1,
+              "section_path": "杭州路线资料/S06 套餐1一日游行程/上门接与集合",
+              "source_id": "S06",
+              "filename": "hangzhou_routes.md",
+              "paragraph_index": 47,
+              "source_title": "S06 套餐1一日游行程"
+            }
+          },
+          {
+            "citation_id": "3",
+            "chunk_id": "hangzhou_routes:paragraph-44:chunk-1",
+            "metadata": {
+              "paragraph_index": 44,
+              "section_path": "杭州路线资料/S06 套餐1一日游行程",
+              "filename": "hangzhou_routes.md",
+              "source": "data/raw/hangzhou_routes.md",
+              "source_title": "S06 套餐1一日游行程",
+              "updated_at": "2026-10-15T15:35:53",
+              "chunk_index": 1,
+              "source_id": "S06",
+              "document_id": "hangzhou_routes",
+              "section_level": 2
+            }
+          },
+          {
+            "citation_id": "4",
+            "chunk_id": "supplier_notes:paragraph-40:chunk-1",
+            "metadata": {
+              "section_path": "商家服务与购买说明/S06 出团、使用及服务安排/导游及执行安排",
+              "source_id": "S06",
+              "chunk_index": 1,
+              "source": "data/raw/supplier_notes.md",
+              "paragraph_index": 40,
+              "document_id": "supplier_notes",
+              "updated_at": "2026-10-14T21:01:09",
+              "filename": "supplier_notes.md",
+              "section_level": 3,
+              "source_title": "S06 出团、使用及服务安排"
+            }
+          }
+        ],
+        "evidence": [
+          {
+            "chunk_id": "tour_products:paragraph-50:chunk-1",
+            "content": "- 标题：杭州雷峰塔＋西湖风景名胜区＋西湖游船＋三潭印月＋灵隐寺＋飞来峰一日游【9人小团 真纯玩】。\n- 出发地：杭州。\n- 天数：一日游。\n- 可见套餐：套餐1，雷峰塔＋西湖游船＋灵隐寺。\n- 团型：拼团；本批未提供包团套餐。\n- 服务：司机＋导游。\n- 标称时长：约10小时15分。\n- 标称景点／游玩地：9个；套餐摘要列出雷峰塔、苏堤、西湖风景名胜区、西湖游船、三潭印月、花港观鱼、灵隐寺，只有7个名称。详细行程还将飞来峰与灵隐寺分别描述，且游船分往返两段。页面没有解释9个的具体计数口径。\n- 上门接及2个集合地点，具体安排见行程资料。\n- 本次选购页选项：路线“雷峰塔＋西湖游船＋灵隐寺”，团人数“9人团”，用餐“不含餐”，服务语言“中文”，发车时间“07:45”。\n- 本次购买数量页显示成人328元/份、儿童198元/份。儿童身高或年龄区间、婴幼儿政策仍未提供，不套用S05划分。\n- ",
+            "metadata": {
+              "paragraph_index": 50,
+              "source_id": "S06",
+              "updated_at": "2026-10-15T15:38:06",
+              "document_id": "tour_products",
+              "source": "data/raw/tour_products.md",
+              "section_path": "旅游产品资料/S06 杭州雷峰塔、西湖、三潭印月、灵隐寺及飞来峰一日游/商品信息",
+              "section_level": 3,
+              "chunk_index": 1,
+              "filename": "tour_products.md",
+              "source_title": "S06 杭州雷峰塔、西湖、三潭印月、灵隐寺及飞来峰一日游"
+            },
+            "retrieval_rank": 3,
+            "rerank_rank": 1,
+            "rerank_score": 0.9687971472740173
+          },
+          {
+            "chunk_id": "hangzhou_routes:paragraph-47:chunk-1",
+            "content": "- 06:45：上门接。\n- 接客范围原文：杭州，东到火车东站，西到“汽车西胡上”，北到汽车北站，南至复兴路。西侧地名表述不规范，保留原文并标记待核对，不自动改为其他地点。\n- 五一、国庆等节假日请自行前往集合点；其他节假日范围需确认。\n- 集合地点1：07:15，杭州市拱墅区浙江大酒店，延安路595号、地铁E出口。截图未注明该出口所属地铁站。\n- 集合地点2：08:30，杭州市西湖区雷峰塔景区检票口，南山路15号。\n- 两处为页面列出的集合点，不能要求所有客人先后到两个集合点；实际选择需按工作人员通知确认。",
+            "metadata": {
+              "source": "data/raw/hangzhou_routes.md",
+              "document_id": "hangzhou_routes",
+              "updated_at": "2026-10-15T15:35:53",
+              "section_level": 3,
+              "chunk_index": 1,
+              "section_path": "杭州路线资料/S06 套餐1一日游行程/上门接与集合",
+              "source_id": "S06",
+              "filename": "hangzhou_routes.md",
+              "paragraph_index": 47,
+              "source_title": "S06 套餐1一日游行程"
+            },
+            "retrieval_rank": 1,
+            "rerank_rank": 2,
+            "rerank_score": 0.9429286122322083
+          },
+          {
+            "chunk_id": "hangzhou_routes:paragraph-44:chunk-1",
+            "content": "补充日期：2026-10-14。用户补充长期可出行、节假日商家可能调整。本次选购页显示发车07:45；与下列上门接06:45、集合点1的07:15和集合点2的08:30分别记录，不能把发车字段替换为所有上车点的集合时间。所选日期和具体上车点按工作人员通知确认。",
+            "metadata": {
+              "paragraph_index": 44,
+              "section_path": "杭州路线资料/S06 套餐1一日游行程",
+              "filename": "hangzhou_routes.md",
+              "source": "data/raw/hangzhou_routes.md",
+              "source_title": "S06 套餐1一日游行程",
+              "updated_at": "2026-10-15T15:35:53",
+              "chunk_index": 1,
+              "source_id": "S06",
+              "document_id": "hangzhou_routes",
+              "section_level": 2
+            },
+            "retrieval_rank": 3,
+            "rerank_rank": 2,
+            "rerank_score": 0.1946738213300705
+          },
+          {
+            "chunk_id": "supplier_notes:paragraph-40:chunk-1",
+            "content": "- 司机＋导游服务。\n- 中文导游提供集合、去程、随车、返程服务，陪同入园讲解；游览遇到困难可以电话联系导游。\n- 行程亮点写旅行社自行操作、一手团、不转团。本次已补页面商家及代理商公示主体；司机、导游或具体执行供应商仍未提供，不能自行指定人员。\n- 车辆卡片写中巴车9～20人、一排4座；实际团人数和车型分配不能仅按车辆容量推断。\n- 该来源返程统一在武林小广场散团，不承诺送回酒店。",
+            "metadata": {
+              "section_path": "商家服务与购买说明/S06 出团、使用及服务安排/导游及执行安排",
+              "source_id": "S06",
+              "chunk_index": 1,
+              "source": "data/raw/supplier_notes.md",
+              "paragraph_index": 40,
+              "document_id": "supplier_notes",
+              "updated_at": "2026-10-14T21:01:09",
+              "filename": "supplier_notes.md",
+              "section_level": 3,
+              "source_title": "S06 出团、使用及服务安排"
+            },
+            "retrieval_rank": 1,
+            "rerank_rank": 1,
+            "rerank_score": 0.5483409762382507
+          },
+          {
+            "chunk_id": "tour_products:paragraph-52:chunk-1",
+            "content": "- 商品标题：9人小团。\n- 套餐卡片：10人以下精致小团。\n- 行程亮点：10人内小团。\n- 本次选购页明确显示所选项为“9人团”；这是当前选项描述，不能据旧“10人以下”解释为恰好10人也可参加。\n- 车辆卡片：中巴车（9～20人），一排4座。\n- 车辆容量不等同于实际成团人数；能否恰好10人、实际人数上限需商家确认。",
+            "metadata": {
+              "filename": "tour_products.md",
+              "updated_at": "2026-10-15T15:38:06",
+              "chunk_index": 1,
+              "section_path": "旅游产品资料/S06 杭州雷峰塔、西湖、三潭印月、灵隐寺及飞来峰一日游/人数和车辆的不同表述",
+              "paragraph_index": 52,
+              "section_level": 3,
+              "source": "data/raw/tour_products.md",
+              "document_id": "tour_products",
+              "source_id": "S06",
+              "source_title": "S06 杭州雷峰塔、西湖、三潭印月、灵隐寺及飞来峰一日游"
+            },
+            "retrieval_rank": 5,
+            "rerank_rank": 2,
+            "rerank_score": 0.06584469974040985
+          }
+        ],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1709,
+          "输出tokens": 161,
+          "总tokens": 1870,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.145
+        },
+        "record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1882,
+          "输出tokens": 110,
+          "总tokens": 1992,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.248
+        },
+        "error": "",
+        "needs_clarification": false,
+        "pending_question": null
+      },
+      "error": "",
+      "elapsed_seconds": 4.1403,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S06"
+        ],
+        "points": [
+          "依据现有资料说明五一期间需自行前往集合点，不能承诺平日06:45上门接",
+          "结合延安路附近的住宿位置，提供资料列出的07:15浙江大酒店集合点，地址为延安路595号",
+          "如果补充另一集合点，应正确说明为08:30雷峰塔景区检票口，地址为南山路15号",
+          "说明两处是不同集合安排，不要求先后到达，最终选择按工作人员通知确认",
+          "说明返程在杭州武林小广场统一散团，不是送回各自酒店",
+          "说明这些是现有资料中的参考安排，2027年五一的实际服务和时间仍需向商家确认"
+        ],
+        "forbidden_points": [
+          "保证五一期间仍提供06:45酒店上门接",
+          "要求客人先到浙江大酒店，再自行赶往雷峰塔集合点",
+          "把选购页07:45发车说成所有上车点的集合时间",
+          "承诺游览结束后送回各自酒店",
+          "使用S05或S07的接送安排代替S06的依据",
+          "把现有截图安排直接保证为2027年五一的确定安排"
+        ]
+      }
+    },
+    {
+      "case_id": "E15",
+      "turn_number": 1,
+      "question": "一家三口住在杭州，两个大人带一个身高1.3米的孩子，想跟艾客旅游去千岛湖中心湖玩一天，需要从杭州出发，他们自己坐地铁到定安路站附近上车比较方便。应该选哪个套餐？几点在哪上车？孩子买儿童票的话包含门票和船票吗？",
+      "status": "ok",
+      "result": {
+        "data": {
+          "answer": "建议选套餐2“全景中心湖”（杭州出发）。10月15日成人328元/份、儿童128元/份，符合你们从杭州出发、去中心湖区的需求。\n\n上车安排：定安路地铁站C口是06:50集合，07:00从河坊街388号集合出发；三个集合点是不同上车安排，按工作人员确认的地点去即可，不用逐个都到。\n\n儿童票：杭州出发的套餐2，儿童票只含杭州至千岛湖往返大巴车费，门票和船票需要自理。另外，行程里有“周五景区免门票、价格已调整，任何优惠证件当天出行不做退费”的商家说明，但这是否适用于你们出行的具体日期，还需要再确认；免门票也不等于船票、车费全免。",
+          "sources": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        "citations": [
+          {
+            "citation_id": "1",
+            "chunk_id": "tour_products:paragraph-72:chunk-1",
+            "metadata": {
+              "chunk_index": 1,
+              "section_level": 3,
+              "filename": "tour_products.md",
+              "section_path": "旅游产品资料/S07 千岛湖中心湖区、梅峰岛与月光岛一日游/2026-10-14补充：套餐2全景中心湖",
+              "document_id": "tour_products",
+              "source_id": "S07",
+              "updated_at": "2026-10-15T15:38:06",
+              "source_title": "S07 千岛湖中心湖区、梅峰岛与月光岛一日游",
+              "source": "data/raw/tour_products.md",
+              "paragraph_index": 72
+            }
+          },
+          {
+            "citation_id": "2",
+            "chunk_id": "pricing_rules:paragraph-55:chunk-1",
+            "metadata": {
+              "source_title": "S07 页面报价的不同口径",
+              "section_level": 3,
+              "paragraph_index": 55,
+              "source": "data/raw/pricing_rules.md",
+              "section_path": "报价与费用资料/S07 页面报价的不同口径/2026-10-14补充：所选票种单价与页面小计",
+              "updated_at": "2026-10-14T21:04:07",
+              "document_id": "pricing_rules",
+              "chunk_index": 1,
+              "source_id": "S07",
+              "filename": "pricing_rules.md"
+            }
+          },
+          {
+            "citation_id": "3",
+            "chunk_id": "hangzhou_routes:paragraph-70:chunk-1",
+            "metadata": {
+              "source_title": "S07 2026-10-09旧截图套餐2：杭州出发全景中心湖",
+              "source": "data/raw/hangzhou_routes.md",
+              "section_path": "千岛湖路线资料/S07 2026-10-09旧截图套餐2：杭州出发全景中心湖/接早及集合",
+              "chunk_index": 1,
+              "document_id": "hangzhou_routes",
+              "source_id": "S07",
+              "updated_at": "2026-10-15T15:35:53",
+              "paragraph_index": 70,
+              "section_level": 3,
+              "filename": "hangzhou_routes.md"
+            }
+          },
+          {
+            "citation_id": "4",
+            "chunk_id": "pricing_rules:paragraph-57:chunk-1",
+            "metadata": {
+              "updated_at": "2026-10-14T21:04:07",
+              "section_path": "报价与费用资料/S07 页面报价的不同口径/2026-10-14补充：费用范围及周五说明",
+              "source_title": "S07 页面报价的不同口径",
+              "document_id": "pricing_rules",
+              "chunk_index": 1,
+              "source": "data/raw/pricing_rules.md",
+              "source_id": "S07",
+              "section_level": 3,
+              "paragraph_index": 57,
+              "filename": "pricing_rules.md"
+            }
+          }
+        ],
+        "evidence": [
+          {
+            "chunk_id": "tour_products:paragraph-72:chunk-1",
+            "content": "- 杭州出发、拼团、司机＋导游服务；卡片268元起，约9小时20分，6个景点/游玩地，摘要列千岛湖景区、千岛湖中心湖区、梅峰岛、千岛湖游船、月光岛（五龙岛）五个名称，计数口径未解释。\n- 大巴车（30人以上）、一排4座、上门接及3个集合地点；不是人数上限说明。\n- 06:00市区接早，东至火车东站、西至汽车西站、北至汽车北站、南至复兴路；06:40凤起路地铁站B口、06:50定安路地铁站C口、07:00河坊街388号集合出发。三个点为不同上车安排。\n- 本次选中10月15日，成人328元/份、儿童128元/份；杭州出发行程说明儿童票只含杭州至千岛湖往返大巴车费，门票船票自理。不把当地出发儿童价或权益混用。\n- 07:00交通段另写“周五景区免门票，价格已调整，任何优惠证件当天出行不做任何退费”；作为商家票价优惠退差说明保存，不是已核验的当前景区政策或全部订单取消规则。",
+            "metadata": {
+              "chunk_index": 1,
+              "section_level": 3,
+              "filename": "tour_products.md",
+              "section_path": "旅游产品资料/S07 千岛湖中心湖区、梅峰岛与月光岛一日游/2026-10-14补充：套餐2全景中心湖",
+              "document_id": "tour_products",
+              "source_id": "S07",
+              "updated_at": "2026-10-15T15:38:06",
+              "source_title": "S07 千岛湖中心湖区、梅峰岛与月光岛一日游",
+              "source": "data/raw/tour_products.md",
+              "paragraph_index": 72
+            },
+            "retrieval_rank": 2,
+            "rerank_rank": 1,
+            "rerank_score": 0.9942697286605835
+          },
+          {
+            "chunk_id": "pricing_rules:paragraph-55:chunk-1",
+            "content": "- 商家：艾客旅游；用户分享入口：#小程序://去哪儿旅行订酒店机票火车票门票/Acq3zE8NKcYdDOe。\n- 日期卡片均未显示年份；三张选购图选中周四10月15日。按该条件记录单价，不将起价当作任意日期成交价。\n- 套餐1“千岛湖出发”：成人228元/份、儿童168元/份。成人1份、儿童0份时小计228元；随机立减70元、原价298元。卡片最低98元起；10月15/17/18日228元起，16日98元起。\n- 套餐2“全景中心湖”：成人328元/份、儿童128元/份。成人1份、儿童0份时小计328元；随机立减70元、原价398元。卡片268元起；10月15/17/18日328元起，16日268元起。旧198元卡片保留为旧记录，不作本次卡片价。\n- 套餐3“10人团千岛湖出发”：成人398元/份、儿童298元/份。成人2份、儿童0份时小计796元；随机立减200元、原价996元。卡片",
+            "metadata": {
+              "source_title": "S07 页面报价的不同口径",
+              "section_level": 3,
+              "paragraph_index": 55,
+              "source": "data/raw/pricing_rules.md",
+              "section_path": "报价与费用资料/S07 页面报价的不同口径/2026-10-14补充：所选票种单价与页面小计",
+              "updated_at": "2026-10-14T21:04:07",
+              "document_id": "pricing_rules",
+              "chunk_index": 1,
+              "source_id": "S07",
+              "filename": "pricing_rules.md"
+            },
+            "retrieval_rank": 3,
+            "rerank_rank": 2,
+            "rerank_score": 0.9849274158477783
+          },
+          {
+            "chunk_id": "hangzhou_routes:paragraph-70:chunk-1",
+            "content": "- 06:00：上门接；范围东至杭州火车东站、西至汽车西站、北至汽车北站、南至复兴路。\n- 06:40：集合地点1，杭州市拱墅区凤起路地铁站B口。\n- 06:50：集合地点2，杭州市上城区定安路地铁站C口。\n- 07:00：集合地点3，杭州河坊街388号。\n- 07:00：集合出发前往千岛湖景区，页面行驶约2小时30分钟。\n- 三个集合点为不同上车安排，游客按工作人员确认的地点集合，不要求每位客人依次到全部地点。",
+            "metadata": {
+              "source_title": "S07 2026-10-09旧截图套餐2：杭州出发全景中心湖",
+              "source": "data/raw/hangzhou_routes.md",
+              "section_path": "千岛湖路线资料/S07 2026-10-09旧截图套餐2：杭州出发全景中心湖/接早及集合",
+              "chunk_index": 1,
+              "document_id": "hangzhou_routes",
+              "source_id": "S07",
+              "updated_at": "2026-10-15T15:35:53",
+              "paragraph_index": 70,
+              "section_level": 3,
+              "filename": "hangzhou_routes.md"
+            },
+            "retrieval_rank": 2,
+            "rerank_rank": 1,
+            "rerank_score": 0.9913892149925232
+          },
+          {
+            "chunk_id": "pricing_rules:paragraph-57:chunk-1",
+            "content": "- 本次费用表包含千岛湖中心湖区门票＋游船船票、中文导游；不含全程餐费、个人消费、自愿娱乐及未列明项目。该表未显示具体选中套餐/票种，不直接认定每种儿童票都含门票船票。\n- 杭州出发套餐2交通说明另写儿童票仅含杭州至千岛湖往返大巴车费，产生门票船票需自理；不因此给当地套餐1/3补出杭州交通。\n- 套餐2行程有“周五景区免门票、价格已调整，任何优惠证件当天出行不做任何退费”的商家说明；是否现行、具体适用日期和退差路径仍需确认。免门票不等于船票、车费或团费全免，不等于所有取消不退款。\n- 本次费用表仍出现2025年11月1日至12月31日免门票/不退差条款，属于已结束的历史期间；收到新截图不使旧期间重新生效。",
+            "metadata": {
+              "updated_at": "2026-10-14T21:04:07",
+              "section_path": "报价与费用资料/S07 页面报价的不同口径/2026-10-14补充：费用范围及周五说明",
+              "source_title": "S07 页面报价的不同口径",
+              "document_id": "pricing_rules",
+              "chunk_index": 1,
+              "source": "data/raw/pricing_rules.md",
+              "source_id": "S07",
+              "section_level": 3,
+              "paragraph_index": 57,
+              "filename": "pricing_rules.md"
+            },
+            "retrieval_rank": 1,
+            "rerank_rank": 1,
+            "rerank_score": 0.9979007244110107
+          }
+        ],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1721,
+          "输出tokens": 200,
+          "总tokens": 1921,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.222
+        },
+        "record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1976,
+          "输出tokens": 193,
+          "总tokens": 2169,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.684
+        },
+        "error": "",
+        "needs_clarification": false,
+        "pending_question": null
+      },
+      "error": "",
+      "elapsed_seconds": 4.7207,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S07"
+        ],
+        "points": [
+          "推荐套餐2“全景中心湖”，说明这是杭州出发的选项",
+          "提供资料列出的06:50定安路地铁站C口上车安排，实际以工作人员确认为准",
+          "说明套餐2儿童票仅含杭州至千岛湖往返大巴车费，门票和船票需自理",
+          "说明儿童票购买资格和具体补票金额仍需向商家确认，不能仅凭身高或旧图文直接确定"
+        ],
+        "forbidden_points": [
+          "推荐当地出发的套餐1或套餐3来满足杭州出发需求",
+          "把09:50淳安县千岛湖中心湖区旅游码头说成本题的杭州上车安排",
+          "要求客人依次到达所有集合点",
+          "用未区分票种的费用总表，认定套餐2儿童票已经包含门票和船票",
+          "把旧图文中的100元补票金额说成当前确定价格，或直接加到儿童票价上保证总价",
+          "套用其他商品的儿童身高界限或费用规则",
+          "承诺结束后送回指定酒店"
+        ]
+      }
+    },
+    {
+      "case_id": "E16",
+      "turn_number": 1,
+      "question": "一位35岁的妈妈带一个身高1.1米的孩子，想报胜蓝旅游的雷峰塔西湖灵隐寺一日游，预算有限，跟大团拼没问题。她住的酒店不在页面写的上门接范围内。哪个套餐最省钱？按单价大概多少钱？她要去哪里集合？",
+      "status": "ok",
+      "result": {
+        "data": {
+          "answer": "按目前能确认的价格，最省的是套餐1“18人经典团”：成人258元/份、儿童128元/份，合计约386元。套餐2“10人小团”是成人328元、儿童198元，合计约526元，更贵。\n\n不过孩子身高1.1米该按儿童价还是其他标准，资料里没有写明，需要向商家确认；酒店不在上门接范围内时，集合地点资料里也没有给出，建议直接问商家该套餐在您酒店附近最近的集合点。",
+          "sources": [
+            "3"
+          ]
+        },
+        "citations": [
+          {
+            "citation_id": "3",
+            "chunk_id": "tour_products:paragraph-29:chunk-1",
+            "metadata": {
+              "paragraph_index": 29,
+              "section_path": "旅游产品资料/S05 杭州雷峰塔、西湖及灵隐寺一日游/2026-10-14补充：当前团型与套餐选项",
+              "section_level": 3,
+              "chunk_index": 1,
+              "source_id": "S05",
+              "source": "data/raw/tour_products.md",
+              "filename": "tour_products.md",
+              "document_id": "tour_products",
+              "updated_at": "2026-10-15T15:38:06",
+              "source_title": "S05 杭州雷峰塔、西湖及灵隐寺一日游"
+            }
+          }
+        ],
+        "evidence": [
+          {
+            "chunk_id": "tour_products:paragraph-25:chunk-2",
+            "content": "认。\n- 版本区分：本次套餐1为18人经典团、套餐2为10人小团；旧截图的套餐1“精致小团”、套餐2“私家团包团”保留为历史记录，不按同一编号合并。首次历史实验的“套餐2”指旧版本。",
+            "metadata": {
+              "chunk_index": 2,
+              "source_id": "S05",
+              "source_title": "S05 杭州雷峰塔、西湖及灵隐寺一日游",
+              "paragraph_index": 25,
+              "updated_at": "2026-10-15T15:38:06",
+              "section_path": "旅游产品资料/S05 杭州雷峰塔、西湖及灵隐寺一日游",
+              "section_level": 2,
+              "document_id": "tour_products",
+              "filename": "tour_products.md",
+              "source": "data/raw/tour_products.md"
+            },
+            "retrieval_rank": 2,
+            "rerank_rank": 1,
+            "rerank_score": 0.9841545820236206
+          },
+          {
+            "chunk_id": "tour_products:paragraph-33:chunk-1",
+            "content": "- 团型：拼团。\n- 服务：司机＋导游。\n- 人数描述：10人以下精致小团。首页另写“10/18人纯玩小团”，实际人数上限需确认。\n- 景点／游玩地：7个。\n- 内容：雷峰塔、西湖风景名胜区、西湖游船、三潭印月、花港观鱼、灵隐飞来峰景区、灵隐寺。\n- 标称时长：约9小时。\n- 车辆卡片：中巴车（9～20人）、一排3座；提供上门接服务。\n- 详细逐时行程：本批截图未展开套餐1的行程，不得直接套用套餐2行程。",
+            "metadata": {
+              "source_title": "S05 杭州雷峰塔、西湖及灵隐寺一日游",
+              "source": "data/raw/tour_products.md",
+              "source_id": "S05",
+              "chunk_index": 1,
+              "paragraph_index": 33,
+              "section_path": "旅游产品资料/S05 杭州雷峰塔、西湖及灵隐寺一日游/2026-10-09旧截图套餐1：精致小团",
+              "section_level": 3,
+              "document_id": "tour_products",
+              "filename": "tour_products.md",
+              "updated_at": "2026-10-15T15:38:06"
+            },
+            "retrieval_rank": 3,
+            "rerank_rank": 2,
+            "rerank_score": 0.9815244078636169
+          },
+          {
+            "chunk_id": "tour_products:paragraph-29:chunk-1",
+            "content": "- 套餐1：18人经典团，拼团选项，成人258元/份、儿童128元/份。\n- 套餐2：10人小团，拼团选项，成人328元/份、儿童198元/份。本次套餐2不是旧版本包团。\n- 套餐3：2人包团，卡片798元起；套餐4：3人包团，卡片598元起。\n- 选购页还列4人、5人、6人、7人、8人包团；其具体数字套餐编号未展示，不自行编号。\n- 2人包团卡片：7个景点/游玩地，约7小时30分；列雷峰塔、西湖风景名胜区、西湖游船、三潭印月、花港观鱼、灵隐飞来峰景区、灵隐寺；5座舒适车（2～4人）、上门接。车辆容量不等于所有包团档位的接待上限或实际车型。\n- 2人包团行程可见“一单一团，1个车＋1个导游＋…”；后半段折叠，不补全。当前4人包团可作为不拼团需求的候选，但具体司机/导游安排、时间可调整范围、登岛及返程须按该选项确认，不把旧包团完整时间表当作新档位承诺。\n- 包团价格页面选择人数对应成人数量2",
+            "metadata": {
+              "paragraph_index": 29,
+              "section_path": "旅游产品资料/S05 杭州雷峰塔、西湖及灵隐寺一日游/2026-10-14补充：当前团型与套餐选项",
+              "section_level": 3,
+              "chunk_index": 1,
+              "source_id": "S05",
+              "source": "data/raw/tour_products.md",
+              "filename": "tour_products.md",
+              "document_id": "tour_products",
+              "updated_at": "2026-10-15T15:38:06",
+              "source_title": "S05 杭州雷峰塔、西湖及灵隐寺一日游"
+            },
+            "retrieval_rank": 2,
+            "rerank_rank": 1,
+            "rerank_score": 0.9929060935974121
+          },
+          {
+            "chunk_id": "pricing_rules:paragraph-27:chunk-1",
+            "content": "- 门票／游览服务：雷峰塔门票＋西湖游船＋三潭印月＋灵隐寺飞来峰预约。\n- 交通：2～3人五座轿车；4～5人七座商务车；6人以上中巴车。\n- 导游：当地中文一日游导游服务。\n- 此处车型规则与套餐卡片不同：套餐1卡片展示中巴9～20人，套餐2卡片展示商务车不超过9人。各说明适用套餐需确认，不能混成统一分配规则。\n- “预约”与“收费门票”应区分：不能根据含预约承诺景区所有票项都已支付。",
+            "metadata": {
+              "source": "data/raw/pricing_rules.md",
+              "section_path": "报价与费用资料/S05 页面起价、促销与费用范围/2026-10-09旧截图费用包含",
+              "section_level": 3,
+              "filename": "pricing_rules.md",
+              "source_id": "S05",
+              "document_id": "pricing_rules",
+              "updated_at": "2026-10-14T21:04:07",
+              "source_title": "S05 页面起价、促销与费用范围",
+              "paragraph_index": 27,
+              "chunk_index": 1
+            },
+            "retrieval_rank": 5,
+            "rerank_rank": 2,
+            "rerank_score": 0.903464674949646
+          },
+          {
+            "chunk_id": "tour_products:paragraph-35:chunk-1",
+            "content": "- 团型：包团。\n- 服务：司机＋导游；行程说明写一个车、一个导游、一个司机单独服务一天，时间可以调整。\n- 景点／游玩地：6个。\n- 列表：雷峰塔、西湖风景名胜区、西湖游船、花港观鱼、灵隐飞来峰景区、灵隐寺。\n- 标称时长：约8小时。\n- 车辆卡片：按团人数分配车型；截图展示商务车（不超过9人）；提供上门接。\n- 接客方式：司机去酒店接，导游在第一个景点等候。\n- 详细路线见同来源的行程整理。",
+            "metadata": {
+              "updated_at": "2026-10-15T15:38:06",
+              "paragraph_index": 35,
+              "chunk_index": 1,
+              "source": "data/raw/tour_products.md",
+              "section_path": "旅游产品资料/S05 杭州雷峰塔、西湖及灵隐寺一日游/2026-10-09旧截图套餐2：私家团包团",
+              "document_id": "tour_products",
+              "section_level": 3,
+              "source_title": "S05 杭州雷峰塔、西湖及灵隐寺一日游",
+              "filename": "tour_products.md",
+              "source_id": "S05"
+            },
+            "retrieval_rank": 3,
+            "rerank_rank": 1,
+            "rerank_score": 0.7170118689537048
+          },
+          {
+            "chunk_id": "tour_products:paragraph-25:chunk-1",
+            "content": "- 来源编号：S05\n- 资料类型：真实产品页面截图整理；并非模拟产品。\n- 平台：去哪儿旅行微信小程序；商家展示名：胜蓝旅游（用户补充及页面可见），公司全称、资质和实际执行关系未提供。\n- 用户提供的分享入口：#小程序://去哪儿旅行订酒店机票火车票门票/MmB3z4tf5LING8d。不是HTTP链接或平台产品编号；平台产品编号未提供。\n- 范围：首次23张截图及本次16个图片文件；本次消息重复展示第1张，不重复计数。原件见data/source_images/S05/2026-10-14/。\n- 出行日期说明（用户补充）：长期有效，未给固定起止日；节假日商家可能调整。价格、接送及行程不保证长期不变，实际日期、库存和安排需商家确认。\n- 版本区分：本次套餐1为18人经典团、套餐2为10人小团；旧截图的套餐1“精致小团”、套餐2“私家团包团”保留为历史记录，不按同一编号合并。首次历史实验",
+            "metadata": {
+              "section_path": "旅游产品资料/S05 杭州雷峰塔、西湖及灵隐寺一日游",
+              "document_id": "tour_products",
+              "chunk_index": 1,
+              "source": "data/raw/tour_products.md",
+              "filename": "tour_products.md",
+              "section_level": 2,
+              "source_id": "S05",
+              "paragraph_index": 25,
+              "updated_at": "2026-10-15T15:38:06",
+              "source_title": "S05 杭州雷峰塔、西湖及灵隐寺一日游"
+            },
+            "retrieval_rank": 1,
+            "rerank_rank": 2,
+            "rerank_score": 0.5931969285011292
+          }
+        ],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1714,
+          "输出tokens": 179,
+          "总tokens": 1893,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.353
+        },
+        "record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 2246,
+          "输出tokens": 126,
+          "总tokens": 2372,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.147
+        },
+        "error": "",
+        "needs_clarification": false,
+        "pending_question": null
+      },
+      "error": "",
+      "elapsed_seconds": 4.196,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S05"
+        ],
+        "points": [
+          "优先推荐套餐1“18人经典团”，说明它在资料列出的拼团选项中价格较低，符合接受大团、预算有限的需求",
+          "提供成人258元、儿童128元，按单价参考合计386元",
+          "说明多人混合订单实付及日期优惠条件仍需确认，386元不是保证成交价或全部旅行费用",
+          "说明1.1米符合资料中的儿童票身高范围，儿童票仅含景区交通和导游，不含门票及游船，补票金额需确认",
+          "提供资料列出的09:00雷峰塔检票口集合安排，实际时间及节假日调整需确认",
+          "说明35岁的妈妈全程同行可满足至少一名18至69周岁成人陪同的条件"
+        ],
+        "forbidden_points": [
+          "忽略已有的较低价大团选项，直接把10人小团或包团作为最省钱的选择",
+          "把1.1米儿童说成无需购买任何票，或声称儿童价包含全部门票和游船",
+          "编造儿童门票或游船补票金额",
+          "在258元或386元基础上再次减100元",
+          "对接送范围外的酒店承诺08:00上门接",
+          "把386元说成已确认实付金额或包含全部费用的总价"
+        ]
+      }
+    },
+    {
+      "case_id": "E17",
+      "turn_number": 1,
+      "question": "以2026年10月17日为判断日期。客人说在艾客旅游千岛湖的页面上看到“景区免门票，价格已调整，所有人群不作任何退费”，问2026年10月下旬去是不是也免门票，而且订了以后就不能退了？",
+      "status": "ok",
+      "result": {
+        "data": {
+          "answer": "不能直接按页面这句话认定2026年10月下旬免门票，也不能理解为下单后任何情况都不能退。\n\n目前能确认的是：这句话出现在套餐2的行程说明里，写的是“周五景区免门票、价格已调整，任何优惠证件当天出行不做任何退费”，但这是否为现行活动、具体适用哪些日期，还需要向商家确认。另外，资料里还有一条2025年11月1日至12月31日免门票、不退差的说明，那属于已经结束的历史期间，不能拿来判断2026年10月下旬。\n\n“所有人群不作任何退费”针对的是免门票期间的优惠退差，不等于订单取消一律不退款。取消能退多少，要看具体订单适用的退改条款，目前没有该订单的条款信息，无法给出确定的退款结论。\n\n建议回复客户：页面上的免门票说明需要确认是否适用于您出行的具体日期，10月下旬是否免票暂不能按页面直接确定；免门票期间的“不退费”指的是门票优惠不退差，不是取消订单一律不退款，具体退改以您订单对应的条款为准。",
+          "sources": [
+            "1",
+            "2",
+            "3"
+          ]
+        },
+        "citations": [
+          {
+            "citation_id": "1",
+            "chunk_id": "pricing_rules:paragraph-57:chunk-1",
+            "metadata": {
+              "document_id": "pricing_rules",
+              "section_path": "报价与费用资料/S07 页面报价的不同口径/2026-10-14补充：费用范围及周五说明",
+              "section_level": 3,
+              "source_title": "S07 页面报价的不同口径",
+              "paragraph_index": 57,
+              "chunk_index": 1,
+              "source_id": "S07",
+              "filename": "pricing_rules.md",
+              "updated_at": "2026-10-14T21:04:07",
+              "source": "data/raw/pricing_rules.md"
+            }
+          },
+          {
+            "citation_id": "2",
+            "chunk_id": "pricing_rules:paragraph-61:chunk-1",
+            "metadata": {
+              "paragraph_index": 61,
+              "filename": "pricing_rules.md",
+              "document_id": "pricing_rules",
+              "source_id": "S07",
+              "source": "data/raw/pricing_rules.md",
+              "section_level": 3,
+              "chunk_index": 1,
+              "source_title": "S07 页面报价的不同口径",
+              "section_path": "报价与费用资料/S07 页面报价的不同口径/2026-10-09旧截图套餐1费用明细",
+              "updated_at": "2026-10-14T21:04:07"
+            }
+          },
+          {
+            "citation_id": "3",
+            "chunk_id": "refund_policy:paragraph-35:chunk-1",
+            "metadata": {
+              "paragraph_index": 35,
+              "updated_at": "2026-10-14T21:01:09",
+              "source": "data/raw/refund_policy.md",
+              "section_path": "退改与服务退款资料/S07 订单取消的退款说明与版本差异",
+              "document_id": "refund_policy",
+              "source_id": "S07",
+              "source_title": "S07 订单取消的退款说明与版本差异",
+              "section_level": 2,
+              "filename": "refund_policy.md",
+              "chunk_index": 1
+            }
+          }
+        ],
+        "evidence": [
+          {
+            "chunk_id": "pricing_rules:paragraph-57:chunk-1",
+            "content": "- 本次费用表包含千岛湖中心湖区门票＋游船船票、中文导游；不含全程餐费、个人消费、自愿娱乐及未列明项目。该表未显示具体选中套餐/票种，不直接认定每种儿童票都含门票船票。\n- 杭州出发套餐2交通说明另写儿童票仅含杭州至千岛湖往返大巴车费，产生门票船票需自理；不因此给当地套餐1/3补出杭州交通。\n- 套餐2行程有“周五景区免门票、价格已调整，任何优惠证件当天出行不做任何退费”的商家说明；是否现行、具体适用日期和退差路径仍需确认。免门票不等于船票、车费或团费全免，不等于所有取消不退款。\n- 本次费用表仍出现2025年11月1日至12月31日免门票/不退差条款，属于已结束的历史期间；收到新截图不使旧期间重新生效。",
+            "metadata": {
+              "document_id": "pricing_rules",
+              "section_path": "报价与费用资料/S07 页面报价的不同口径/2026-10-14补充：费用范围及周五说明",
+              "section_level": 3,
+              "source_title": "S07 页面报价的不同口径",
+              "paragraph_index": 57,
+              "chunk_index": 1,
+              "source_id": "S07",
+              "filename": "pricing_rules.md",
+              "updated_at": "2026-10-14T21:04:07",
+              "source": "data/raw/pricing_rules.md"
+            },
+            "retrieval_rank": 3,
+            "rerank_rank": 1,
+            "rerank_score": 0.9910492897033691
+          },
+          {
+            "chunk_id": "pricing_rules:paragraph-61:chunk-1",
+            "content": "- 包含：千岛湖中心湖区门票＋游船船票、中文导游。\n- 该明细没有列杭州往返巴士；不得将杭州出发图文内容自动应用于千岛湖当地出发套餐。\n- 不包含：全程餐费、个人消费、缆车、小木舟、空中飞人等自费项目，以及费用包含未列明的项目。\n- 明细在“门票”不含栏插入一条历史说明：2025年11月1日至2025年12月31日千岛湖景区免门票，价格已调整，所有人群不作任何退费。这里的“所有人群不退费”上下文为该期间优惠退差，不能解释为任何订单取消都不退款。\n- 上述期间已早于2026-10-09整理日期，仅作为历史条款保留；不能用它否定其他时段票价优惠，也不能按它承诺当前免票。",
+            "metadata": {
+              "paragraph_index": 61,
+              "filename": "pricing_rules.md",
+              "document_id": "pricing_rules",
+              "source_id": "S07",
+              "source": "data/raw/pricing_rules.md",
+              "section_level": 3,
+              "chunk_index": 1,
+              "source_title": "S07 页面报价的不同口径",
+              "section_path": "报价与费用资料/S07 页面报价的不同口径/2026-10-09旧截图套餐1费用明细",
+              "updated_at": "2026-10-14T21:04:07"
+            },
+            "retrieval_rank": 1,
+            "rerank_rank": 2,
+            "rerank_score": 0.9897909760475159
+          },
+          {
+            "chunk_id": "refund_policy:paragraph-35:chunk-1",
+            "content": "本次补充获取及整理日期：2026-10-14；商家展示名艾客旅游。两版完整拍摄日期、生效日期和订单条款未提供，不能仅因收到更晚就认定适用于所有旧订单。",
+            "metadata": {
+              "paragraph_index": 35,
+              "updated_at": "2026-10-14T21:01:09",
+              "source": "data/raw/refund_policy.md",
+              "section_path": "退改与服务退款资料/S07 订单取消的退款说明与版本差异",
+              "document_id": "refund_policy",
+              "source_id": "S07",
+              "source_title": "S07 订单取消的退款说明与版本差异",
+              "section_level": 2,
+              "filename": "refund_policy.md",
+              "chunk_index": 1
+            },
+            "retrieval_rank": 5,
+            "rerank_rank": 1,
+            "rerank_score": 0.7550956010818481
+          }
+        ],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1710,
+          "输出tokens": 141,
+          "总tokens": 1851,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 0.86
+        },
+        "record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1397,
+          "输出tokens": 253,
+          "总tokens": 1650,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 2.32
+        },
+        "error": "",
+        "needs_clarification": false,
+        "pending_question": null
+      },
+      "error": "",
+      "elapsed_seconds": 4.399,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S07"
+        ],
+        "points": [
+          "指出该历史免门票条款对应2025年11月1日至2025年12月31日，相对判断日期已经结束",
+          "说明不能依据这条历史优惠承诺2026年10月下旬免门票",
+          "区分票价优惠退差与订单取消退款，不能把“所有人群不作退费”理解成订购后任何取消都不退款",
+          "如说明取消条件，应注明本次页面写出游日00:00前申请不收手续费、00:00后不可退，并提醒核对实际订单适用条款",
+          "如提及套餐2的周五免门票说明，应指出其当前适用日期及条件仍需确认"
+        ],
+        "forbidden_points": [
+          "把2025年的优惠期间套用到2026年10月下旬",
+          "因为新截图仍出现旧条款，就认定该优惠重新生效",
+          "把票价优惠不退差解释成所有订单取消均不退款",
+          "未经核实就承诺当前周五一定免门票",
+          "把某版取消规则直接保证为所有套餐和订单的统一规则"
+        ]
+      }
+    },
+    {
+      "case_id": "E18",
+      "turn_number": 1,
+      "question": "客人孩子身高0.6米，家长翻到胜蓝旅游以前的截图，说儿童票0.7米以上才需要买，所以孩子不用买票。现在报这个一日游，孩子到底要不要买儿童票？",
+      "status": "ok",
+      "result": {
+        "data": {
+          "answer": "现在报的是胜蓝旅游的哪个一日游产品或套餐？",
+          "sources": []
+        },
+        "citations": [],
+        "evidence": [],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1699,
+          "输出tokens": 147,
+          "总tokens": 1846,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.045
+        },
+        "record": null,
+        "error": "",
+        "needs_clarification": true,
+        "pending_question": "客人孩子身高0.6米，家长翻到胜蓝旅游以前的截图，说儿童票0.7米以上才需要买，所以孩子不用买票。现在报这个一日游，孩子到底要不要买儿童票？"
+      },
+      "error": "",
+      "elapsed_seconds": 1.0472,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S05"
+        ],
+        "points": [
+          "指出0.7米儿童票下限属于旧截图口径，本次整理页面的儿童票范围为0.5米含至1.19米含",
+          "说明0.6米落在本次页面的儿童票范围内，不能依据旧截图判断不用买票",
+          "如提供拼团儿童价格，应区分套餐1“18人经典团”128元每份、套餐2“10人小团”198元每份，并提醒核实实际订单条件",
+          "如涉及包团，说明儿童计数和计价规则仍需确认，不能直接套用拼团儿童价格"
+        ],
+        "forbidden_points": [
+          "沿用旧0.7米下限，断言0.6米孩子不用买票",
+          "把未指定套餐的儿童票统一报价为128元或198元",
+          "用拼团儿童价格补出包团儿童报价",
+          "声称儿童价已经包含全部门票和游船",
+          "编造儿童补票金额或资料未提供的婴幼儿政策"
+        ]
+      }
+    },
+    {
+      "case_id": "E19",
+      "turn_number": 1,
+      "question": "以2026年10月17日为判断日期。一个公司小团8位成年人，订4间房，想跑P001杭州三日精品游，2026年12月30日出发。按系统规则直接帮我算一下报价？",
+      "status": "ok",
+      "result": {
+        "data": {
+          "answer": "目前无法直接算出报价。已确认 P001 杭州三日精品游在 2026-12-30 属于产品有效期内，但现有价格规则只写明了适用产品和币种，没有房型、人数对应的单价、儿童价或整团计价方式，因此不能凭空给出总价。请补充该产品的套餐/房型价格表或整团报价规则，我再按 8 位成人、4 间房帮您核算。",
+          "sources": [
+            "1",
+            "2"
+          ]
+        },
+        "citations": [
+          {
+            "citation_id": "1",
+            "chunk_id": "pricing_rules:paragraph-4:chunk-1",
+            "metadata": {
+              "updated_at": "2026-10-14T21:04:07",
+              "valid_from": "2026-09-28",
+              "source_title": "SIM02 旅行产品模拟价格规则",
+              "section_level": 2,
+              "document_id": "pricing_rules",
+              "filename": "pricing_rules.md",
+              "source_id": "SIM02",
+              "paragraph_index": 4,
+              "chunk_index": 1,
+              "valid_until": "2026-12-31",
+              "section_path": "SIM02 旅行产品模拟价格规则/R001 P001报价规则",
+              "source": "data/raw/pricing_rules.md"
+            }
+          },
+          {
+            "citation_id": "2",
+            "chunk_id": "tour_products:paragraph-4:chunk-1",
+            "metadata": {
+              "paragraph_index": 4,
+              "chunk_index": 1,
+              "source_id": "SIM01",
+              "valid_until": "2026-12-31",
+              "section_path": "SIM01 旅行产品演示资料/P001 产品名称",
+              "filename": "tour_products.md",
+              "section_level": 2,
+              "updated_at": "2026-10-15T15:38:06",
+              "document_id": "tour_products",
+              "source": "data/raw/tour_products.md",
+              "valid_from": "2026-09-28",
+              "source_title": "SIM01 旅行产品演示资料"
+            }
+          }
+        ],
+        "evidence": [
+          {
+            "chunk_id": "pricing_rules:paragraph-4:chunk-1",
+            "content": "适用产品：P001 杭州三日精品游  \n币种：人民币（CNY）",
+            "metadata": {
+              "updated_at": "2026-10-14T21:04:07",
+              "valid_from": "2026-09-28",
+              "source_title": "SIM02 旅行产品模拟价格规则",
+              "section_level": 2,
+              "document_id": "pricing_rules",
+              "filename": "pricing_rules.md",
+              "source_id": "SIM02",
+              "paragraph_index": 4,
+              "chunk_index": 1,
+              "valid_until": "2026-12-31",
+              "section_path": "SIM02 旅行产品模拟价格规则/R001 P001报价规则",
+              "source": "data/raw/pricing_rules.md"
+            },
+            "retrieval_rank": 1,
+            "rerank_rank": 1,
+            "rerank_score": 0.7076067924499512
+          },
+          {
+            "chunk_id": "tour_products:paragraph-4:chunk-1",
+            "content": "产品名称：杭州三日精品游",
+            "metadata": {
+              "paragraph_index": 4,
+              "chunk_index": 1,
+              "source_id": "SIM01",
+              "valid_until": "2026-12-31",
+              "section_path": "SIM01 旅行产品演示资料/P001 产品名称",
+              "filename": "tour_products.md",
+              "section_level": 2,
+              "updated_at": "2026-10-15T15:38:06",
+              "document_id": "tour_products",
+              "source": "data/raw/tour_products.md",
+              "valid_from": "2026-09-28",
+              "source_title": "SIM01 旅行产品演示资料"
+            },
+            "retrieval_rank": 3,
+            "rerank_rank": 2,
+            "rerank_score": 0.2864685654640198
+          }
+        ],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1702,
+          "输出tokens": 114,
+          "总tokens": 1816,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 0.763
+        },
+        "record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 906,
+          "输出tokens": 109,
+          "总tokens": 1015,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.231
+        },
+        "error": "",
+        "needs_clarification": false,
+        "pending_question": null
+      },
+      "error": "",
+      "elapsed_seconds": 2.5918,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "SIM01",
+          "SIM02",
+          "SIM04"
+        ],
+        "points": [
+          "根据固定三天两晚、结束日为出发日加2个自然日，正确推出行程结束日为2027年1月1日",
+          "指出R001 v1.1要求出发日和结束日都在2026年9月28日至2026年12月31日内，本次行程不满足条件",
+          "说明8名成人、4间房本身满足人数及每间最多2名成人的容量条件，但不能因此忽略日期限制",
+          "拒绝直接套用本版本规则给出可用报价，说明需要员工确认覆盖该行程的新规则，或由客户决定是否调整日期"
+        ],
+        "forbidden_points": [
+          "只检查出发日，没有检查行程结束日",
+          "把4820元等按旧规则计算的金额作为本次行程的可用报价",
+          "假定2027年继续沿用相同价格和供应条件",
+          "擅自提前出发日期、缩短行程或修改晚数以套用规则",
+          "用判断日期或下单日期代替实际出发日期",
+          "错误声称8名成人、4间房不满足容量条件"
+        ]
+      }
+    },
+    {
+      "case_id": "E20",
+      "turn_number": 1,
+      "question": "客人一共正好10个人，想报洲游假日的9人小团，就是雷峰塔、西湖游船、灵隐寺那个。页面有地方写“10人以下”，有地方写“10人内”，他们10个人能一起报吗？",
+      "status": "ok",
+      "result": {
+        "data": {
+          "answer": "这个产品当前选购页明确写的是“9人团”，所以不能按“10人以下”或“10人内”理解成10个人也能一起报。页面上的“10人以下”“10人内”是旧描述，不能覆盖当前选项；车辆写的是中巴车（9～20人），但车辆容量不等于成团人数。10人能否参加、实际人数上限是多少，需要向商家确认。",
+          "sources": [
+            "1",
+            "2"
+          ]
+        },
+        "citations": [
+          {
+            "citation_id": "1",
+            "chunk_id": "tour_products:paragraph-52:chunk-1",
+            "metadata": {
+              "source": "data/raw/tour_products.md",
+              "filename": "tour_products.md",
+              "updated_at": "2026-10-15T15:38:06",
+              "source_title": "S06 杭州雷峰塔、西湖、三潭印月、灵隐寺及飞来峰一日游",
+              "document_id": "tour_products",
+              "section_level": 3,
+              "paragraph_index": 52,
+              "source_id": "S06",
+              "section_path": "旅游产品资料/S06 杭州雷峰塔、西湖、三潭印月、灵隐寺及飞来峰一日游/人数和车辆的不同表述",
+              "chunk_index": 1
+            }
+          },
+          {
+            "citation_id": "2",
+            "chunk_id": "tour_products:paragraph-50:chunk-1",
+            "metadata": {
+              "section_level": 3,
+              "paragraph_index": 50,
+              "document_id": "tour_products",
+              "filename": "tour_products.md",
+              "updated_at": "2026-10-15T15:38:06",
+              "source_id": "S06",
+              "section_path": "旅游产品资料/S06 杭州雷峰塔、西湖、三潭印月、灵隐寺及飞来峰一日游/商品信息",
+              "chunk_index": 1,
+              "source_title": "S06 杭州雷峰塔、西湖、三潭印月、灵隐寺及飞来峰一日游",
+              "source": "data/raw/tour_products.md"
+            }
+          }
+        ],
+        "evidence": [
+          {
+            "chunk_id": "tour_products:paragraph-52:chunk-1",
+            "content": "- 商品标题：9人小团。\n- 套餐卡片：10人以下精致小团。\n- 行程亮点：10人内小团。\n- 本次选购页明确显示所选项为“9人团”；这是当前选项描述，不能据旧“10人以下”解释为恰好10人也可参加。\n- 车辆卡片：中巴车（9～20人），一排4座。\n- 车辆容量不等同于实际成团人数；能否恰好10人、实际人数上限需商家确认。",
+            "metadata": {
+              "source": "data/raw/tour_products.md",
+              "filename": "tour_products.md",
+              "updated_at": "2026-10-15T15:38:06",
+              "source_title": "S06 杭州雷峰塔、西湖、三潭印月、灵隐寺及飞来峰一日游",
+              "document_id": "tour_products",
+              "section_level": 3,
+              "paragraph_index": 52,
+              "source_id": "S06",
+              "section_path": "旅游产品资料/S06 杭州雷峰塔、西湖、三潭印月、灵隐寺及飞来峰一日游/人数和车辆的不同表述",
+              "chunk_index": 1
+            },
+            "retrieval_rank": 1,
+            "rerank_rank": 1,
+            "rerank_score": 0.9946774244308472
+          },
+          {
+            "chunk_id": "tour_products:paragraph-50:chunk-1",
+            "content": "- 标题：杭州雷峰塔＋西湖风景名胜区＋西湖游船＋三潭印月＋灵隐寺＋飞来峰一日游【9人小团 真纯玩】。\n- 出发地：杭州。\n- 天数：一日游。\n- 可见套餐：套餐1，雷峰塔＋西湖游船＋灵隐寺。\n- 团型：拼团；本批未提供包团套餐。\n- 服务：司机＋导游。\n- 标称时长：约10小时15分。\n- 标称景点／游玩地：9个；套餐摘要列出雷峰塔、苏堤、西湖风景名胜区、西湖游船、三潭印月、花港观鱼、灵隐寺，只有7个名称。详细行程还将飞来峰与灵隐寺分别描述，且游船分往返两段。页面没有解释9个的具体计数口径。\n- 上门接及2个集合地点，具体安排见行程资料。\n- 本次选购页选项：路线“雷峰塔＋西湖游船＋灵隐寺”，团人数“9人团”，用餐“不含餐”，服务语言“中文”，发车时间“07:45”。\n- 本次购买数量页显示成人328元/份、儿童198元/份。儿童身高或年龄区间、婴幼儿政策仍未提供，不套用S05划分。\n- ",
+            "metadata": {
+              "section_level": 3,
+              "paragraph_index": 50,
+              "document_id": "tour_products",
+              "filename": "tour_products.md",
+              "updated_at": "2026-10-15T15:38:06",
+              "source_id": "S06",
+              "section_path": "旅游产品资料/S06 杭州雷峰塔、西湖、三潭印月、灵隐寺及飞来峰一日游/商品信息",
+              "chunk_index": 1,
+              "source_title": "S06 杭州雷峰塔、西湖、三潭印月、灵隐寺及飞来峰一日游",
+              "source": "data/raw/tour_products.md"
+            },
+            "retrieval_rank": 5,
+            "rerank_rank": 2,
+            "rerank_score": 0.9270997643470764
+          }
+        ],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1707,
+          "输出tokens": 181,
+          "总tokens": 1888,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.278
+        },
+        "record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1343,
+          "输出tokens": 103,
+          "总tokens": 1446,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.257
+        },
+        "error": "",
+        "needs_clarification": false,
+        "pending_question": null
+      },
+      "error": "",
+      "elapsed_seconds": 3.7306,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S06"
+        ],
+        "points": [
+          "指出商品标题和本次选购页为9人团，套餐卡片写10人以下，行程亮点写10人内，人数表述不一致",
+          "说明现有资料不足以保证正好10人可以报名并安排在同一团",
+          "区分中巴车9至20人的车辆容量与实际成团人数，不能用车辆容量推断报名上限",
+          "建议向商家确认实际人数上限、10人能否同团，以及必要时是否有其他安排"
+        ],
+        "forbidden_points": [
+          "自行把10人以下或10人内解释成确定包含10人，并承诺可以同团",
+          "仅凭9人团标题就断言任何情况下10人都绝对不能报名，无需确认",
+          "因为中巴车能容纳9至20人，就认定10人一定可以成团",
+          "编造加一个人、拆单、加车或补差价即可解决的规则",
+          "混用其他商品的人数规则来保证本商品可以接待10人"
+        ]
+      }
+    },
+    {
+      "case_id": "E21",
+      "turn_number": 1,
+      "question": "两位客人2027年五一想报胜蓝旅游18人经典团，住在火车东站附近，在接送范围内。五一那天还能上门接吗？几点？",
+      "status": "ok",
+      "result": {
+        "data": {
+          "answer": "可以安排上门接，但五一属于节假日，需要提前1小时集合出发，具体时间以导游通知为准。按18人经典团平时的安排是08:00上门接，节假日提前1小时后预计为07:00左右；东至火车东站属于接送范围。建议下单前再和商家确认2027年五一当天的实际接送时间。",
+          "sources": [
+            "1",
+            "2",
+            "3"
+          ]
+        },
+        "citations": [
+          {
+            "citation_id": "1",
+            "chunk_id": "hangzhou_routes:paragraph-25:chunk-1",
+            "metadata": {
+              "document_id": "hangzhou_routes",
+              "source_title": "S05 2026-10-14补充：按当前选项区分接送",
+              "source": "data/raw/hangzhou_routes.md",
+              "source_id": "S05",
+              "filename": "hangzhou_routes.md",
+              "chunk_index": 1,
+              "paragraph_index": 25,
+              "section_level": 3,
+              "section_path": "杭州路线资料/S05 2026-10-14补充：按当前选项区分接送/当前套餐1：18人经典团",
+              "updated_at": "2026-10-15T15:35:53"
+            }
+          },
+          {
+            "citation_id": "2",
+            "chunk_id": "supplier_notes:paragraph-17:chunk-1",
+            "metadata": {
+              "document_id": "supplier_notes",
+              "chunk_index": 1,
+              "section_path": "商家服务及出行说明/S05 服务安排、联络与注意事项",
+              "source_title": "S05 服务安排、联络与注意事项",
+              "filename": "supplier_notes.md",
+              "source_id": "S05",
+              "section_level": 2,
+              "updated_at": "2026-10-14T21:01:09",
+              "paragraph_index": 17,
+              "source": "data/raw/supplier_notes.md"
+            }
+          },
+          {
+            "citation_id": "3",
+            "chunk_id": "tour_products:paragraph-25:chunk-1",
+            "metadata": {
+              "source_id": "S05",
+              "source": "data/raw/tour_products.md",
+              "paragraph_index": 25,
+              "section_path": "旅游产品资料/S05 杭州雷峰塔、西湖及灵隐寺一日游",
+              "section_level": 2,
+              "document_id": "tour_products",
+              "filename": "tour_products.md",
+              "chunk_index": 1,
+              "source_title": "S05 杭州雷峰塔、西湖及灵隐寺一日游",
+              "updated_at": "2026-10-15T15:38:06"
+            }
+          }
+        ],
+        "evidence": [
+          {
+            "chunk_id": "hangzhou_routes:paragraph-25:chunk-1",
+            "content": "- 选中18人经典团的行程页列08:00上门接、08:00乘车前往雷峰塔；范围东至火车东站、南至复兴路、西至汽车西站、北至汽车北站。并非杭州任意酒店均可接。\n- 春节、五一、十一期间需要提前1小时集合出发，具体以导游通知为准。范围外或不想早起者，页面写09:00雷峰塔检票口集合；节假日是否也调整该集合时间需确认。\n- 上述不是10人小团或任一包团的通用接送承诺；旧FAQ节假日不能接早的说法适用范围未明确，不能自行消除差异。",
+            "metadata": {
+              "document_id": "hangzhou_routes",
+              "source_title": "S05 2026-10-14补充：按当前选项区分接送",
+              "source": "data/raw/hangzhou_routes.md",
+              "source_id": "S05",
+              "filename": "hangzhou_routes.md",
+              "chunk_index": 1,
+              "paragraph_index": 25,
+              "section_level": 3,
+              "section_path": "杭州路线资料/S05 2026-10-14补充：按当前选项区分接送/当前套餐1：18人经典团",
+              "updated_at": "2026-10-15T15:35:53"
+            },
+            "retrieval_rank": 3,
+            "rerank_rank": 1,
+            "rerank_score": 0.9261703491210938
+          },
+          {
+            "chunk_id": "supplier_notes:paragraph-17:chunk-1",
+            "content": "- 来源编号：S05\n- 资料类型：真实产品页面截图整理。\n- 商家展示名：胜蓝旅游，来自本次页面及用户补充；分享入口：#小程序://去哪儿旅行订酒店机票火车票门票/MmB3z4tf5LING8d。公司全称、资质及实际执行/合同关系未提供。\n- 补充获取及整理日期：2026-10-14。用户说明长期可出行、节假日商家可能调整，实际接送和服务须按出行日期确认。",
+            "metadata": {
+              "document_id": "supplier_notes",
+              "chunk_index": 1,
+              "section_path": "商家服务及出行说明/S05 服务安排、联络与注意事项",
+              "source_title": "S05 服务安排、联络与注意事项",
+              "filename": "supplier_notes.md",
+              "source_id": "S05",
+              "section_level": 2,
+              "updated_at": "2026-10-14T21:01:09",
+              "paragraph_index": 17,
+              "source": "data/raw/supplier_notes.md"
+            },
+            "retrieval_rank": 2,
+            "rerank_rank": 2,
+            "rerank_score": 0.6422081589698792
+          },
+          {
+            "chunk_id": "tour_products:paragraph-25:chunk-1",
+            "content": "- 来源编号：S05\n- 资料类型：真实产品页面截图整理；并非模拟产品。\n- 平台：去哪儿旅行微信小程序；商家展示名：胜蓝旅游（用户补充及页面可见），公司全称、资质和实际执行关系未提供。\n- 用户提供的分享入口：#小程序://去哪儿旅行订酒店机票火车票门票/MmB3z4tf5LING8d。不是HTTP链接或平台产品编号；平台产品编号未提供。\n- 范围：首次23张截图及本次16个图片文件；本次消息重复展示第1张，不重复计数。原件见data/source_images/S05/2026-10-14/。\n- 出行日期说明（用户补充）：长期有效，未给固定起止日；节假日商家可能调整。价格、接送及行程不保证长期不变，实际日期、库存和安排需商家确认。\n- 版本区分：本次套餐1为18人经典团、套餐2为10人小团；旧截图的套餐1“精致小团”、套餐2“私家团包团”保留为历史记录，不按同一编号合并。首次历史实验",
+            "metadata": {
+              "source_id": "S05",
+              "source": "data/raw/tour_products.md",
+              "paragraph_index": 25,
+              "section_path": "旅游产品资料/S05 杭州雷峰塔、西湖及灵隐寺一日游",
+              "section_level": 2,
+              "document_id": "tour_products",
+              "filename": "tour_products.md",
+              "chunk_index": 1,
+              "source_title": "S05 杭州雷峰塔、西湖及灵隐寺一日游",
+              "updated_at": "2026-10-15T15:38:06"
+            },
+            "retrieval_rank": 3,
+            "rerank_rank": 2,
+            "rerank_score": 0.5688949227333069
+          }
+        ],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1686,
+          "输出tokens": 120,
+          "总tokens": 1806,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.012
+        },
+        "record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1417,
+          "输出tokens": 90,
+          "总tokens": 1507,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.244
+        },
+        "error": "",
+        "needs_clarification": false,
+        "pending_question": null
+      },
+      "error": "",
+      "elapsed_seconds": 3.4094,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S05"
+        ],
+        "points": [
+          "说明当前18人经典团页面写春节、五一、十一需提前1小时集合出发，具体以导游通知为准",
+          "说明旧FAQ另写节假日不能提供接早服务，需要自行到雷峰塔检票口08:00集合，但FAQ未明确限定套餐",
+          "指出两种说明的适用关系尚不明确，不能承诺五一一定上门接或给出唯一确定时间",
+          "建议向商家或导游确认2027年五一该套餐的接送安排"
+        ],
+        "forbidden_points": [
+          "因为酒店在接送范围内，就保证五一仍然上门接",
+          "直接用平日08:00减去1小时，承诺07:00接车",
+          "未经确认就认定旧FAQ已失效，或认定所有套餐节假日都不提供接早",
+          "套用包团或S06的节假日接送规则",
+          "把现有截图安排保证为2027年五一的确定服务"
+        ]
+      }
+    },
+    {
+      "case_id": "E22",
+      "turn_number": 1,
+      "question": "以2026年10月17日为判断日期。客人自由行，没报团，想自己去灵隐寺，问现在门票多少钱、几点开门、要不要提前预约？",
+      "status": "ok",
+      "result": {
+        "data": {
+          "answer": "灵隐寺的票价和开放时间，目前能确认的只有页面标注：门票30元、7:00–17:45，但未说明票种，不能据此确定2026年10月17日当天实际售价。预约方面，有商品页面写“2025年12月1日起景区免票、至少提前1天实名预约，凭身份证入园”，但这是该商品页面的描述，不能直接当作自由行散客的通用规则；另有页面同时写“含门票预约”和“免费”，票价与预约服务的关系也需向景区或商家确认。建议客人出发前通过灵隐寺或景区官方渠道核实当天票价、开放时间及是否需实名预约，以免白跑。",
+          "sources": [
+            "1",
+            "3",
+            "4"
+          ]
+        },
+        "citations": [
+          {
+            "citation_id": "1",
+            "chunk_id": "pricing_rules:paragraph-43:chunk-1",
+            "metadata": {
+              "section_path": "报价与费用资料/S06 套餐1展示价格及费用范围/2026-10-14补充选购页的单价与条件",
+              "section_level": 3,
+              "document_id": "pricing_rules",
+              "source": "data/raw/pricing_rules.md",
+              "paragraph_index": 43,
+              "updated_at": "2026-10-14T21:04:07",
+              "chunk_index": 1,
+              "source_id": "S06",
+              "source_title": "S06 套餐1展示价格及费用范围",
+              "filename": "pricing_rules.md"
+            }
+          },
+          {
+            "citation_id": "3",
+            "chunk_id": "hangzhou_attraction:paragraph-47:chunk-1",
+            "metadata": {
+              "paragraph_index": 47,
+              "source_title": "S06 商品文案中的景点与体验",
+              "document_id": "hangzhou_attraction",
+              "filename": "hangzhou_attraction.md",
+              "source": "data/raw/hangzhou_attraction.md",
+              "section_path": "杭州景点资料/S06 商品文案中的景点与体验/飞来峰与灵隐寺",
+              "section_level": 3,
+              "source_id": "S06",
+              "chunk_index": 1,
+              "updated_at": "2026-10-14T21:04:07"
+            }
+          },
+          {
+            "citation_id": "4",
+            "chunk_id": "hangzhou_attraction:paragraph-31:chunk-1",
+            "metadata": {
+              "chunk_index": 1,
+              "document_id": "hangzhou_attraction",
+              "source": "data/raw/hangzhou_attraction.md",
+              "paragraph_index": 31,
+              "filename": "hangzhou_attraction.md",
+              "section_level": 3,
+              "section_path": "杭州景点资料/S05 商品页面中的景点介绍与游览内容/灵隐寺",
+              "source_title": "S05 商品页面中的景点介绍与游览内容",
+              "updated_at": "2026-10-14T21:04:07",
+              "source_id": "S05"
+            }
+          }
+        ],
+        "evidence": [
+          {
+            "chunk_id": "pricing_rules:paragraph-43:chunk-1",
+            "content": "- 对应同一S06商品；本次选项为“雷峰塔＋西湖游船＋灵隐寺”、9人团、不含餐、中文服务、发车07:45。\n- 使用日期卡片显示周四10月15日、周五16日、周六17日、周日18日，均328元起；选中10月15日。截图没有显示年份，不自动补成年份或把四个日期扩展成所有日期同价。\n- 购买数量区明确成人328元/份、儿童198元/份。“份”为所选票种购买数量单位，不是整个9人团的总价。\n- 本次截图选择成人1份、儿童0份，底部选购页小计为328元，并显示“随机立减100元、原价428元”。就该组选择而言，页面展示小计已经是328元，不能再减100元报价228元。\n- 儿童年龄/身高条件及婴幼儿规则仍未提供，不能擅自把所有未成年人按198元/份计算，也不套用S05的儿童身高规则。\n- 在员工确认日期、同一选项、票种资格及单价仍适用后，可按成人份数乘328元、儿童份数乘198元解释商品价参考小计",
+            "metadata": {
+              "section_path": "报价与费用资料/S06 套餐1展示价格及费用范围/2026-10-14补充选购页的单价与条件",
+              "section_level": 3,
+              "document_id": "pricing_rules",
+              "source": "data/raw/pricing_rules.md",
+              "paragraph_index": 43,
+              "updated_at": "2026-10-14T21:04:07",
+              "chunk_index": 1,
+              "source_id": "S06",
+              "source_title": "S06 套餐1展示价格及费用范围",
+              "filename": "pricing_rules.md"
+            },
+            "retrieval_rank": 3,
+            "rerank_rank": 1,
+            "rerank_score": 0.9780936241149902
+          },
+          {
+            "chunk_id": "hangzhou_attraction:paragraph-8:chunk-1",
+            "content": "- 灵隐寺：截图标注门票30元、7:00–17:45，未说明票种。",
+            "metadata": {
+              "document_id": "hangzhou_attraction",
+              "source": "data/raw/hangzhou_attraction.md",
+              "updated_at": "2026-10-14T21:04:07",
+              "section_path": "s01｜景点内容",
+              "filename": "hangzhou_attraction.md",
+              "paragraph_index": 8,
+              "chunk_index": 1,
+              "section_level": 2,
+              "source_id": "S01",
+              "source_title": "s01｜景点内容"
+            },
+            "retrieval_rank": 1,
+            "rerank_rank": 2,
+            "rerank_score": 0.9362850189208984
+          },
+          {
+            "chunk_id": "hangzhou_attraction:paragraph-47:chunk-1",
+            "content": "- 14:00行程标题写灵隐寺，正文描述飞来峰；15:00再次列灵隐寺，两段分别约1小时。\n- 商品文案称飞来峰又名灵鹫峰，高168米，石灰岩山体，并引用印度僧人慧理解释得名的传说。\n- 灵隐寺文案称始建于东晋咸和元年，寺名与“仙灵所隐”的说法有关。\n- 祈福段写可免费领取三支清香；未独立核验领取条件或最新供应情况。\n- 商品费用说明称2025年12月1日起景区免票、至少提前1天实名预约，凭身份证入园；这是本商品的页面描述，不扩展为所有日期、票项或其他来源的通用规则。",
+            "metadata": {
+              "paragraph_index": 47,
+              "source_title": "S06 商品文案中的景点与体验",
+              "document_id": "hangzhou_attraction",
+              "filename": "hangzhou_attraction.md",
+              "source": "data/raw/hangzhou_attraction.md",
+              "section_path": "杭州景点资料/S06 商品文案中的景点与体验/飞来峰与灵隐寺",
+              "section_level": 3,
+              "source_id": "S06",
+              "chunk_index": 1,
+              "updated_at": "2026-10-14T21:04:07"
+            },
+            "retrieval_rank": 4,
+            "rerank_rank": 2,
+            "rerank_score": 0.5556160807609558
+          },
+          {
+            "chunk_id": "hangzhou_attraction:paragraph-31:chunk-1",
+            "content": "- 页面活动为祈福，参考约1小时；标注“含门票预约”，图文行程标注免费。\n- 文案称灵隐景区包括灵隐寺和飞来峰；灵隐寺始建于东晋咸和元年，即公元326年。\n- 文案以印度僧人慧理所称“仙灵所隐”解释寺名，属于页面历史／传说介绍。\n- 免费政策与仍写“含门票预约”的关系，应区分票价和预约服务并向商家确认，不自行生成最新票价。",
+            "metadata": {
+              "chunk_index": 1,
+              "document_id": "hangzhou_attraction",
+              "source": "data/raw/hangzhou_attraction.md",
+              "paragraph_index": 31,
+              "filename": "hangzhou_attraction.md",
+              "section_level": 3,
+              "section_path": "杭州景点资料/S05 商品页面中的景点介绍与游览内容/灵隐寺",
+              "source_title": "S05 商品页面中的景点介绍与游览内容",
+              "updated_at": "2026-10-14T21:04:07",
+              "source_id": "S05"
+            },
+            "retrieval_rank": 1,
+            "rerank_rank": 1,
+            "rerank_score": 0.7552762031555176
+          },
+          {
+            "chunk_id": "hangzhou_routes:paragraph-31:chunk-2",
+            "content": "选择。\n- 13:00：乘车前往灵隐寺，行驶约15分钟。\n- 13:30：灵隐飞来峰景区，活动约30分钟；页面写游览飞来峰、不爬山，以及“含门票预约”。\n- 14:00：灵隐寺，活动约1小时；页面写祈福及“含门票预约”。\n- 15:00：乘车返回市区，行驶约30分钟；具体时间地点与导游沟通。\n- 16:00：返程，页面写行程结束后送回上车地点。",
+            "metadata": {
+              "filename": "hangzhou_routes.md",
+              "section_path": "杭州路线资料/S05 2026-10-09旧截图套餐2：私家团包团一日游行程/详细行程",
+              "paragraph_index": 31,
+              "section_level": 3,
+              "updated_at": "2026-10-15T15:35:53",
+              "document_id": "hangzhou_routes",
+              "source_id": "S05",
+              "source": "data/raw/hangzhou_routes.md",
+              "source_title": "S05 2026-10-09旧截图套餐2：私家团包团一日游行程",
+              "chunk_index": 2
+            },
+            "retrieval_rank": 4,
+            "rerank_rank": 2,
+            "rerank_score": 0.7369688749313354
+          }
+        ],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1688,
+          "输出tokens": 148,
+          "总tokens": 1836,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.002
+        },
+        "record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1713,
+          "输出tokens": 167,
+          "总tokens": 1880,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.387
+        },
+        "error": "",
+        "needs_clarification": false,
+        "pending_question": null
+      },
+      "error": "",
+      "elapsed_seconds": 4.0821,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S01",
+          "S04",
+          "S05",
+          "S06"
+        ],
+        "points": [
+          "指出不同资料对票价存在30元与免费的不同说法，不能直接给出唯一确定的当前票价",
+          "指出开放时间存在07:00至17:45和07:30至17:00两种说法",
+          "指出预约要求存在提前3天与至少提前1天的不同说法",
+          "说明商品页关于2025年12月1日起免票的描述未独立核验，不能当作已确认的最新官方政策",
+          "建议出发前通过景区官方渠道确认具体票项、开放时间和预约要求"
+        ],
+        "forbidden_points": [
+          "只选择某一来源，宣称它就是唯一当前官方政策",
+          "把飞来峰景区的免票描述扩大成灵隐寺所有票项均免费",
+          "把跟团商品的费用包含或预约服务当成自由行游客的已确认权益",
+          "编造资料未提供的官方预约入口、库存或预约成功保证",
+          "把不同开放时间自行合并成一个确定营业时段"
+        ]
+      }
+    },
+    {
+      "case_id": "E23",
+      "turn_number": 1,
+      "question": "客人想报洲游假日的9人小团，带一个2岁宝宝，身高0.8米，全程抱着。宝宝要不要买儿童票？占不占9人名额？",
+      "status": "ok",
+      "result": {
+        "data": {
+          "answer": "目前无法确定2岁、身高0.8米且全程抱着的宝宝是否需要购买儿童票，也不能确认宝宝是否占用9人团名额。现有资料只说明该商品为9人小团，选购页有成人328元/份、儿童198元/份的选项，但没有提供儿童年龄、身高条件及婴幼儿规则，因此不能直接按儿童票处理，也不能套用其他产品的儿童身高规则。建议向商家确认两点：2岁、0.8米、全程抱着的宝宝是否免票或需购儿童票，以及宝宝是否计入9人团人数。",
+          "sources": [
+            "1",
+            "2"
+          ]
+        },
+        "citations": [
+          {
+            "citation_id": "1",
+            "chunk_id": "pricing_rules:paragraph-43:chunk-1",
+            "metadata": {
+              "filename": "pricing_rules.md",
+              "document_id": "pricing_rules",
+              "updated_at": "2026-10-14T21:04:07",
+              "chunk_index": 1,
+              "source_id": "S06",
+              "section_path": "报价与费用资料/S06 套餐1展示价格及费用范围/2026-10-14补充选购页的单价与条件",
+              "paragraph_index": 43,
+              "source": "data/raw/pricing_rules.md",
+              "source_title": "S06 套餐1展示价格及费用范围",
+              "section_level": 3
+            }
+          },
+          {
+            "citation_id": "2",
+            "chunk_id": "tour_products:paragraph-52:chunk-1",
+            "metadata": {
+              "source": "data/raw/tour_products.md",
+              "source_id": "S06",
+              "section_path": "旅游产品资料/S06 杭州雷峰塔、西湖、三潭印月、灵隐寺及飞来峰一日游/人数和车辆的不同表述",
+              "filename": "tour_products.md",
+              "section_level": 3,
+              "source_title": "S06 杭州雷峰塔、西湖、三潭印月、灵隐寺及飞来峰一日游",
+              "updated_at": "2026-10-15T15:38:06",
+              "paragraph_index": 52,
+              "chunk_index": 1,
+              "document_id": "tour_products"
+            }
+          }
+        ],
+        "evidence": [
+          {
+            "chunk_id": "pricing_rules:paragraph-43:chunk-1",
+            "content": "- 对应同一S06商品；本次选项为“雷峰塔＋西湖游船＋灵隐寺”、9人团、不含餐、中文服务、发车07:45。\n- 使用日期卡片显示周四10月15日、周五16日、周六17日、周日18日，均328元起；选中10月15日。截图没有显示年份，不自动补成年份或把四个日期扩展成所有日期同价。\n- 购买数量区明确成人328元/份、儿童198元/份。“份”为所选票种购买数量单位，不是整个9人团的总价。\n- 本次截图选择成人1份、儿童0份，底部选购页小计为328元，并显示“随机立减100元、原价428元”。就该组选择而言，页面展示小计已经是328元，不能再减100元报价228元。\n- 儿童年龄/身高条件及婴幼儿规则仍未提供，不能擅自把所有未成年人按198元/份计算，也不套用S05的儿童身高规则。\n- 在员工确认日期、同一选项、票种资格及单价仍适用后，可按成人份数乘328元、儿童份数乘198元解释商品价参考小计",
+            "metadata": {
+              "filename": "pricing_rules.md",
+              "document_id": "pricing_rules",
+              "updated_at": "2026-10-14T21:04:07",
+              "chunk_index": 1,
+              "source_id": "S06",
+              "section_path": "报价与费用资料/S06 套餐1展示价格及费用范围/2026-10-14补充选购页的单价与条件",
+              "paragraph_index": 43,
+              "source": "data/raw/pricing_rules.md",
+              "source_title": "S06 套餐1展示价格及费用范围",
+              "section_level": 3
+            },
+            "retrieval_rank": 1,
+            "rerank_rank": 1,
+            "rerank_score": 0.556821346282959
+          },
+          {
+            "chunk_id": "tour_products:paragraph-52:chunk-1",
+            "content": "- 商品标题：9人小团。\n- 套餐卡片：10人以下精致小团。\n- 行程亮点：10人内小团。\n- 本次选购页明确显示所选项为“9人团”；这是当前选项描述，不能据旧“10人以下”解释为恰好10人也可参加。\n- 车辆卡片：中巴车（9～20人），一排4座。\n- 车辆容量不等同于实际成团人数；能否恰好10人、实际人数上限需商家确认。",
+            "metadata": {
+              "source": "data/raw/tour_products.md",
+              "source_id": "S06",
+              "section_path": "旅游产品资料/S06 杭州雷峰塔、西湖、三潭印月、灵隐寺及飞来峰一日游/人数和车辆的不同表述",
+              "filename": "tour_products.md",
+              "section_level": 3,
+              "source_title": "S06 杭州雷峰塔、西湖、三潭印月、灵隐寺及飞来峰一日游",
+              "updated_at": "2026-10-15T15:38:06",
+              "paragraph_index": 52,
+              "chunk_index": 1,
+              "document_id": "tour_products"
+            },
+            "retrieval_rank": 5,
+            "rerank_rank": 2,
+            "rerank_score": 0.23057307302951813
+          }
+        ],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1691,
+          "输出tokens": 145,
+          "总tokens": 1836,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 0.943
+        },
+        "record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1268,
+          "输出tokens": 137,
+          "总tokens": 1405,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.189
+        },
+        "error": "",
+        "needs_clarification": false,
+        "pending_question": null
+      },
+      "error": "",
+      "elapsed_seconds": 3.2779,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S06"
+        ],
+        "points": [
+          "明确说明现有S06资料没有提供婴幼儿购票资格及是否计入团人数的规则，无法确定这两个问题",
+          "说明有儿童198元每份的价格记录，不等于已确认2岁、0.8米宝宝适用该票种",
+          "建议向商家确认婴幼儿购票、座位及团人数计入条件"
+        ],
+        "forbidden_points": [
+          "直接断言宝宝必须购买198元儿童票或完全不用买票",
+          "套用S05或S07的儿童身高规则",
+          "因为全程抱着，就认定不占座、不占团人数或免费",
+          "编造宝宝一定计入或一定不计入9人名额的规则",
+          "把资料没有说明解释成商家不接待婴幼儿"
+        ]
+      }
+    },
+    {
+      "case_id": "E24",
+      "turn_number": 1,
+      "question": "两位客人要参加艾客旅游千岛湖当地出发的套餐，想提前一晚住在淳安中心湖区旅游码头附近。艾客那边能推荐或者代订附近的酒店吗？大概多少钱一晚？",
+      "status": "ok",
+      "result": {
+        "data": {
+          "answer": "目前手头的千岛湖当地出发套餐资料只涉及行程、集合地点和费用包含，没有艾客旅游可推荐或代订码头附近酒店的信息，也没有酒店价格，所以暂时无法确认能否代订，也不能给出每晚大概多少钱。建议先向艾客旅游确认是否有合作酒店或代订服务；如果客人需要，我们也可以先按“淳安中心湖区旅游码头附近、提前一晚入住”帮客人另行查找可订酒店，再报实际房型和价格。",
+          "sources": []
+        },
+        "citations": [],
+        "evidence": [
+          {
+            "chunk_id": "hangzhou_routes:paragraph-66:chunk-1",
+            "content": "- 09:50：淳安县千岛湖中心湖区旅游码头集合。\n- 10:00：乘船进入千岛湖中心湖区，活动约30分钟。\n- 10:20：月光岛（五龙岛），活动约2小时。\n- 12:40：千岛湖游船，约30分钟，月光岛游览后继续游览中心湖区。\n- 13:20：梅峰岛，活动约1小时20分钟，登岛及梅峰观景台观景。\n- 14:40：千岛湖中心湖区，约40分钟，环湖游览并乘船返回码头。\n- 15:20：送回中心湖区旅游码头，靠岸后就地散团。\n- 部分参考时段可能重叠，不把全部活动时长简单相加作为保证时长。\n- 实际行程可因天气、路况调整。\n- 此套餐没有从杭州出发的往返巴士时间表，不能据其他图文内容承诺杭州接送。",
+            "metadata": {
+              "source_title": "S07 2026-10-09旧截图套餐1：千岛湖当地出发",
+              "filename": "hangzhou_routes.md",
+              "document_id": "hangzhou_routes",
+              "paragraph_index": 66,
+              "section_path": "千岛湖路线资料/S07 2026-10-09旧截图套餐1：千岛湖当地出发",
+              "source": "data/raw/hangzhou_routes.md",
+              "chunk_index": 1,
+              "section_level": 2,
+              "updated_at": "2026-10-15T15:35:53",
+              "source_id": "S07"
+            },
+            "retrieval_rank": 5,
+            "rerank_rank": 1,
+            "rerank_score": 0.9732407331466675
+          },
+          {
+            "chunk_id": "tour_products:paragraph-70:chunk-1",
+            "content": "- 当地出发、拼团；司机＋导游服务，09:50在淳安县千岛湖中心湖区旅游码头集合。\n- 卡片98元起；标称7个景点/游玩地、约5小时30分，摘要只列千岛湖中心湖区、梅峰岛、渔乐岛、龙山岛四个名称；不自行补出另外3个。\n- 卡片展示大巴车（30人以上）、一排4座、1个集合地点。实际行程当地码头集合，不据车图承诺杭州巴士接送。\n- 本次摘要不再列月光岛，虽商品标题仍有月光岛，不能保证本次套餐1含月光岛；具体登岛及顺序需按所选日期确认。\n- 选中10月15日时成人228元/份、儿童168元/份；旧儿童免票/不用网上购票图文与本次可选儿童份数的适用关系待核对。儿童资格、所含票项不能仅凭单价推断。\n- 本次只显示09:50集合节点，之后逐时行程未展开；旧月光岛路线时间表仅作历史参考，不当作本次完整路线。",
+            "metadata": {
+              "document_id": "tour_products",
+              "section_level": 3,
+              "filename": "tour_products.md",
+              "source_id": "S07",
+              "updated_at": "2026-10-15T15:38:06",
+              "source_title": "S07 千岛湖中心湖区、梅峰岛与月光岛一日游",
+              "chunk_index": 1,
+              "source": "data/raw/tour_products.md",
+              "paragraph_index": 70,
+              "section_path": "旅游产品资料/S07 千岛湖中心湖区、梅峰岛与月光岛一日游/2026-10-14补充：套餐1千岛湖出发"
+            },
+            "retrieval_rank": 2,
+            "rerank_rank": 2,
+            "rerank_score": 0.9694401025772095
+          },
+          {
+            "chunk_id": "pricing_rules:paragraph-65:chunk-1",
+            "content": "- 图文称包含行程中列出的景点大门票、一票通、游船票、导游、车费。\n- 图文相关信息列：目的地淳安（千岛湖），出发地杭州或淳安，中心湖区门票、游船船票及导游服务。\n- 该图文表同时称旅游巴士往返及市区免费接早，但当地套餐1实际为码头集合；交通包含范围应按所选套餐确认。\n- 图文费用组成：中心湖门票130元＋游船票65元＋旅游巴士138元＋导游20元＝353元／人；图文宣传优惠后328元。\n- 353元的加总可按已给分项计算，但328元宣传价与套餐卡片198元起、日期卡片268元起的适用关系未说明，不把它们合成一个统一报价。\n- 不含餐费、岛上娱乐、索道、游船升级、手划船、状元桥等；页面称自愿选择。\n- 中心湖船默认一楼标准舱，二楼升级费用自理，升级金额未提供。",
+            "metadata": {
+              "source_id": "S07",
+              "section_path": "报价与费用资料/S07 2026-10-09旧图文中心湖＋游船：报价及费用",
+              "document_id": "pricing_rules",
+              "filename": "pricing_rules.md",
+              "updated_at": "2026-10-14T21:04:07",
+              "section_level": 2,
+              "source_title": "S07 2026-10-09旧图文中心湖＋游船：报价及费用",
+              "chunk_index": 1,
+              "paragraph_index": 65,
+              "source": "data/raw/pricing_rules.md"
+            },
+            "retrieval_rank": 1,
+            "rerank_rank": 1,
+            "rerank_score": 0.4643549919128418
+          },
+          {
+            "chunk_id": "tour_products:paragraph-76:chunk-1",
+            "content": "- 名称：千岛湖出发。\n- 出发／集合地：淳安县千岛湖中心湖区旅游码头，09:50集合。\n- 卡片起价：98元起。\n- 团型：拼团；服务卡片写司机＋导游。\n- 标称游玩时间：约5小时30分。\n- 标称景点／游玩地：5个；摘要列千岛湖中心湖区、月光岛（五龙岛）、千岛湖游船、梅峰岛四个名称，具体计数未说明。\n- 卡片车辆：大巴车（30人以上），一排4座，1个集合地点；但详细行程是当地码头集合、游船游览，费用包含只列门票／船票和中文导游，杭州往返车程未包含在该行程中。\n- 15:20回到中心湖区旅游码头，就地散团。\n- 不把图文页的杭州市区接早或杭州往返巴士承诺直接应用于本套餐。",
+            "metadata": {
+              "filename": "tour_products.md",
+              "section_level": 3,
+              "paragraph_index": 76,
+              "source_id": "S07",
+              "section_path": "旅游产品资料/S07 千岛湖中心湖区、梅峰岛与月光岛一日游/2026-10-09旧截图套餐1：千岛湖出发",
+              "chunk_index": 1,
+              "source_title": "S07 千岛湖中心湖区、梅峰岛与月光岛一日游",
+              "updated_at": "2026-10-15T15:38:06",
+              "document_id": "tour_products",
+              "source": "data/raw/tour_products.md"
+            },
+            "retrieval_rank": 2,
+            "rerank_rank": 2,
+            "rerank_score": 0.36511704325675964
+          }
+        ],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1694,
+          "输出tokens": 137,
+          "总tokens": 1831,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 0.98
+        },
+        "record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1929,
+          "输出tokens": 112,
+          "总tokens": 2041,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.544
+        },
+        "error": "",
+        "needs_clarification": false,
+        "pending_question": null
+      },
+      "error": "",
+      "elapsed_seconds": 3.7297,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S07"
+        ],
+        "points": [
+          "说明现有资料没有艾客旅游提供淳安码头附近酒店推荐、代订服务和房价的信息，无法据此确认",
+          "建议联系商家核实是否提供住宿推荐或代订，并另行查询实际入住日期的酒店价格",
+          "如补充集合地点，应正确说明为淳安县千岛湖中心湖区旅游码头，不把集合地点当成住宿服务依据"
+        ],
+        "forbidden_points": [
+          "编造酒店名称、房价、房源或代订承诺",
+          "把版面英文COMFORT HOTEL当成具体酒店或住宿产品",
+          "用杭州湖滨、武林广场等住宿区域建议回答淳安码头附近住宿",
+          "把资料未提供住宿服务说成商家确定不提供或不能代订",
+          "因为参加当地出发套餐，就声称套餐已经包含住宿"
+        ]
+      }
+    },
+    {
+      "case_id": "E25",
+      "turn_number": 1,
+      "question": "客人想住便宜一点，第二天主要去宋城看《宋城千古情》，平时坐地铁出行。住杭州哪一片比较合适？",
+      "status": "ok",
+      "result": {
+        "data": {
+          "answer": "可以优先考虑转塘／宋城周边。这一带住宿相对便宜，也能利用地铁6号线，适合第二天去宋城看《宋城千古情》。如果客人更想住市中心、方便逛夜市和商圈，西湖文化广场／武林广场一带价格通常比湖滨更友好，但去宋城不如住转塘方便。具体酒店名称、房价和房源情况需要再按入住日期查。",
+          "sources": [
+            "1"
+          ]
+        },
+        "citations": [
+          {
+            "citation_id": "1",
+            "chunk_id": "hangzhou_hotel_guide:paragraph-3:chunk-1",
+            "metadata": {
+              "paragraph_index": 3,
+              "updated_at": "2026-10-09T22:51:54",
+              "section_path": "s04｜住宿建议",
+              "document_id": "hangzhou_hotel_guide",
+              "filename": "hangzhou_hotel_guide.md",
+              "section_level": 2,
+              "source_title": "s04｜住宿建议",
+              "chunk_index": 1,
+              "source_id": "S04",
+              "source": "data/raw/hangzhou_hotel_guide.md"
+            }
+          }
+        ],
+        "evidence": [
+          {
+            "chunk_id": "hangzhou_hotel_guide:paragraph-3:chunk-1",
+            "content": "- **湖滨／龙翔桥附近**：分享者认为去主要景点和商圈方便，餐饮购物选择多，但住宿价格偏高。\n- **河坊街／南宋御街周边**：适合想逛老城、看夜景和体验夜生活的人；分享者称周边餐饮较多、地铁方便。\n- **西湖文化广场／武林广场附近**：分享者认为价格比湖滨更友好，去武林夜市和运河景区方便。\n- **转塘／宋城周边**：分享者认为住宿相对便宜，可利用地铁6号线，适合计划游览宋城及之江文化中心的人。",
+            "metadata": {
+              "paragraph_index": 3,
+              "updated_at": "2026-10-09T22:51:54",
+              "section_path": "s04｜住宿建议",
+              "document_id": "hangzhou_hotel_guide",
+              "filename": "hangzhou_hotel_guide.md",
+              "section_level": 2,
+              "source_title": "s04｜住宿建议",
+              "chunk_index": 1,
+              "source_id": "S04",
+              "source": "data/raw/hangzhou_hotel_guide.md"
+            },
+            "retrieval_rank": 1,
+            "rerank_rank": 1,
+            "rerank_score": 0.974773108959198
+          },
+          {
+            "chunk_id": "hangzhou_hotel_guide:paragraph-6:chunk-1",
+            "content": "- 来源编号：S05\n- 资料类型：真实商品页面中的商家建议，未独立核实。\n- 页面建议：酒店预订在杭州市中心，列举武林广场、延安路、吴山广场。\n- 理由：页面称附近酒店较多、出行方便，夜市、步行街、商业街在附近。\n- 范围：仅是住宿区域建议，不是具体酒店推荐，也不是产品费用包含项。\n- 具体酒店名称、星级、房价、早餐、入住日期、房源情况：资料未提供。",
+            "metadata": {
+              "paragraph_index": 6,
+              "section_level": 2,
+              "updated_at": "2026-10-09T22:51:54",
+              "source_id": "S05",
+              "source_title": "S05 商家FAQ中的住宿建议",
+              "section_path": "杭州住宿区域资料/S05 商家FAQ中的住宿建议",
+              "source": "data/raw/hangzhou_hotel_guide.md",
+              "document_id": "hangzhou_hotel_guide",
+              "filename": "hangzhou_hotel_guide.md",
+              "chunk_index": 1
+            },
+            "retrieval_rank": 2,
+            "rerank_rank": 2,
+            "rerank_score": 0.508002519607544
+          },
+          {
+            "chunk_id": "hangzhou_attraction:paragraph-14:chunk-2",
+            "content": "汇总页写10:00–21:00，详情页写10:00至演出结束；截图建议提前1天选好《宋城千古情》的场次。\n- 杭州植物园：10元；截图称全天开放、无需预约。\n- 九溪烟树、河坊街：截图均称免费、全天开放、无需预约。\n- 法喜寺：10元，6:30–18:00；截图称无需预约。\n- 虎跑公园：15元，7:30–17:00。\n- 龙井村：截图称免费、全天开放。",
+            "metadata": {
+              "paragraph_index": 14,
+              "filename": "hangzhou_attraction.md",
+              "source_id": "S04",
+              "updated_at": "2026-10-14T21:04:07",
+              "source": "data/raw/hangzhou_attraction.md",
+              "section_level": 2,
+              "chunk_index": 2,
+              "source_title": "s04｜景点内容与体验",
+              "document_id": "hangzhou_attraction",
+              "section_path": "s04｜景点内容与体验"
+            },
+            "retrieval_rank": 3,
+            "rerank_rank": 2,
+            "rerank_score": 0.26114246249198914
+          }
+        ],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1681,
+          "输出tokens": 118,
+          "总tokens": 1799,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.166
+        },
+        "record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1227,
+          "输出tokens": 98,
+          "总tokens": 1325,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.078
+        },
+        "error": "",
+        "needs_clarification": false,
+        "pending_question": null
+      },
+      "error": "",
+      "elapsed_seconds": 3.5022,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S04"
+        ],
+        "points": [
+          "优先推荐转塘或宋城周边",
+          "推荐理由至少对应相对便宜、方便游览宋城、可利用地铁6号线中的两项",
+          "说明这是分享者的住宿区域建议，不是已核实的具体酒店或房价"
+        ],
+        "forbidden_points": [
+          "忽略低预算和宋城需求，直接把资料中价格偏高的湖滨或龙翔桥作为最匹配的首选",
+          "编造具体酒店、房价、房源或保证最低价",
+          "把相对便宜说成所有酒店、所有日期都一定便宜",
+          "承诺未经确认的演出场次、余票或酒店到景区的具体交通耗时"
+        ]
+      }
+    },
+    {
+      "case_id": "E26",
+      "turn_number": 1,
+      "question": "客人说杭州菜太清淡，晚上想找个重口味的地方吃宵夜，最好有牛蛙。有推荐吗？",
+      "status": "ok",
+      "result": {
+        "data": {
+          "answer": "可以推荐大塘集美蛙鱼头（嘉里中心店）。这家店有牛蛙，也有红油锅底，适合喜欢重口味、想吃宵夜的人；资料里还提到牛蛙个头大且嫩，自助区有冰豆浆。",
+          "sources": [
+            "1"
+          ]
+        },
+        "citations": [
+          {
+            "citation_id": "1",
+            "chunk_id": "food_guide:paragraph-17:chunk-1",
+            "metadata": {
+              "source_title": "s03｜杭州美食推荐",
+              "source": "data/raw/food_guide.md",
+              "chunk_index": 1,
+              "section_path": "s03｜杭州美食推荐",
+              "document_id": "food_guide",
+              "filename": "food_guide.md",
+              "section_level": 2,
+              "paragraph_index": 17,
+              "updated_at": "2026-09-28T15:43:38",
+              "source_id": "S03"
+            }
+          }
+        ],
+        "evidence": [
+          {
+            "chunk_id": "food_guide:paragraph-17:chunk-1",
+            "content": "- **大塘集美蛙鱼头（嘉里中心店）**：作者推荐牛蛙、红油锅底及自助区冰豆浆，评价牛蛙个头大且嫩，适合喜欢重口味宵夜的人。",
+            "metadata": {
+              "source_title": "s03｜杭州美食推荐",
+              "source": "data/raw/food_guide.md",
+              "chunk_index": 1,
+              "section_path": "s03｜杭州美食推荐",
+              "document_id": "food_guide",
+              "filename": "food_guide.md",
+              "section_level": 2,
+              "paragraph_index": 17,
+              "updated_at": "2026-09-28T15:43:38",
+              "source_id": "S03"
+            },
+            "retrieval_rank": 1,
+            "rerank_rank": 1,
+            "rerank_score": 0.9903663396835327
+          },
+          {
+            "chunk_id": "food_guide:paragraph-3:chunk-1",
+            "content": "- 杭鸽餐厅：博主推荐脆皮乳鸽、东坡肉和龙井虾仁，评价乳鸽外皮香脆、肉质多汁。截图称餐厅在龙翔桥地铁站附近，营业时间为11:00–22:00。",
+            "metadata": {
+              "section_path": "s01 推荐的餐厅",
+              "source_id": "S01",
+              "filename": "food_guide.md",
+              "document_id": "food_guide",
+              "paragraph_index": 3,
+              "source": "data/raw/food_guide.md",
+              "chunk_index": 1,
+              "section_level": 2,
+              "updated_at": "2026-09-28T15:43:38",
+              "source_title": "s01 推荐的餐厅"
+            },
+            "retrieval_rank": 5,
+            "rerank_rank": 2,
+            "rerank_score": 0.3996944725513458
+          },
+          {
+            "chunk_id": "food_guide:paragraph-18:chunk-1",
+            "content": "- **鸟鸟好吃店·成都土砂锅串串（杭州总店）**：原文称店在奥体附近。作者推荐泡椒牛肉、铁板鱿鱼，并提到可先喝免费土鸡汤；评价砂锅保温、店内有烟火气，适合边吃串串边吹晚风。",
+            "metadata": {
+              "filename": "food_guide.md",
+              "source_title": "s03｜杭州美食推荐",
+              "updated_at": "2026-09-28T15:43:38",
+              "section_path": "s03｜杭州美食推荐",
+              "source_id": "S03",
+              "paragraph_index": 18,
+              "section_level": 2,
+              "chunk_index": 1,
+              "source": "data/raw/food_guide.md",
+              "document_id": "food_guide"
+            },
+            "retrieval_rank": 4,
+            "rerank_rank": 2,
+            "rerank_score": 0.10447732359170914
+          }
+        ],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1677,
+          "输出tokens": 90,
+          "总tokens": 1767,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 0.977
+        },
+        "record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1009,
+          "输出tokens": 67,
+          "总tokens": 1076,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.058
+        },
+        "error": "",
+        "needs_clarification": false,
+        "pending_question": null
+      },
+      "error": "",
+      "elapsed_seconds": 3.2354,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S03"
+        ],
+        "points": [
+          "推荐大塘集美蛙鱼头（嘉里中心店）",
+          "说明牛蛙、红油锅底与重口味宵夜需求相匹配",
+          "说明相关口味评价来自原文作者的个人体验，不是旅行社已经核实的保证",
+          "如补充营业时间或是否适合当晚到店，应说明现有资料未提供，需另行确认"
+        ],
+        "forbidden_points": [
+          "编造营业时间、具体门牌地址、人均价格或订座情况",
+          "声称当晚一定营业、有座或无需排队",
+          "把作者个人口味评价说成所有客人都会满意的保证",
+          "为其他餐厅编造资料未记载的牛蛙菜品"
+        ]
+      }
+    },
+    {
+      "case_id": "E27",
+      "turn_number": 1,
+      "question": "客人想去杭州博物馆，问几点开门几点关门？要不要预约？",
+      "status": "ok",
+      "result": {
+        "data": {
+          "answer": "杭州博物馆的开放时间资料里有两个版本：一处写9:30–17:30，另一处写9:00–16:30，暂时不能确定哪个准确。预约方面，资料提到需要提前预约，但两处分别写“提前预约”和“提前1天预约”，具体以哪个为准也需要再核实。建议出发前向馆方确认当天开放时间和预约要求。",
+          "sources": [
+            "1",
+            "3"
+          ]
+        },
+        "citations": [
+          {
+            "citation_id": "1",
+            "chunk_id": "hangzhou_attraction:paragraph-10:chunk-1",
+            "metadata": {
+              "paragraph_index": 10,
+              "chunk_index": 1,
+              "document_id": "hangzhou_attraction",
+              "source": "data/raw/hangzhou_attraction.md",
+              "updated_at": "2026-10-14T21:04:07",
+              "source_id": "S01",
+              "section_level": 2,
+              "filename": "hangzhou_attraction.md",
+              "section_path": "s01｜景点内容",
+              "source_title": "s01｜景点内容"
+            }
+          },
+          {
+            "citation_id": "3",
+            "chunk_id": "hangzhou_attraction:paragraph-14:chunk-1",
+            "metadata": {
+              "source_id": "S04",
+              "document_id": "hangzhou_attraction",
+              "section_level": 2,
+              "chunk_index": 1,
+              "source": "data/raw/hangzhou_attraction.md",
+              "paragraph_index": 14,
+              "source_title": "s04｜景点内容与体验",
+              "filename": "hangzhou_attraction.md",
+              "updated_at": "2026-10-14T21:04:07",
+              "section_path": "s04｜景点内容与体验"
+            }
+          }
+        ],
+        "evidence": [
+          {
+            "chunk_id": "hangzhou_attraction:paragraph-10:chunk-1",
+            "content": "- 杭州博物馆：免费，9:30–17:30；截图提醒提前预约。",
+            "metadata": {
+              "paragraph_index": 10,
+              "chunk_index": 1,
+              "document_id": "hangzhou_attraction",
+              "source": "data/raw/hangzhou_attraction.md",
+              "updated_at": "2026-10-14T21:04:07",
+              "source_id": "S01",
+              "section_level": 2,
+              "filename": "hangzhou_attraction.md",
+              "section_path": "s01｜景点内容",
+              "source_title": "s01｜景点内容"
+            },
+            "retrieval_rank": 1,
+            "rerank_rank": 1,
+            "rerank_score": 0.9054896235466003
+          },
+          {
+            "chunk_id": "hangzhou_attraction:paragraph-14:chunk-2",
+            "content": "汇总页写10:00–21:00，详情页写10:00至演出结束；截图建议提前1天选好《宋城千古情》的场次。\n- 杭州植物园：10元；截图称全天开放、无需预约。\n- 九溪烟树、河坊街：截图均称免费、全天开放、无需预约。\n- 法喜寺：10元，6:30–18:00；截图称无需预约。\n- 虎跑公园：15元，7:30–17:00。\n- 龙井村：截图称免费、全天开放。",
+            "metadata": {
+              "document_id": "hangzhou_attraction",
+              "source_title": "s04｜景点内容与体验",
+              "source": "data/raw/hangzhou_attraction.md",
+              "filename": "hangzhou_attraction.md",
+              "updated_at": "2026-10-14T21:04:07",
+              "section_path": "s04｜景点内容与体验",
+              "source_id": "S04",
+              "section_level": 2,
+              "chunk_index": 2,
+              "paragraph_index": 14
+            },
+            "retrieval_rank": 4,
+            "rerank_rank": 2,
+            "rerank_score": 0.1264611780643463
+          },
+          {
+            "chunk_id": "hangzhou_attraction:paragraph-14:chunk-1",
+            "content": "- 西湖：免费、全天开放，无需预约。\n- 灵隐寺：汇总页的票价栏写作“00r”，详情页称免费，两处标注无法统一；开放时间7:30–17:00。汇总页写提前3天预约“灵隐飞来峰”，未注明平台。\n- 岳王庙：25元，8:00–17:00，截图称无需预约。\n- 六和塔：20元，8:00–17:30；详情页称登塔另收10元。\n- 雷峰塔：40元，8:00–20:30；截图写提前1天预约“雷峰塔”，未注明平台。\n- 杭州博物馆：免费，9:00–16:30；截图写提前1天预约。\n- 三潭印月：55元，8:00–16:30；截图称无需预约，从码头乘船。\n- 京杭大运河博物馆：免费，9:00–16:30；截图写提前1天预约。\n- 宋城：300元起。汇总页写10:00–21:00，详情页写10:00至演出结束；截图建议提前1天选好《宋城千古情》的场次。\n- 杭州植物园：10元；截图称全天开放、无需预约。\n-",
+            "metadata": {
+              "source_id": "S04",
+              "document_id": "hangzhou_attraction",
+              "section_level": 2,
+              "chunk_index": 1,
+              "source": "data/raw/hangzhou_attraction.md",
+              "paragraph_index": 14,
+              "source_title": "s04｜景点内容与体验",
+              "filename": "hangzhou_attraction.md",
+              "updated_at": "2026-10-14T21:04:07",
+              "section_path": "s04｜景点内容与体验"
+            },
+            "retrieval_rank": 2,
+            "rerank_rank": 2,
+            "rerank_score": 0.9398029446601868
+          }
+        ],
+        "rewrite_record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1665,
+          "输出tokens": 69,
+          "总tokens": 1734,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 0.743
+        },
+        "record": {
+          "模型名": "deepseek-flash",
+          "状态码": 200,
+          "输入tokens": 1252,
+          "输出tokens": 96,
+          "总tokens": 1348,
+          "结束原因": "stop",
+          "重试次数": 0,
+          "请求耗时秒": 1.062
+        },
+        "error": "",
+        "needs_clarification": false,
+        "pending_question": null
+      },
+      "error": "",
+      "elapsed_seconds": 2.9583,
+      "expected": {
+        "needs_clarification": false,
+        "source_ids": [
+          "S01",
+          "S04"
+        ],
+        "points": [
+          "指出S01记录为09:30至17:30，S04记录为09:00至16:30，开放时间存在不同说法",
+          "说明两份资料都提示预约，其中S04写提前1天预约",
+          "说明这些是尚未核实的截图记录，不能给出唯一确定的当前开放时间",
+          "建议出发前通过官方渠道确认开放时间及预约方式"
+        ],
+        "forbidden_points": [
+          "只给其中一个开放时间并当作确定的当前安排",
+          "把两种时间自行合并成09:00至17:30等确定营业时段",
+          "因为资料写免费就认为不需要预约",
+          "编造当前预约余量、闭馆日、预约入口或入馆保证"
+        ]
+      }
+    }
+  ]
+}
