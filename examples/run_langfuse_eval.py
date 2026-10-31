@@ -110,11 +110,7 @@ def evaluate_source_coverage(*,output,expected_output,**kwargs):
 
     #没有要求引用来源的题目，不评分
     if required==0:
-        return{
-            "name": "source_coverage",
-            "value": None,
-            "comment": "本题没有预期来源要求",
-        }
+        return []
 
     return {
         "name": "source_coverage",
@@ -156,11 +152,7 @@ def evaluate_evidence_coverage(*,output,expected_output,**kwargs):
         matched+=len(expected_ids&actual_ids)
 
     if required==0:
-        return{
-            "name": "evidence_coverage",
-            "value": None,
-            "comment": "本题没有需要检索的预期来源",
-        }
+        return []
 
     return {
         "name": "evidence_coverage",
@@ -242,8 +234,7 @@ if __name__ == "__main__":
         print("完整中文结果已保存：", result_path)
         if len(experiment.item_results) != len(selected_items):
             print("注意：部分案例执行失败，记录数量不足，请查看日志；不能按完整评测统计。")
-        expected_score_count = 3
-        if any(len(row.evaluations) != expected_score_count for row in experiment.item_results):
+        if any(not row.evaluations for row in experiment.item_results):
             print("注意：部分评分失败，不能把缺失评分当作0分或满分。")
 
         print(experiment.format())

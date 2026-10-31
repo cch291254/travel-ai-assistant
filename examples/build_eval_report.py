@@ -6,6 +6,7 @@
     python -m examples.build_eval_report --run 运行文件路径 --offline
 
 人工分的备注以“检索：”“重排：”“生成：”“工具：”开头时，报告会按这四类统计问题归因。
+每次还会生成 -review.md 问题清单，按问题类型列出每题的回答、失败原文和追踪链接。
 """
 import argparse
 import json
@@ -22,6 +23,17 @@ HUMAN_COVERAGE = "human_answer_coverage"
 HUMAN_GROUNDEDNESS = "human_groundedness"
 ATTRIBUTIONS = ("检索", "重排", "生成", "工具")
 SCORE_FIELDS = "details"
+TRACE_URL = "https://jp.cloud.langfuse.com/project/cmvpbwbvk000mad0emaw9f3ja/traces/"
+
+# 问题类型按定位顺序排列：先看有没有跑完，再看检索，最后看回答。
+ISSUE_ACTIONS = {
+    "回答格式": "看失败原文哪里不合法",
+    "工具循环": "打开追踪，看模型在重复做什么",
+    "执行错误": "看错误信息",
+    "证据未命中": "看搜索词和资料切片",
+    "引用不全": "资料已找到，看回答为什么没用上",
+    "回答质量": "对照要点和回答，看人工备注",
+}
 
 # 沿用第二、三轮评审的互斥题型分组，新旧报告可以按题型对照。
 CASE_GROUPS = {
@@ -92,6 +104,11 @@ def turn_rows(case):
     return rows
 
 
+def turn_errors(case):
+    turns = (case.get("output") or {}).get("turns") or []
+    return [(turn.get("result") or {}).get("error") for turn in turns if (turn.get("result") or {}).get("error")]
+
+
 def rule_score(case, name):
     return next((score["value"] for score in case.get("scores") or [] if score["name"] == name), None)
 
@@ -115,6 +132,7 @@ def summarize_case(case, langfuse_data=None):
         "human_groundedness": groundedness.get("value"),
         "comments": [text for text in (coverage.get("comment"), groundedness.get("comment")) if text],
         "tokens": langfuse_data.get("tokens"),
+        "errors": turn_errors(case),
     }
 
 
@@ -128,6 +146,31 @@ def is_attention_case(summary):
         summary["human_groundedness"] in (None, 1, 1.0),
     )
     return not all(checks)
+
+
+def issue_type(summary):
+    """只给一个主要类型：没跑完时，后面的检索和回答指标都不可信。"""
+    errors = "".join(summary["errors"])
+    if "格式" in errors:
+        return "回答格式"
+    if "上限" in errors:
+        return "工具循环"
+    if errors or summary["execution_complete"] != 1:
+        return "执行错误"
+    if summary["evidence_hits"] != len(summary["evidence_rows"]):
+        return "证据未命中"
+    if summary["source_coverage"] not in (None, 1, 1.0):
+        return "引用不全"
+    return "回答质量"
+
+
+def issue_rows(summaries):
+    rows = []
+    for name, action in ISSUE_ACTIONS.items():
+        ids = [summary["case_id"] for summary in summaries if is_attention_case(summary) and issue_type(summary) == name]
+        if ids:
+            rows.append((name, len(ids), "、".join(ids), action))
+    return sorted(rows, key=lambda row: -row[1])
 
 
 def attribution_counts(summaries):
@@ -211,9 +254,13 @@ def build_report(run, langfuse_scores=None):
         "",
         *table(["题型", "题数", "证据完整命中", "要点覆盖", "幻觉率"], group_rows(summaries)),
         "",
-        "## 问题归因",
+        "## 问题分类",
         "",
     ]
+
+    issues = issue_rows(summaries)
+    lines += table(["问题类型", "题数", "题号", "下一步"], issues) if issues else ["没有未达标的题。"]
+    lines += ["", "## 问题归因", ""]
 
     counts = attribution_counts(summaries)
     if counts:
@@ -225,9 +272,9 @@ def build_report(run, langfuse_scores=None):
     lines += ["", f"## 需要复盘的题（{len(attention)} 题）", ""]
     if attention:
         lines += table(
-            ["题号", "题型", "证据", "引用", "要点", "依据", "备注"],
+            ["题号", "问题类型", "题型", "证据", "引用", "要点", "依据", "备注"],
             [(
-                summary["case_id"], summary["group"],
+                summary["case_id"], issue_type(summary), summary["group"],
                 f"{summary['evidence_hits']}/{len(summary['evidence_rows'])}" if summary["evidence_rows"] else "不适用",
                 score_text(summary["source_coverage"]) if summary["source_coverage"] is not None else "不适用",
                 score_text(summary["human_coverage"]), score_text(summary["human_groundedness"]),
@@ -249,6 +296,44 @@ def build_report(run, langfuse_scores=None):
         "- 本报告与 historical-rag-round-* 的旧人工分口径不同，不能直接比较平均值。",
         "",
     ]
+    return "\n".join(lines)
+
+
+def review_case(case, summary):
+    lines = [f"### {case['case_id']}（{summary['group']}）", "", f"- 追踪：{TRACE_URL}{case['trace_id']}", ""]
+    turns = (case.get("output") or {}).get("turns") or []
+    for index, expected in enumerate(case["expected_output"]["turns"]):
+        turn = turns[index] if index < len(turns) else {}
+        result = turn.get("result") or {}
+        found = sorted(evidence_source_ids(result))
+        lines += [
+            f"**第 {index + 1} 轮**：{turn.get('question') or '未执行'}",
+            "",
+            f"- 预期来源：{'、'.join(expected.get('source_ids') or []) or '无'}；实际证据：{'、'.join(found) or '无'}",
+            f"- 要点：{'；'.join(expected.get('points') or []) or '无'}",
+            f"- 回答：{result.get('answer') or '无'}",
+        ]
+        if result.get("error"):
+            lines.append(f"- 错误：{result['error']}")
+        if result.get("raw_answer"):
+            lines.append(f"- 失败原文：`{result['raw_answer']}`")
+        lines.append("")
+    return lines
+
+
+def build_review(run, langfuse_scores=None):
+    """按问题类型整理需要复盘的题，所有定位信息放在一个文件里，不用逐题打开网页。"""
+    langfuse_scores = langfuse_scores or {}
+    cases = {case["case_id"]: case for case in run["results"]}
+    summaries = [summarize_case(case, langfuse_scores.get(case["trace_id"])) for case in run["results"]]
+    attention = [summary for summary in summaries if is_attention_case(summary)]
+    lines = ["# 问题清单", "", f"运行：{run.get('run_name', '未记录')}，共 {len(attention)} 题需要复盘。", ""]
+
+    for name, count, _, action in issue_rows(summaries):
+        lines += [f"## {name}（{count} 题）", "", f"下一步：{action}", ""]
+        for summary in attention:
+            if issue_type(summary) == name:
+                lines += review_case(cases[summary["case_id"]], summary)
     return "\n".join(lines)
 
 
@@ -303,7 +388,10 @@ def main():
 
     out_path = args.out or run_path.with_name(f"{run_path.stem}-report.md")
     out_path.write_text(build_report(run, langfuse_scores), encoding="utf-8")
+    review_path = out_path.with_name(f"{run_path.stem}-review.md")
+    review_path.write_text(build_review(run, langfuse_scores), encoding="utf-8")
     print("报告已生成：", out_path)
+    print("问题清单已生成：", review_path)
 
 
 if __name__ == "__main__":

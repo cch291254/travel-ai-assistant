@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 from app.rag_context import build_context,extract_citation_ids,build_web_evidence
 import os
 from app.rag_answer import RAG_SYSTEM_PROMPT
-from app.structured_output import parse_structured_answer
 import logging
 from time import perf_counter
 from app.tracing import get_tracing_client
@@ -155,8 +154,22 @@ def call_tool_model(messages, *, json_mode=False):
 
     return choice["message"]
 
+#当前的回答合法才进入下一步,且只取回答
+def read_answer_text(raw_text):
+    """只取第一个JSON对象的answer；引用编号从回答文字提取，不依赖sources。"""
+    try:
+        data, _ = json.JSONDecoder(strict=False).raw_decode(raw_text.strip())
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(data, dict):
+        return None
+    answer = data.get("answer")
+    if not isinstance(answer, str) or not answer.strip():
+        return None
+    return answer
 
-def run_tool_chat(question,history=None,max_rounds=4,max_tool_calls=8):
+
+def run_tool_chat(question,history=None,max_rounds=6,max_tool_calls=12):
     tool_call_count=0
     evidence=[]
     seen_chunk_ids=set()
@@ -266,9 +279,9 @@ def run_tool_chat(question,history=None,max_rounds=4,max_tool_calls=8):
             if final_text is None:
                 final_text = ""
 
-            parsed_answer = parse_structured_answer(final_text)
-            if parsed_answer["error"]:
-                                # 保留失败阶段、错误码和长度，便于通过请求编号定位。
+            answer_text = read_answer_text(final_text)
+            if answer_text is None:
+                # 保留失败阶段、错误码和长度，便于通过请求编号定位。
                 logger.warning(
                     "知识库回答解析失败 error_code=INVALID_ANSWER_FORMAT answer_length=%s",
                     len(final_text),
@@ -277,10 +290,10 @@ def run_tool_chat(question,history=None,max_rounds=4,max_tool_calls=8):
                     "answer": "",
                     "error": "知识库回答格式不正确",
                     "raw_answer": final_text,  # 评测时保留原文，便于定位解析失败
+                    "evidence": evidence,
                 }
 
-            answer_data = parsed_answer["data"]
-            citation_ids = extract_citation_ids(answer_data["answer"])
+            citation_ids = extract_citation_ids(answer_text)
             citations = []
 
             for citation_id in citation_ids:
@@ -298,7 +311,7 @@ def run_tool_chat(question,history=None,max_rounds=4,max_tool_calls=8):
                 })
 
             return {
-                "answer": answer_data["answer"],
+                "answer": answer_text,
                 "sources": citation_ids,
                 "citations": citations,
                 "evidence": evidence,
@@ -411,4 +424,5 @@ def run_tool_chat(question,history=None,max_rounds=4,max_tool_calls=8):
     return {
         "answer": "",
         "error": "已达到模型请求轮数上限，请缩小问题后重试",
+        "evidence":evidence
     }

@@ -110,3 +110,26 @@ def test_find_latest_run_skips_usage_file(tmp_path):
     (tmp_path / "20261030T01-usage.json").write_text("{}", encoding="utf-8")
 
     assert report.find_latest_run(tmp_path).name == "20261029T01.json"
+
+
+def test_issue_type_prefers_execution_errors():
+    failed = make_case("E16", found=(), scores=[{"name": "execution_complete", "value": 0}])
+    failed["output"]["turns"][0]["result"]["error"] = "知识库回答格式不正确"
+    limited = make_case("E10", found=(), scores=[{"name": "execution_complete", "value": 0}])
+    limited["output"]["turns"][0]["result"]["error"] = "已达到模型请求轮数上限，请缩小问题后重试"
+
+    assert report.issue_type(report.summarize_case(failed)) == "回答格式"
+    assert report.issue_type(report.summarize_case(limited)) == "工具循环"
+    assert report.issue_type(report.summarize_case(make_case("E19", found=()))) == "证据未命中"
+
+
+def test_review_lists_raw_answer_and_trace():
+    case = make_case("E16", found=(), scores=[{"name": "execution_complete", "value": 0}])
+    case["output"]["turns"][0]["question"] = "问题"
+    case["output"]["turns"][0]["result"].update(error="知识库回答格式不正确", raw_answer="坏的原文")
+
+    text = report.build_review({"run_name": "测试运行", "results": [case]})
+
+    assert "## 回答格式（1 题）" in text
+    assert "坏的原文" in text
+    assert report.TRACE_URL + "trace-E16" in text

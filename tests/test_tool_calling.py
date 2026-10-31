@@ -2,7 +2,7 @@ import json
 
 from app.tool_calling import execute_model_tool_call
 from unittest.mock import Mock
-from app.tool_calling import execute_model_tool_call, call_tool_model,run_tool_chat
+from app.tool_calling import execute_model_tool_call, read_answer_text,call_tool_model,run_tool_chat
 from app.tools import build_model_tools
 import requests
 import pytest
@@ -488,11 +488,10 @@ def test_run_tool_chat_logs_invalid_knowledge_answer(monkeypatch, caplog):
 
     result = run_tool_chat("示例线路几点集合？")
 
-    assert result == {
-        "answer": "",
-        "error": "知识库回答格式不正确",
-        "raw_answer": raw_answer,
-    }
+    assert result["answer"] == ""
+    assert result["error"] == "知识库回答格式不正确"
+    assert result["raw_answer"] == raw_answer
+    assert result["evidence"]
     assert "知识库回答解析失败" in caplog.text
     # 验证仍有错误标识，但完整回答没有进入日志。
     assert "error_code=INVALID_ANSWER_FORMAT" in caplog.text
@@ -590,3 +589,16 @@ def test_run_tool_chat_returns_web_citations(monkeypatch, tool_name):
     assert url in context
     assert content_type in context
     assert text in context
+
+
+#只要能读出answer就算成功，多余的JSON和缺少sources都不影响
+def test_read_answer_text_accepts_extra_json():
+    assert read_answer_text('{"answer":"推荐[1]"}\n{"sources":["1"]}') == "推荐[1]"
+    assert read_answer_text('{"answer":"推荐[1]"}') == "推荐[1]"
+    assert read_answer_text('{"answer":"第一段\n第二段"}') == "第一段\n第二段"
+
+
+def test_read_answer_text_rejects_invalid_answer():
+    assert read_answer_text("纯文字") is None
+    assert read_answer_text('{"sources":["1"]}') is None
+    assert read_answer_text('{"answer":""}') is None
