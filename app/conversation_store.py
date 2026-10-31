@@ -92,6 +92,13 @@ def init_db():
         REFERENCES plans(id)
         ON DELETE CASCADE)"""
         )
+        #当前用户的提问次数
+        conn.execute("""
+        CREATE TABLE IF NOT EXISTS daily_usage(
+        owner_id TEXT NOT NULL,
+        day TEXT NOT NULL,
+        request_count INTEGER NOT NULL,
+        PRIMARY KEY (owner_id,day))""")
 
 
         conn.commit()
@@ -280,6 +287,26 @@ def get_draft(conversation_id):
         return json.loads(row[0])  #返回是元组所以需要
     finally:
         conn.close()
+
+
+def consume_daily_quota(owner_id,day,limit):
+    conn=get_connection()
+    try:
+        cursor=conn.execute("""
+        INSERT INTO 
+        daily_usage(owner_id,day,request_count)
+        VALUES (?,?,1)
+        ON CONFLICT(owner_id,day) DO UPDATE SET
+        request_count=request_count+1
+        WHERE request_count<?""",(owner_id,day,limit))
+        conn.commit()
+        return cursor.rowcount==1
+    except sqlite3.Error:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
 
 
 if __name__=="__main__":

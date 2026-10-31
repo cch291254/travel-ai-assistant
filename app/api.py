@@ -1,9 +1,10 @@
 from fastapi import FastAPI,HTTPException,Depends,Header,Path
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel,Field,ConfigDict
 from app.structured_output import StructuredAnswer
 from app.conversation_store import( init_db,get_conversation,get_messages,save_turn,create_conversation_with_turn,delete_conversation)
 from threading import Lock
-from app.conversation_store import (get_pending_question,get_draft,save_draft)
+from app.conversation_store import (get_pending_question,consume_daily_quota, get_draft,save_draft)
 
 import logging
 from contextlib import asynccontextmanager   #定义应用启动和关闭
@@ -20,9 +21,11 @@ from app.tool_schemas import CalculateQuoteInput
 from app.tools import calculate_quote_parts
 from app.tool_results import tool_result_to_json
 from typing import Literal
-
+from datetime import datetime,timedelta,timezone
+                    #日期和时间，一段时长，时区
 
 from app.plan_store import (get_plan,list_plans,change_plan_status,delete_plan,copy_plan,create_plan,save_plan_version)
+
 
 
 logger=logging.getLogger(__name__)
@@ -45,6 +48,16 @@ async def lifespan(app):    #应用生命周期的写法，聊天接口保持原
 
 init_db()
 app = FastAPI(lifespan=lifespan)
+
+MAX_BODY_BYTES=1024*1024  #限制请求体1m
+
+#自动拒接过大请求
+@app.middleware("http")
+async def limit_body_size(request:Request,call_next):
+    content_length=request.headers.get("content-length","")
+    if content_length.isdigit() and int(content_length)>MAX_BODY_BYTES:
+        return JSONResponse(status_code=413,content={"detail":"请求内容过大"})
+    return await call_next(request)
 
 #记录每一次 HTTP 请求。
 @app.middleware("http")    #middleware，在进行处理之前进行日志处理
@@ -87,6 +100,8 @@ async def log_request(request:Request,call_next):  #
         request_id_var.reset(context_token)
 
 MAX_HISTORY_TURNS=3
+DAILY_CHAT_LIMIT=50
+CHINA_TZ=timezone(timedelta(hours=8))
 RAG_REQUEST_LOCK=Lock() #单进程锁
 
 DEMO_TOKEN_USERS={
@@ -319,6 +334,10 @@ def chat(
             history=history[-MAX_HISTORY_TURNS*2:]#倒数两个对话
             pending_question=get_pending_question(conversation_id)
             
+        today=datetime.now(CHINA_TZ).date().isoformat()
+        if not consume_daily_quota(current_user_id,today,DAILY_CHAT_LIMIT):
+            raise HTTPException(status_code=429,detail=("今日调用次数已用完"))
+
 
         result=model_caller(request.question,
                             history=history,

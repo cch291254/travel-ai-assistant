@@ -1122,3 +1122,53 @@ def test_update_plan_title():
 
     assert response.status_code==200
     assert client.get(f"/plans/{plan_id}").json()["title"]=="杭州四日游"
+
+
+def test_request_body_too_large():
+    response = client.post(
+        "/plans",
+        content=b"x" * (api.MAX_BODY_BYTES + 1),
+        headers={"Content-Type": "application/json"},
+    )
+
+    assert response.status_code == 413
+    assert "X-Request-ID" in response.headers
+
+
+def test_daily_quote_stops_at_limit():
+    assert store.consume_daily_quota("user_a", "2026-10-31", 2) is True
+    assert store.consume_daily_quota("user_a", "2026-10-31", 2) is True
+    assert store.consume_daily_quota("user_a", "2026-10-31", 2) is False
+
+
+def test_daily_quote_separates_user_and_day():
+    assert store.consume_daily_quota("user_a", "2026-10-31", 1) is True
+    assert store.consume_daily_quota("user_b", "2026-10-31", 1) is True
+    assert store.consume_daily_quota("user_a", "2026-11-01", 1) is True
+
+
+def test_chat_daily_limit(monkeypatch):
+    model_calls=[]
+
+    def fake_call_model(question,history=None,*,pending_question=None):
+        model_calls.append(question)
+        return{
+            "data":{"answer":"推荐西湖","sources":[]},
+            "error":"",
+            "record":None,
+            "pending_question":None,
+        }
+
+    monkeypatch.setitem(
+        api.app.dependency_overrides,
+        api.get_model_caller,
+        lambda:fake_call_model,
+    )
+    monkeypatch.setattr(api,"DAILY_CHAT_LIMIT",1)
+
+    first=client.post("/chat",json={"question":"推荐杭州景点"})
+    second=client.post("/chat",json={"question":"推荐杭州美食"})
+
+    assert first.status_code==200
+    assert second.status_code==429
+    assert len(model_calls)==1

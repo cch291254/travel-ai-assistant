@@ -602,3 +602,25 @@ def test_read_answer_text_rejects_invalid_answer():
     assert read_answer_text("纯文字") is None
     assert read_answer_text('{"sources":["1"]}') is None
     assert read_answer_text('{"answer":""}') is None
+
+
+
+def test_run_tool_chat_logs_call_counts(monkeypatch, caplog):
+    tool_call = {
+        "id": "call_demo_1",
+        "type": "function",
+        "function": {
+            "name": "calculate_quote",
+            "arguments": '{"adults":2,"children":0,"meal_price":"50.00"}',
+        },
+    }
+    fake_model = Mock(side_effect=[
+        {"role": "assistant", "content": None, "tool_calls": [tool_call]},
+        {"role": "assistant", "content": "费用小计50元。"},
+    ])
+    monkeypatch.setattr("app.tool_calling.call_tool_model", fake_model)
+
+    with caplog.at_level("INFO", logger="app.tool_calling"):
+        run_tool_chat("帮我计算")
+
+    assert "工具聊天结束 model_calls=2 tool_calls=1" in caplog.text

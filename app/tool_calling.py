@@ -170,7 +170,19 @@ def read_answer_text(raw_text):
 
 
 def run_tool_chat(question,history=None,max_rounds=6,max_tool_calls=12):
-    tool_call_count=0
+    counts={"model_calls":0,"tool_calls":0}
+    try:
+        return _run_tool_loop(question,history,max_rounds,max_tool_calls,counts)
+    finally:
+        # 不管从哪个 return 离开，都记一条汇总
+        logger.info(
+            "工具聊天结束 model_calls=%s tool_calls=%s",
+            counts["model_calls"],
+            counts["tool_calls"],
+        )
+
+
+def _run_tool_loop(question,history,max_rounds,max_tool_calls,counts):
     evidence=[]
     seen_chunk_ids=set()
     source_map = {}
@@ -203,6 +215,7 @@ def run_tool_chat(question,history=None,max_rounds=6,max_tool_calls=12):
 
     for round_index in range(max_rounds):
         # 每次调用模型前，重新计时；默认标记为失败。
+        counts["model_calls"]+=1
         model_start = perf_counter()
         model_status = "failed"
         model_error_type="-"
@@ -319,10 +332,10 @@ def run_tool_chat(question,history=None,max_rounds=6,max_tool_calls=12):
             }
 
 
-        if tool_call_count+len(tool_calls)>max_tool_calls:
+        if counts["tool_calls"]+len(tool_calls)>max_tool_calls:
             logger.warning(
                 "工具调用次数超限 executed=%s requested=%s limit=%s",
-                tool_call_count,
+                counts["tool_calls"],
                 len(tool_calls),
                 max_tool_calls,
             )
@@ -334,7 +347,7 @@ def run_tool_chat(question,history=None,max_rounds=6,max_tool_calls=12):
 
         # 执行模型提出的工具调用，并收集本轮回答需要的资料与引用。
         for tool_call in tool_calls:
-            tool_call_count+=1
+            counts["tool_calls"]+=1
             tool_name = tool_call["function"]["name"]
             client=get_tracing_client()
 
