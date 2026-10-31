@@ -3,7 +3,7 @@
 ## 运行信息
 
 - 运行名称：tool-agent-full - 2026-10-31T09:33:42.359157Z
-- 代码提交：dcf6704c6b6a8eb56e1f75ae9e51ee38ea5d4725
+- 代码提交：f0f47c21b8c3d60564f46ad27fdb1eb3a735d88e（重写历史前为 dcf6704，运行文件和 Langfuse 里仍是旧编号）
 - 题目数量：40 题，51 轮
 - 文件哈希：app/tool_calling.py b40eff4b8e13；app/tools.py 8f9c2e26768c；examples/rag_eval_cases.json b903453d8d94
 
