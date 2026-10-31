@@ -26,9 +26,9 @@ def execute_model_tool_call(tool_call):
         #这里检验top的复用   检测时打开
         if tool_name=="knowledge_search" and isinstance(raw,dict):
             logger.info(
-            "检索参数 tool_call_id=%s query=%r top_k=%s",
+            "检索参数 tool_call_id=%s query_length=%s top_k=%s",
             tool_call["id"],
-            raw.get("query"),
+            len(str(raw.get("query") or "")),
             raw.get("top_k", 3),
         )
 

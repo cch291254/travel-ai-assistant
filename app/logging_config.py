@@ -1,6 +1,7 @@
 import logging                 # 导入日志模块
 from pathlib import Path       # 处理日志目录和文件路径
 from contextvars import ContextVar
+import re  #描述长什么样，可以将内容找出来,做脱敏
 
 
 #保留当前请求的编号
@@ -12,6 +13,20 @@ class RequestIdFilter(logging.Filter):
         record.request_id=request_id_var.get()
         return True
 
+SENSITIVE_PATTERNS=[
+    (re.compile(r"sk-[A-Za-z0-9_-]{8,}"),"[已隐藏密钥]"),
+    (re.compile(r"Bearer\s+\S+"), "Bearer [已隐藏]"),
+    (re.compile(r"(?<!\d)\d{17}[\dXx](?!\d)"), "[已隐藏证件号]"),
+    (re.compile(r"(?<!\d)1[3-9]\d{9}(?!\d)"), "[已隐藏手机号]"),
+]
+
+
+class RedactingFormatter(logging.Formatter):
+    def format(self,record):  #过滤重写格式
+        text=super().format(record)
+        for pattern,replacement in SENSITIVE_PATTERNS:
+            text=pattern.sub(replacement,text)
+        return text
 
 
 def setup_logging():
@@ -28,7 +43,7 @@ def setup_logging():
     log_dir.mkdir(parents=True, exist_ok=True)
 
     # 统一格式：时间、日志级别、模块名称、具体内容。
-    formatter = logging.Formatter(
+    formatter = RedactingFormatter(
         "%(asctime)s | %(levelname)s | %(name)s | "
         "request_id=%(request_id)s | %(message)s"
 
