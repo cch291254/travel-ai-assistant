@@ -1,7 +1,8 @@
 import json
+import re
 
 import requests
-from app.tools import execute_tool,build_model_tools
+from app.tools import execute_tool,build_model_tools,search_state_var
 from app.tool_results import tool_result_to_json,tool_failure
 from dotenv import load_dotenv
 from app.rag_context import build_context,extract_citation_ids,build_web_evidence
@@ -36,7 +37,7 @@ def execute_model_tool_call(tool_call):
 
         #同上 ，主要是对top_k的检查
         if tool_name == "knowledge_search" and result["ok"]:
-            items = result["data"]["evidence"]
+            items = result["data"].get("evidence",[])
             logger.info(
                 "检索结果 tool_call_id=%s count=%s chunk_ids=%s",
                 tool_call["id"],
@@ -68,7 +69,7 @@ def execute_model_tool_call(tool_call):
     }
 
 #选择请求工具
-def call_tool_model(messages, *, json_mode=False):
+def call_tool_model(messages, *, json_mode=False,use_tools=True):
     load_dotenv()
     model=os.getenv("DEEPSEEK_MODEL","deepseek-flash")
     api_key=os.getenv("DEEPSEEK_API_KEY")
@@ -88,13 +89,14 @@ def call_tool_model(messages, *, json_mode=False):
     payload={
         "model":model,
         "messages":messages,
-        "tools":build_model_tools(),
         "thinking":{"type":"enabled"},
-        "max_tokens":4048,
+        "max_tokens":6000,
         "stream":False,
         "temperature":0.2
     }
 
+    if use_tools:
+        payload["tools"]=build_model_tools()
     if json_mode:
         payload["response_format"] = {"type": "json_object"}
 
@@ -154,13 +156,21 @@ def call_tool_model(messages, *, json_mode=False):
 
     return choice["message"]
 
+#模型偶尔漏掉引号或逗号；正文完整时取出正文，不再多花一次模型调用
+def salvage_answer_text(raw_text):
+    matched = re.search(r'"answer"\s*:\s*"(.+?)"?\s*,?\s*"sources"', raw_text, re.S)
+    if matched is None:
+        return None
+    return matched[1].replace("\\n", "\n").replace('\\"', '"')
+
+
 #当前的回答合法才进入下一步,且只取回答
 def read_answer_text(raw_text):
     """只取第一个JSON对象的answer；引用编号从回答文字提取，不依赖sources。"""
     try:
         data, _ = json.JSONDecoder(strict=False).raw_decode(raw_text.strip())
     except json.JSONDecodeError:
-        return None
+        return salvage_answer_text(raw_text)
     if not isinstance(data, dict):
         return None
     answer = data.get("answer")
@@ -169,11 +179,25 @@ def read_answer_text(raw_text):
     return answer
 
 
-def run_tool_chat(question,history=None,max_rounds=6,max_tool_calls=12):
-    counts={"model_calls":0,"tool_calls":0}
+def run_tool_chat(question,history=None,max_rounds=4,max_tool_calls=5):
+    counts={"model_calls":0,"tool_calls":0,"draft_requested":False}
+    search_history=[  
+        message for message in history or []
+        if message["role"] in ("user","assistant")  #过滤system
+    ]
+    search_history.append({"role":"user","content":question})
+    token=search_state_var.set({  #建立小本子
+        "history":search_history,
+        "searched":False,
+        "where":None,
+    })
     try:
-        return _run_tool_loop(question,history,max_rounds,max_tool_calls,counts)
+        result=_run_tool_loop(question,history,max_rounds,max_tool_calls,counts)
+        if counts["draft_requested"] is True:
+            result["draft_requested"]=counts["draft_requested"]
+        return result
     finally:
+        search_state_var.reset(token)
         # 不管从哪个 return 离开，都记一条汇总
         logger.info(
             "工具聊天结束 model_calls=%s tool_calls=%s",
@@ -200,6 +224,7 @@ def _run_tool_loop(question,history,max_rounds,max_tool_calls,counts):
                 "不能仅凭检索未命中或命中其他城市资料，"
                 "断言整个知识库没有相关信息。"
                 "无需向用户罗列与当前问题无关的检索结果。"
+                "需要保存草案时，和其他工具放在同一轮调用。"
             )
         }
     ]
@@ -212,8 +237,9 @@ def _run_tool_loop(question,history,max_rounds,max_tool_calls,counts):
         "role":"user",
         "content":question
     })
-
+    tools_open=True
     for round_index in range(max_rounds):
+        use_tools=tools_open and round_index<max_rounds-1  #两个条件都满足
         # 每次调用模型前，重新计时；默认标记为失败。
         counts["model_calls"]+=1
         model_start = perf_counter()
@@ -228,6 +254,7 @@ def _run_tool_loop(question,history,max_rounds,max_tool_calls,counts):
                 message = call_tool_model(
                     messages,
                     json_mode=bool(source_map),
+                    use_tools=use_tools,
                 )
 
             else:
@@ -243,6 +270,7 @@ def _run_tool_loop(question,history,max_rounds,max_tool_calls,counts):
                     message = call_tool_model(
                         messages,
                         json_mode=bool(source_map),
+                        use_tools=use_tools,
                     )
 
                     # 记录模型返回了多少工具调用要求、多少字符。
@@ -331,24 +359,30 @@ def _run_tool_loop(question,history,max_rounds,max_tool_calls,counts):
                 "error": "",
             }
 
-
-        if counts["tool_calls"]+len(tool_calls)>max_tool_calls:
+        counted_calls=0
+        for tool_call in tool_calls:  #将这个标记但是不算次数
+            if tool_call["function"]["name"]=="save_to_draft":
+                counts["draft_requested"]=True
+            else:
+                counted_calls+=1
+        if counts["tool_calls"]+counted_calls>max_tool_calls:
             logger.warning(
                 "工具调用次数超限 executed=%s requested=%s limit=%s",
                 counts["tool_calls"],
-                len(tool_calls),
+                counted_calls,
                 max_tool_calls,
             )
-            return {
-                "answer": "",
-                "error": "本轮请求会超过工具调用次数上限，请缩小问题后重试",
-            }
-        messages.append(message)  # 原来的这一行保留
+            tools_open=False
+            continue
+
+        counts["tool_calls"]+=counted_calls
+        messages.append(message)
+        
 
         # 执行模型提出的工具调用，并收集本轮回答需要的资料与引用。
         for tool_call in tool_calls:
-            counts["tool_calls"]+=1
             tool_name = tool_call["function"]["name"]
+
             client=get_tracing_client()
 
             if client is None:
@@ -390,6 +424,9 @@ def _run_tool_loop(question,history,max_rounds,max_tool_calls,counts):
                 execution_result = json.loads(tool_message["content"])
 
                 if execution_result["ok"]:
+                    clarification=execution_result["data"].get("clarification")
+                    if clarification:
+                        return {"answer":clarification,"error":""}
                     if tool_name == "knowledge_search":
                         current_evidence = execution_result["data"]["evidence"]
                     else:

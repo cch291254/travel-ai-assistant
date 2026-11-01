@@ -109,8 +109,15 @@ def send_chat(question, conversation_id, token):
         "citations": body.get("citations") or [],  # 值不存在或为 None 时，提供空列表。
         "evidence": body.get("evidence") or [],
         "needs_clarification": bool(body.get("needs_clarification")),  # bool 转为 True/False。
+        "generated_draft": body.get("generated_draft"),
+        "draft_error": body.get("draft_error") or "",
     }
     return result
+
+
+# 作用：读取当前用户的历史会话列表，最近聊过的排在前面。
+def list_conversations(token):
+    return _request("GET", "/conversations", token)
 
 
 # 作用：读取已有会话，只保留页面展示所需的 user/assistant 消息。
@@ -160,6 +167,13 @@ def fetch_draft(conversation_id, token):
 # 作用：覆盖保存当前会话的草稿，一个会话只有一份。
 def save_draft(conversation_id, draft, token):
     return _request("PUT", f"/conversations/{conversation_id}/draft", token, json={"draft": draft})
+
+
+# 作用：让后端读取全部聊天记录并整理成草案；要调用模型，等待时间和聊天一样长。
+def generate_draft(conversation_id, token):
+    return _request(
+        "POST", f"/conversations/{conversation_id}/draft/generate", token, timeout=CHAT_TIMEOUT,
+    )
 
 
 # 作用：读取当前用户的方案列表，不包含草案内容。

@@ -3,9 +3,10 @@ import logging
 from decimal import Decimal
 
 from pydantic import ValidationError
+from contextvars import ContextVar
 
 from app.tool_results import tool_failure, tool_success
-from app.tool_schemas import CalculateQuoteInput, KnowledgeSearchInput,WebSearchInput,WebFetchInput
+from app.tool_schemas import CalculateQuoteInput,SaveToDraftInput, KnowledgeSearchInput,WebSearchInput,WebFetchInput
 
 import os
 from dotenv import load_dotenv
@@ -18,6 +19,7 @@ ACCOMMODATION_QUANTITY_MESSAGE = (
     "请填写大于0的房间数和晚数；无需住宿时，请移除该条住宿明细"
 )
 
+search_state_var=ContextVar("search_state",default=None)
 
 def validate_search_input(raw):
     try:
@@ -158,6 +160,82 @@ def calculate_quote_parts(raw):
         "requires_confirmation": True,
     })
 
+
+#把重写的用量记成一次模型调用，评测报告才能算进总成本
+def trace_rewrite_usage(record):
+    from app.tracing import get_tracing_client
+
+    client=get_tracing_client()
+    if client is None or record is None or record["总tokens"] is None:
+        return
+    with client.start_as_current_observation(
+        as_type="generation",
+        name="model-call",
+        model=record["模型名"],
+        metadata={"step":"rewrite"},
+    ) as generation:
+        generation.update(usage_details={
+            "input":record["输入tokens"],
+            "output":record["输出tokens"],
+            "total":record["总tokens"],
+        })
+
+
+#重写
+def plan_search(query,history=None):
+    from app.query_rewriter import rewrite_retrieval_question
+
+    plan={"queries":[query],"where":None,"clarification":""}
+    result=rewrite_retrieval_question(query,history=history)
+    trace_rewrite_usage(result.get("record"))
+    if result["error"]:
+        logger.warning("重写调用失败")
+        return plan
+    if result["needs_clarification"]:
+        plan["clarification"]=result["clarification_question"]
+        return plan
+    retrieve_questions=[result["answer"].strip()]
+    for sub_question in result["sub_questions"]:
+        if sub_question not in retrieve_questions:
+            retrieve_questions.append(sub_question)
+    plan["queries"]=retrieve_questions
+    if result["target_source_ids"]:
+        plan["where"]={"source_id":{"$in":result["target_source_ids"]}}
+    return plan
+
+#判断第一次检索,是就重写
+def get_search_plan(query):
+    state=search_state_var.get()   #记录history,searched,where
+    if state is None:
+        return {"queries":[query],"where":None,"clarification":""}
+    if state["searched"]:
+        return {"queries":[query],"where":state["where"],"clarification":""}
+    #能走到这里就是第一次检索
+    state["searched"]=True
+    plan=plan_search(query,state["history"])
+    state["where"]=plan["where"]
+    return plan
+
+#子问题检索
+def retrieve_routes(queries,resources,where=None):
+    from app.retrieval import retrieve_evidence
+
+    evidence=[]
+    seen_chunk_ids=set()
+    for query in queries:
+        result=retrieve_evidence(query,
+                                resources["model"],
+                                resources["collection"],
+                                resources["reranker"],where=where,n_results=7,top_k=3)
+        for item in result:
+            if item["chunk_id"] not in seen_chunk_ids:
+                seen_chunk_ids.add(item["chunk_id"])
+                evidence.append(item)
+
+    return evidence
+
+
+
 #搜索内部知识
 def knowledge_search(raw):
     validation = validate_search_input(raw)
@@ -167,17 +245,15 @@ def knowledge_search(raw):
     try:
         # 只有实际执行合法检索时，才导入并获取模型和向量库资源。
         from app.rag_resources import get_rag_resources
-        from app.retrieval import retrieve_evidence
 
-        resources = get_rag_resources()
-        evidence = retrieve_evidence(
-            question=data["query"],
-            model=resources["model"],
-            collection=resources["collection"],
-            reranker=resources["reranker"],
-            n_results=7,
-            top_k=3,
-        )
+        plan=get_search_plan(data["query"])
+        if plan["clarification"]:
+            return tool_success({"clarification":plan["clarification"]})
+        resources=get_rag_resources()
+        evidence=retrieve_routes(plan["queries"],resources,where=plan["where"])
+        if plan["where"] is not None and len(evidence)<2:
+            evidence=retrieve_routes(plan["queries"],resources)   #资料不足，全量检索
+
     except Exception:
         # 对外返回稳定提示；日志记录具体异常，便于排查导入、加载或检索问题。
         logger.exception("知识库检索工具执行失败")
@@ -306,6 +382,9 @@ def web_fetch(raw):
     })
 
 
+def save_to_draft(raw):
+    return tool_success({"message":"已记录，系统会在本轮回答后整理草案。请简短告诉员工去右侧核对。"})
+
 
 # 内部工具说明。以后对接模型时仍需转换成所用 API 的工具格式。
 TOOL_CONTRACTS = {
@@ -322,6 +401,7 @@ TOOL_CONTRACTS = {
         "description": (
             "根据员工提供的成人、儿童单人价格及人数，分别计算已知费用，"
     "并加上一次整组住宿费用，返回整组已知费用合计。"
+    "价格是人民币、单人整条线路的参考费用；未提供的留空，0表示明确为零。"
     "未提供价格不代表免费，儿童不自动套用成人价格，结果需员工确认。"
         ),
         "parameters": CalculateQuoteInput.model_json_schema(),
@@ -334,13 +414,23 @@ TOOL_CONTRACTS = {
     "description": "获取指定公开网页的标题和正文，不生成最终答案，不保证网页可访问。",
     "parameters": WebFetchInput.model_json_schema(),
     },
-}
+    "save_to_draft": {
+        "description": (
+            "把本次对话整理成方案草案。只有员工明确要求保存、整理或生成草案时才调用；"
+            "询问问题、讨论假设或只是提到草案时不要调用。"
+        ),
+        "parameters": SaveToDraftInput.model_json_schema(),
+    },
+
+    }
+
 
 TOOL_HANDLERS = {
     "calculate_quote": calculate_quote_parts,     #计算价格
     "knowledge_search": knowledge_search,   #知识检索
     "web_search":web_search,
     "web_fetch": web_fetch,
+    "save_to_draft":save_to_draft
 }
 
 
@@ -352,14 +442,25 @@ def execute_tool(tool_name, raw):
     return handler(raw)
 
 
+COMPACT_SCHEMA_KEYS = {
+    "title", "default", "pattern",
+    "minLength", "maxLength", "minimum", "maximum", "exclusiveMinimum",
+}
+
+
 def compact_tool_schema(value):
     # 只精简模型看到的说明，不修改 Pydantic 的校验规则。
     if isinstance(value, dict):
-        return {
+        compact = {
             key: compact_tool_schema(item)
             for key, item in value.items()
-            if key not in {"title", "default", "pattern"}
+            if key not in COMPACT_SCHEMA_KEYS
         }
+        # 金额校验时接受数字和字符串，模型只需知道填数字。
+        if any(item.get("type") == "number" for item in compact.get("anyOf", [])):
+            del compact["anyOf"]
+            compact["type"] = "number"
+        return compact
 
     if isinstance(value, list):
         return [compact_tool_schema(item) for item in value]

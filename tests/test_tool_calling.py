@@ -295,8 +295,8 @@ def test_run_tool_chat_returns_knowledge_citations(monkeypatch):
         "chunk_id": "demo:chunk-1",
         "metadata": evidence[0]["metadata"],
     }]
-    assert fake_model.call_args_list[0].kwargs == {"json_mode": False}
-    assert fake_model.call_args_list[1].kwargs == {"json_mode": True}
+    assert fake_model.call_args_list[0].kwargs["json_mode"] is False
+    assert fake_model.call_args_list[1].kwargs["json_mode"] is True
 
     fake_execute.assert_called_once_with(
         "knowledge_search",
@@ -624,3 +624,113 @@ def test_run_tool_chat_logs_call_counts(monkeypatch, caplog):
         run_tool_chat("帮我计算")
 
     assert "工具聊天结束 model_calls=2 tool_calls=1" in caplog.text
+
+
+def test_save_to_draft_sets_signal(monkeypatch):
+    tool_call = {
+        "id": "call_draft",
+        "type": "function",
+        "function": {"name": "save_to_draft", "arguments": "{}"},
+    }
+    fake_model = Mock(side_effect=[
+        {"role": "assistant", "content": None, "tool_calls": [tool_call]},
+        {"role": "assistant", "content": "已整理，请到右侧核对。"},
+    ])
+    monkeypatch.setattr("app.tool_calling.call_tool_model", fake_model)
+
+    result = run_tool_chat("整理成草案")
+
+    assert result["draft_requested"] is True
+    assert result["answer"] == "已整理，请到右侧核对。"
+
+
+def test_normal_chat_has_no_draft_signal(monkeypatch):
+    fake_model = Mock(return_value={"role": "assistant", "content": "你好"})
+    monkeypatch.setattr("app.tool_calling.call_tool_model", fake_model)
+
+    assert "draft_requested" not in run_tool_chat("你好")
+
+
+
+def tool_call_named(name, call_id):
+    return {
+        "id": call_id,
+        "type": "function",
+        "function": {"name": name, "arguments": "{}"},
+    }
+
+
+def tool_message(tool_call):
+    return {"role": "tool", "tool_call_id": tool_call["id"], "content": "{}"}
+
+#测试最后回合不能使用工具
+def test_last_round_has_no_tools(monkeypatch):
+    fake_model = Mock(side_effect=[
+        {
+            "role": "assistant",
+            "content": None,
+            "tool_calls": [tool_call_named("calculate_quote", "call_1")],
+        },
+        {"role": "assistant", "content": "按已有结果回答"},
+    ])
+    monkeypatch.setattr("app.tool_calling.call_tool_model", fake_model)
+    monkeypatch.setattr("app.tool_calling.execute_model_tool_call", tool_message)
+
+    result = run_tool_chat("帮我计算", max_rounds=2)
+
+    assert result["answer"] == "按已有结果回答"
+    assert fake_model.call_args_list[0].kwargs["use_tools"] is True
+    assert fake_model.call_args_list[1].kwargs["use_tools"] is False
+
+
+#测试最后一轮直接回答
+def test_tool_limit_answers_with_existing_data(monkeypatch):
+    fake_execute = Mock()
+    fake_model = Mock(side_effect=[
+        {
+            "role": "assistant",
+            "content": None,
+            "tool_calls": [
+                tool_call_named("web_search", "call_1"),
+                tool_call_named("web_fetch", "call_2"),
+            ],
+        },
+        {"role": "assistant", "content": "按已有资料回答"},
+    ])
+    monkeypatch.setattr("app.tool_calling.call_tool_model", fake_model)
+    monkeypatch.setattr("app.tool_calling.execute_model_tool_call", fake_execute)
+
+    result = run_tool_chat("帮我查一下", max_tool_calls=1)
+
+    assert result["answer"] == "按已有资料回答"
+    fake_execute.assert_not_called()
+    assert fake_model.call_args_list[1].kwargs["use_tools"] is False
+
+
+#测试保存不消耗工具次数
+def test_save_to_draft_is_not_counted(monkeypatch):
+    fake_execute = Mock(side_effect=tool_message)
+    fake_model = Mock(side_effect=[
+        {
+            "role": "assistant",
+            "content": None,
+            "tool_calls": [
+                tool_call_named("calculate_quote", "call_1"),
+                tool_call_named("save_to_draft", "call_2"),
+            ],
+        },
+        {"role": "assistant", "content": "已整理"},
+    ])
+    monkeypatch.setattr("app.tool_calling.call_tool_model", fake_model)
+    monkeypatch.setattr("app.tool_calling.execute_model_tool_call", fake_execute)
+
+    result = run_tool_chat("算好后保存", max_tool_calls=1)
+
+    assert fake_execute.call_count == 2
+    assert result["draft_requested"] is True
+
+
+def test_read_answer_text_salvages_broken_json():
+    broken = '{"answer":"第一段[1]。\\n\\n第二段[2]。"sources":["1","2"]}'
+
+    assert read_answer_text(broken) == "第一段[1]。\n\n第二段[2]。"

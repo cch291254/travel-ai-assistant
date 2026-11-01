@@ -4,6 +4,12 @@ from decimal import Decimal
 from pydantic import BaseModel, ConfigDict, Field,HttpUrl
 
 
+class SaveToDraftInput(BaseModel):
+    model_config=ConfigDict(str_strip_whitespace=True,extra="forbid")
+            #禁止空白和参数
+
+
+
 class KnowledgeSearchInput(BaseModel):
                     #配置字典类型 ,后面都是规则
     model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
@@ -22,7 +28,7 @@ class AccommodationItemInput(BaseModel):
         default=None,
         ge=0,
         decimal_places=2,
-        description="住宿参考费用，人民币元/间/晚；None表示未提供，0表示明确为零",
+        description="元/间/晚",
     )
 
 class ChildPricesInput(BaseModel):
@@ -35,27 +41,27 @@ class ChildPricesInput(BaseModel):
         default=None,
         ge=0,
         decimal_places=2,
-        description="餐饮参考费用，人民币元/儿童/整条线路",
+        description="餐饮，元/儿童",
     )
     transport_price: Decimal | None = Field(
             default=None, ge=0, decimal_places=2,
-            description="交通参考费用，人民币元/儿童/整条线路",
+            description="交通，元/儿童",
         )
     guide_price: Decimal | None = Field(
         default=None, ge=0, decimal_places=2,
-        description="导游参考费用，人民币元/儿童/整条线路",
+        description="导游，元/儿童",
     )
     ticket_price: Decimal | None = Field(
         default=None, ge=0, decimal_places=2,
-        description="门票参考费用，人民币元/儿童/整条线路",
+        description="门票，元/儿童",
     )
     boat_price: Decimal | None = Field(
         default=None, ge=0, decimal_places=2,
-        description="船票参考费用，人民币元/儿童/整条线路",
+        description="船票，元/儿童",
     )
     entertainment_price: Decimal | None = Field(
         default=None, ge=0, decimal_places=2,
-        description="娱乐参考费用，人民币元/儿童/整条线路",)
+        description="娱乐，元/儿童",)
 
 class CalculateQuoteInput(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
@@ -64,35 +70,35 @@ class CalculateQuoteInput(BaseModel):
     children: int = Field(strict=True, ge=0, le=50)
     room_items: list[AccommodationItemInput] | None = Field(
         default=None,
-        description="住宿明细；None表示未提供，空列表表示不住宿，每项房间数和晚数必须大于0",
+        description="住宿明细；空列表表示不住宿",
     )
     meal_price: Decimal | None = Field(
         default=None, ge=0, decimal_places=2,
-        description="餐饮参考费用，人民币元/成人/整条线路",
+        description="餐饮，元/成人",
     )
     transport_price: Decimal | None = Field(
         default=None, ge=0, decimal_places=2,
-        description="交通参考费用，人民币元/成人/整条线路",
+        description="交通，元/成人",
     )
     guide_price: Decimal | None = Field(
         default=None, ge=0, decimal_places=2,
-        description="导游参考费用，人民币元/成人/整条线路",
+        description="导游，元/成人",
     )
     ticket_price: Decimal | None = Field(
         default=None, ge=0, decimal_places=2,
-        description="门票参考费用，人民币元/成人/整条线路",
+        description="门票，元/成人",
     )
     boat_price: Decimal | None = Field(
         default=None, ge=0, decimal_places=2,
-        description="船票参考费用，人民币元/成人/整条线路",
+        description="船票，元/成人",
     )
     entertainment_price: Decimal | None = Field(
         default=None, ge=0, decimal_places=2,
-        description="娱乐参考费用，人民币元/成人/整条线路",
+        description="娱乐，元/成人",
     )
     child_prices: ChildPricesInput | None = Field(
     default=None,
-    description="员工提供的儿童单人各项费用；未提供时不能套用成人价格",
+    description="儿童单人费用",
 )
 
 
@@ -107,6 +113,8 @@ class WebFetchInput(BaseModel):
     model_config=ConfigDict(str_strip_whitespace=True,extra="forbid")
 
     url:HttpUrl
+
+
 
 
 

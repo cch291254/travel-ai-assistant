@@ -1,8 +1,9 @@
 from fastapi import FastAPI,HTTPException,Depends,Header,Path
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel,Field,ConfigDict
+
 from app.structured_output import StructuredAnswer
-from app.conversation_store import( init_db,get_conversation,get_messages,save_turn,create_conversation_with_turn,delete_conversation)
+from app.conversation_store import( init_db,list_conversations, get_conversation,get_messages,save_turn,create_conversation_with_turn,delete_conversation)
 from threading import Lock
 from app.conversation_store import (get_pending_question,consume_daily_quota, get_draft,save_draft)
 
@@ -16,16 +17,16 @@ from uuid import uuid4   #独立编号
 from app.tracing import setup_tracing,shutdown_tracing,get_tracing_client
 
 import json
-
 from app.tool_schemas import CalculateQuoteInput
 from app.tools import calculate_quote_parts
 from app.tool_results import tool_result_to_json
+
 from typing import Literal
 from datetime import datetime,timedelta,timezone
                     #日期和时间，一段时长，时区
 
 from app.plan_store import (get_plan,list_plans,change_plan_status,delete_plan,copy_plan,create_plan,save_plan_version)
-
+from app.draft_generator import draft_to_context,generate_draft
 
 
 logger=logging.getLogger(__name__)
@@ -164,6 +165,22 @@ def _get_owner_plan(plan_id,current_user_id):
     return plan
 
 
+#每次调用模型前扣一次配额，用完返回 429
+def _use_daily_quota(current_user_id):
+    today=datetime.now(CHINA_TZ).date().isoformat()
+    if not consume_daily_quota(current_user_id,today,DAILY_CHAT_LIMIT):
+        raise HTTPException(status_code=429,detail="今日调用次数已用完")
+
+
+def _generate_chat_draft(conversation_id,current_user_id):
+    try:
+        _use_daily_quota(current_user_id)
+    except HTTPException as error:
+        return{"generate_draft":None,"draft_error":error.detail}
+
+    result=generate_draft(get_messages(conversation_id),conversation_id)
+    return {"generated_draft":result["draft"],"draft_error":result["error"]}
+
 class ChatRequest(BaseModel):
     model_config=ConfigDict(str_strip_whitespace=True)
     question: str=Field(min_length=1,max_length=1000)
@@ -179,6 +196,8 @@ class ChatResponse(BaseModel):
     citations: list[dict]=Field(default_factory=list) #没提供使用自己的空列表。
     evidence:list[dict]=Field(default_factory=list)
     needs_clarification:bool=False
+    generated_draft:dict |None=None
+    draft_error:str=""
 
 class ErrorResponse(BaseModel):
     detail:str
@@ -308,6 +327,7 @@ def call_tool_chat(question,history=None,*,pending_question=None):
     }
     result["citations"]=tool_result.get("citations",[])
     result["evidence"]=tool_result.get("evidence",[])
+    result["draft_requested"]=tool_result.get("draft_requested",False)
 
     return result
 
@@ -337,12 +357,12 @@ def chat(
 
             history=get_messages(conversation_id)
             history=history[-MAX_HISTORY_TURNS*2:]#倒数两个对话
+            draft=get_draft(conversation_id)
+            if draft is not None:
+                history=[{"role":"system","content":draft_to_context(draft)}]+history
             pending_question=get_pending_question(conversation_id)
             
-        today=datetime.now(CHINA_TZ).date().isoformat()
-        if not consume_daily_quota(current_user_id,today,DAILY_CHAT_LIMIT):
-            raise HTTPException(status_code=429,detail=("今日调用次数已用完"))
-
+        _use_daily_quota(current_user_id)
 
         result=model_caller(request.question,
                             history=history,
@@ -381,7 +401,16 @@ def chat(
             )
 
         result["conversation_id"]=conversation_id
+        if result.get("draft_requested"):
+            result.update(_generate_chat_draft(conversation_id,current_user_id))
         return result
+
+#看会话列表
+@app.get("/conversations")
+def read_conversation_list(
+    current_user_id:str =Depends(get_current_user_id)
+):
+    return {"conversations":list_conversations(current_user_id)}
 
 
 @app.delete("/conversations/{conversation_id}")
@@ -429,6 +458,27 @@ def write_draft(request:SaveDraftRequest,
     _get_owner_conversation(conversation_id,current_user_id)
     save_draft(conversation_id,request.draft)
     return {"status":"saved"}
+
+
+#读取全部聊天记录，整理成草案；只返回给页面，由页面保存
+@app.post("/conversations/{conversation_id}/draft/generate")
+def generate_conversation_draft(
+    conversation_id:int=Path(ge=1),
+    current_user_id:str=Depends(get_current_user_id),
+):
+    _get_owner_conversation(conversation_id,current_user_id)
+
+    messages=get_messages(conversation_id)
+    if not messages:
+        raise HTTPException(status_code=422,detail="这个会话还没有可整理的内容")
+
+    _use_daily_quota(current_user_id)
+
+    result=generate_draft(messages,conversation_id)
+    if result["error"]:
+        raise HTTPException(status_code=502,detail=result["error"])
+
+    return {"draft":result["draft"]}
 
 
 #这是一组请求

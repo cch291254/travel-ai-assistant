@@ -6,7 +6,9 @@ from fastapi.testclient import TestClient
 import app.conversation_store as store
 import requests
 from app.workspace_plan import empty_draft
-
+from app.draft_generator import ExtractedDraft, to_draft
+from app.tools import search_state_var
+from app.tool_calling import run_tool_chat
 
 with patch.object(store, "init_db"):#防止提前初始化数据库
     import app.api as api #正常导入api,让init——db储存库临时替换
@@ -1172,3 +1174,221 @@ def test_chat_daily_limit(monkeypatch):
     assert first.status_code==200
     assert second.status_code==429
     assert len(model_calls)==1
+
+
+#读历史会话
+def test_list_conversations_newest_first():
+    first = store.create_conversation("第一个会话", "user_a")
+    second = store.create_conversation("第二个会话", "user_a")
+    store.save_turn(first, "问题", "回答")
+
+    conn = store.get_connection()
+    conn.execute(
+        "UPDATE messages SET created_at='2030-01-01 00:00:00' WHERE conversation_id=?",
+        (first,),
+    )
+    conn.commit()
+    conn.close()
+
+    result = store.list_conversations("user_a")
+
+    assert [item["id"] for item in result] == [first, second]
+
+
+#测试历史会话隔离
+def test_conversation_list_only_shows_own():
+    first=store.create_conversation("会话a","user_a")
+    second=store.create_conversation("会话b","user_b")
+    
+    response=client.get("/conversations")
+
+    assert response.status_code==200
+    ids = [item["id"] for item in response.json()["conversations"]]
+    assert ids == [first]
+
+
+#模拟整理草稿
+def test_generate_draft_uses_all_messages(monkeypatch):
+    conversation_id = store.create_conversation("杭州", "user_a")
+    for index in range(5):
+        store.save_turn(conversation_id, f"问题{index}", f"回答{index}")
+
+    seen = {}
+
+    def fake_generate(messages, target_id):
+        seen["count"] = len(messages)
+        return {"draft": {"name": "杭州两日游"}, "error": ""}
+
+    monkeypatch.setattr(api, "generate_draft", fake_generate)
+
+    response = client.post(f"/conversations/{conversation_id}/draft/generate")
+
+    assert response.status_code == 200
+    assert response.json()["draft"]["name"] == "杭州两日游"
+    assert seen["count"] == 10
+
+#模拟空聊天报错
+def test_generate_draft_empty_conversation(monkeypatch):
+    conversation_id = store.create_conversation("杭州", "user_a")
+    fake_generate = Mock()
+    monkeypatch.setattr(api, "generate_draft", fake_generate)
+
+    response = client.post(f"/conversations/{conversation_id}/draft/generate")
+
+    assert response.status_code == 422
+    fake_generate.assert_not_called()
+
+#模拟其他用户是否隔离
+def test_generate_draft_forbidden_for_other_user(monkeypatch):
+    conversation_id=store.create_conversation("杭州","user_b")
+    fake_generate=Mock()
+    monkeypatch.setattr(api,"generate_draft",fake_generate)
+
+    response=client.post(f"/conversations/{conversation_id}/draft/generate")
+
+    assert response.status_code==403
+    fake_generate.assert_not_called()
+
+
+#保存过草案的会话，/chat 会把草案内容传给模型。
+def test_chat_passage_draft_to_model(monkeypatch):
+    conversation_id=store.create_conversation("杭州","user_a")
+    draft = to_draft(ExtractedDraft(adult_prices={"meal_price": 80}), conversation_id)
+    store.save_draft(conversation_id,draft)
+    seen=[]
+
+    def fake_call_model(question,history=None,*,pending_question=None):
+        seen.append(history)
+        return {
+            "data": {"answer": "好的", "sources": []},
+            "error": "",
+            "record": None,
+            "pending_question": None,
+        }
+
+
+    monkeypatch.setitem(
+        api.app.dependency_overrides,
+        api.get_model_caller,
+        lambda: fake_call_model,
+    )
+
+
+    response=client.post(
+        "/chat",
+        json={"question": "餐费多少", "conversation_id": conversation_id},
+    )
+
+    assert response.status_code==200
+    assert seen[0][0]["role"]=="system"
+    assert "餐饮80.0元" in seen[0][0]["content"]
+
+
+def fake_draft_chat(question, history=None, *, pending_question=None):
+    return {
+        "data": {"answer": "好的", "sources": []},
+        "error": "",
+        "record": None,
+        "pending_question": None,
+        "draft_requested": True,
+    }
+
+
+def test_chat_generates_draft_with_current_turn(monkeypatch):
+    seen = []
+
+    def fake_generate(messages, conversation_id):
+        seen.extend(messages)
+        return {"draft": {"name": "杭州"}, "error": ""}
+
+    monkeypatch.setitem(api.app.dependency_overrides, api.get_model_caller, lambda: fake_draft_chat)
+    monkeypatch.setattr(api, "generate_draft", fake_generate)
+
+    response = client.post("/chat", json={"question": "餐费80，整理成草案"})
+
+    assert response.status_code == 200
+    assert response.json()["generated_draft"] == {"name": "杭州"}
+    assert seen[0]["content"] == "餐费80，整理成草案"
+
+
+def test_chat_keeps_answer_when_draft_fails(monkeypatch):
+    monkeypatch.setitem(api.app.dependency_overrides, api.get_model_caller, lambda: fake_draft_chat)
+    monkeypatch.setattr(
+        api, "generate_draft",
+        lambda messages, conversation_id: {"draft": None, "error": "草案整理失败，请重试"},
+    )
+
+    response = client.post("/chat", json={"question": "整理成草案"})
+
+    assert response.status_code == 200
+    assert response.json()["data"]["answer"] == "好的"
+    assert response.json()["generated_draft"] is None
+    assert response.json()["draft_error"] == "草案整理失败，请重试"
+
+
+def test_chat_keeps_answer_when_quota_runs_out(monkeypatch):
+    fake_generate = Mock()
+    monkeypatch.setitem(api.app.dependency_overrides, api.get_model_caller, lambda: fake_draft_chat)
+    monkeypatch.setattr(api, "generate_draft", fake_generate)
+    monkeypatch.setattr(api, "DAILY_CHAT_LIMIT", 1)
+
+    response = client.post("/chat", json={"question": "整理成草案"})
+
+    assert response.status_code == 200
+    assert response.json()["draft_error"] == "今日调用次数已用完"
+    fake_generate.assert_not_called()
+
+
+#模拟工具
+def knowledge_call():
+    return {
+        "id": "call_search",
+        "type": "function",
+        "function": {"name": "knowledge_search", "arguments": '{"query": "这个团多少钱"}'},
+    }
+
+#如果进行了澄清
+def test_clarification_returns_without_second_model_call(monkeypatch):
+    fake_model = Mock(return_value={
+        "role": "assistant", "content": None, "tool_calls": [knowledge_call()],
+    })
+    monkeypatch.setattr("app.tool_calling.call_tool_model", fake_model)
+    monkeypatch.setattr(
+        "app.tool_calling.execute_tool",
+        Mock(return_value={
+            "ok": True, "data": {"clarification": "是哪家商家？"}, "error": None,
+        }),
+    )
+
+    result = run_tool_chat("这个团多少钱")
+
+    assert result == {"answer": "是哪家商家？", "error": ""}
+    assert fake_model.call_count == 1
+
+
+#测试建立的小本本
+def test_tool_chat_builds_search_state(monkeypatch):
+    seen = {}
+
+    def fake_execute(tool_name, raw):
+        seen.update(search_state_var.get())
+        return {"ok": True, "data": {"evidence": []}, "error": None}
+
+    fake_model = Mock(side_effect=[
+        {"role": "assistant", "content": None, "tool_calls": [knowledge_call()]},
+        {"role": "assistant", "content": "没有查到"},
+    ])
+    monkeypatch.setattr("app.tool_calling.call_tool_model", fake_model)
+    monkeypatch.setattr("app.tool_calling.execute_tool", fake_execute)
+    history = [
+        {"role": "system", "content": "草案内容"},
+        {"role": "user", "content": "杭州两日游"},
+    ]
+
+    run_tool_chat("这个团多少钱", history=history)
+
+    assert seen["history"] == [  #查过滤，并带上本轮原话
+        {"role": "user", "content": "杭州两日游"},
+        {"role": "user", "content": "这个团多少钱"},
+    ]
+    assert search_state_var.get() is None  #查小本子在不在

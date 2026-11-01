@@ -3,8 +3,7 @@
 与 app/streamlit.py 并存，可分别启动比较：
     streamlit run app/streamlit_workspace.py --server.port 8502
 
-真实接口：聊天、会话、草稿、方案和费用核算（见 workspace_api）。
-演示数据：历史会话列表、生成草案（见 workspace_mock）。
+真实接口：聊天、会话、草稿、生成草案、方案和费用核算（见 workspace_api）。
 """
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -12,7 +11,6 @@ from decimal import Decimal
 import streamlit as st
 
 from app import workspace_api as api
-from app import workspace_mock as mock
 from app.workspace_plan import (
     LODGING_MODES,
     PLAN_STATUSES,
@@ -61,6 +59,8 @@ st.markdown(
     [data-testid="stChatMessage"] td { padding: 0.55rem 0.75rem; vertical-align: top; }
     [data-testid="stText"] { font-family: inherit; line-height: 1.65; overflow-wrap: anywhere; }
     [data-testid="stMetricValue"] { font-size: 1.3rem; }
+    [data-testid="stSidebar"] button[kind="tertiary"] > div { justify-content: flex-start; }
+    [data-testid="stSidebar"] button[kind="tertiary"] p { text-align: left; }
     @media (max-width: 768px) {
         .block-container { padding-top: 1rem; padding-inline: 1rem; }
         [data-testid="stChatMessage"] { padding: 0.75rem; }
@@ -70,7 +70,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-DEMO_BADGE = ":gray-badge[演示]"
 USER_AVATAR = ":material/person:"
 ASSISTANT_AVATAR = ":material/travel_explore:"
 WEEKDAYS = "一二三四五六日"
@@ -171,10 +170,10 @@ def draft_changed():
 
 
 def needs_discard_confirmation():
-    """有修改，或演示/已打开的草案尚未保存时，离开前需要确认。"""
+    """有修改，或已打开的草案尚未保存时，离开前需要确认；生成的草案会自动保存到会话。"""
     if ss.draft is None:
         return False
-    return draft_changed() or (ss.draft["plan_id"] is None and ss.draft_origin not in {"blank", "autosaved"})
+    return draft_changed() or (ss.draft["plan_id"] is None and ss.draft_origin not in {"blank", "autosaved", "generated"})
 
 
 def quote_state():
@@ -244,6 +243,38 @@ def run_action(action):
         ss.reopened = True
         notify("success", f"已打开方案 #{action['plan_id']} 继续编辑")
 
+    elif kind == "generate_draft":
+        generate_draft_from_chat()
+
+    elif kind == "apply_generated":
+        apply_generated_draft(action["draft"])
+
+
+def generate_draft_from_chat():
+    """读取这个会话的全部聊天记录，由模型整理成草案；员工核对后才保存。"""
+    with st.spinner("正在整理聊天内容……"):
+        result = api.generate_draft(ss.conversation_id, current_token())
+    if not result["ok"]:
+        notify("error", result["error"])
+        return
+    apply_generated_draft(result["data"]["draft"])
+
+
+def apply_generated_draft(generated):
+    current = ss.draft
+    draft = restore_draft(generated)
+    if current is None:
+        load_draft(draft, origin="generated")
+    else:
+        # 重新生成不换方案：保留编号和版本，保存时才能生成新版本；旧基线用来显示“有未保存修改”。
+        baseline = ss.baseline
+        origin = ss.draft_origin
+        for key in ("plan_id", "version", "status"):
+            draft[key] = current[key]
+        load_draft(draft, origin=origin)
+        ss.baseline = baseline
+    notify("success", "已整理成草案，请核对内容；空着的价格是聊天里没有确定的")
+
 
 ACTION_TEXT = {
     "new_conversation": "新建对话",
@@ -257,10 +288,13 @@ def render_pending_action():
     if action is None:
         return
     with st.container(border=True):
-        st.markdown(
-            f":orange[**当前方案尚未保存**] · {ACTION_TEXT[action['type']]}将放弃这些修改。"
-            "如需保留，请先取消并点击“保存方案”。"
-        )
+        if action["type"] in {"generate_draft", "apply_generated"}:
+            st.markdown(":orange[**重新生成会覆盖当前页面的内容**] · 你的手动修改会被替换，确认后才生效。")
+        else:
+            st.markdown(
+                f":orange[**当前方案尚未保存**] · {ACTION_TEXT[action['type']]}将放弃这些修改。"
+                "如需保留，请先取消并点击“保存方案”。"
+            )
         with st.container(horizontal=True):
             st.button("放弃修改并继续", type="primary", on_click=run_action, args=(action,))
             st.button("取消", on_click=lambda: ss.update(pending_action=None))
@@ -315,10 +349,6 @@ def add_manual_item(input_key):
 
 def remove_manual_item(index):
     ss.draft["manual_items"].pop(index)
-
-
-def generate_demo_draft():
-    load_draft(mock.build_demo_draft(ss.conversation_id), origin="demo")
 
 
 def create_blank_draft():
@@ -533,6 +563,14 @@ def submit_question(question, box):
             "evidence": data["evidence"],
             "needs_clarification": data["needs_clarification"],
         })
+        # 聊天里要求整理草案：页面有未保存修改时先确认，不直接覆盖。
+        if data["generated_draft"]:
+            if draft_changed():
+                ss.pending_action = {"type": "apply_generated", "draft": data["generated_draft"]}
+            else:
+                apply_generated_draft(data["generated_draft"])
+        elif data["draft_error"]:
+            notify("error", f"草案没有整理成功：{data['draft_error']}")
     else:
         ss.chat_error = {"question": question, "message": result["error"]}
     st.rerun()
@@ -577,14 +615,17 @@ def render_chat():
 
 def render_draft_empty_state():
     st.markdown("当前会话还没有方案草案。")
-    st.caption("先在左侧查资料，再生成草案并调整；只有点击“保存方案”才会进入方案库。")
+    st.caption("先在左侧聊好线路和价格，再整理成草案并调整；只有点击“保存方案”才会进入方案库。")
     with st.container(horizontal=True):
-        st.button(
+        if st.button(
             "生成路线草案", type="primary", icon=":material/auto_awesome:",
-            on_click=generate_demo_draft, key="generate_demo_draft",
-        )
+            key="generate_draft", disabled=ss.conversation_id is None,
+        ):
+            run_action({"type": "generate_draft"})
+            st.rerun()
         st.button("新建空白草案", icon=":material/note_add:", on_click=create_blank_draft, key="create_blank")
-    st.caption(f"{DEMO_BADGE} 生成草案暂用结构化示例数据，不从聊天回答中解析。")
+    if ss.conversation_id is None:
+        st.caption("发送第一条消息后，就可以把聊天内容整理成草案。")
 
 
 def render_day(draft, day_index, day):
@@ -944,6 +985,11 @@ def render_plan_header():
                 f":gray[{draft['plan_id'] or '新方案'} · 待确认 {pending_count} 项]",
                 width="stretch",
             )
+        if draft is not None and ss.conversation_id is not None:
+            st.button(
+                "重新生成", icon=":material/refresh:", key="regenerate_draft",
+                on_click=lambda: ss.update(pending_action={"type": "generate_draft"}),
+            )
         # 保存：只有明确点击才写入方案库。
         if st.button(
             "保存方案", type="primary", icon=":material/save:", key="save_plan", disabled=draft is None,
@@ -954,6 +1000,8 @@ def render_plan_header():
     if draft is not None and draft["status"] == "confirmed" and draft_changed():
         st.caption(":orange[已确认的方案有修改，保存后会生成新版本，需要重新提交。]")
     render_status_actions(draft)
+    if draft is not None and draft["plan_id"] is not None:
+        st.caption("要做另一条线路，建议点“新建对话”，避免价格和景点混在一起。")
     if ss.autosave_error:
         st.caption(f":orange[草稿自动保存失败：{md_escape(ss.autosave_error)}]")
 
@@ -996,6 +1044,27 @@ def delete_current_conversation():
     notify("success", f"已删除会话 #{conversation_id}")
 
 
+def render_conversation_list():
+    result = api.list_conversations(current_token())
+    if not result["ok"]:
+        st.error(result["error"], icon=":material/error:")
+        return
+
+    conversations = result["data"]["conversations"]
+    if not conversations:
+        st.caption("还没有历史会话。")
+
+    for item in conversations:
+        # 按钮文字支持 Markdown，标题来自用户问题，需要转义。
+        if st.button(
+            md_escape(item["title"]), key=f"open_conversation_{item['id']}", type="tertiary",
+            width="stretch", disabled=item["id"] == ss.conversation_id,
+        ):
+            open_conversation(item["id"])
+            st.rerun()
+        st.caption(display_time(item["updated_at"]))
+
+
 def render_sidebar():
     with st.sidebar:
         st.markdown("### 会话工作台")
@@ -1009,14 +1078,6 @@ def render_sidebar():
 
         st.caption("当前是新对话" if ss.conversation_id is None else f"当前会话 #{ss.conversation_id}")
 
-        with st.popover("打开已有会话", icon=":material/folder_open:", width="stretch"):
-            conversation_id = st.number_input(
-                "会话编号", min_value=1, step=1, value=None, placeholder="例如 12", key="open_conversation_id",
-            )
-            if st.button("打开", key="open_conversation_button", disabled=conversation_id is None):
-                open_conversation(int(conversation_id))
-                st.rerun()
-
         if ss.conversation_id is not None:
             with st.popover("删除当前会话", icon=":material/delete:", width="stretch"):
                 st.caption("将删除后端保存的聊天记录，并清空当前页面的未保存草案；已保存的方案不受影响。")
@@ -1028,10 +1089,8 @@ def render_sidebar():
             st.error(ss.sidebar_error, icon=":material/error:")
 
         st.divider()
-        st.markdown(f"**历史会话** {DEMO_BADGE}")
-        for item in mock.DEMO_CONVERSATIONS.get(ss.user_select, []):
-            st.markdown(f"{item['title']}  \n:gray[{item['updated_at']}]")
-        st.caption("会话列表接口实现后，可在这里直接打开历史会话。")
+        st.markdown("**历史会话**")
+        render_conversation_list()
 
         st.divider()
         st.caption("资料与费用仅供员工参考，实际政策和最终报价仍需核实。")

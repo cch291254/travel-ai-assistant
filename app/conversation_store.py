@@ -307,6 +307,29 @@ def consume_daily_quota(owner_id,day,limit):
     finally:
         conn.close()
 
+#会话历史
+def list_conversations(owner_id,limit=30):
+    conn=get_connection()
+
+    try:
+        rows=conn.execute("""
+        SELECT c.id,c.title,COALESCE(MAX(m.created_at),c.created_at) 
+        AS updated_at
+        FROM conversations c
+        LEFT JOIN messages m ON m.conversation_id=c.id
+        WHERE c.owner_id=?
+        GROUP BY c.id 
+        ORDER BY updated_at DESC,c.id DESC
+        LIMIT ?""",(owner_id,limit)).fetchall()
+
+        results=[]
+        for row in rows:
+
+            results.append({"id":row[0],"title":row[1],"updated_at":row[2]})
+        return results
+    finally:
+        conn.close()
+
 
 
 if __name__=="__main__":

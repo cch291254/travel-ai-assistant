@@ -6,10 +6,11 @@ import sys
 from decimal import Decimal
 from pathlib import Path
 from types import ModuleType
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 import requests
 import pytest
+from app.tools import plan_search,trace_rewrite_usage
 
 from app.tool_results import tool_result_to_json
 from app.tools import (
@@ -19,6 +20,9 @@ from app.tools import (
     execute_tool,
     validate_search_input,
     build_model_tools,
+    retrieve_routes,
+    get_search_plan,
+    search_state_var
 )
 
 
@@ -89,8 +93,11 @@ def test_search_passes_resources_and_counts(fake_search):
 
     get_resources.assert_called_once_with()
     retrieve.assert_called_once_with(
-        question="杭州住宿",
-        **resources,
+        "杭州住宿",
+        resources["model"],
+        resources["collection"],
+        resources["reranker"],
+        where=None,
         n_results=7,
         top_k=3,
     )
@@ -483,3 +490,181 @@ def test_quote_child_price_boundaries(
     else:
         assert data["child_costs"]["child_base"] == Decimal("0.00")
         assert "meal_price" not in data["child_costs"]["missing_items"]
+
+
+def test_retrieve_routes_removes_duplicates(fake_search):
+    resources, _, retrieve = fake_search
+    retrieve.side_effect = [
+        [{"chunk_id": "1"}, {"chunk_id": "2"}],
+        [{"chunk_id": "2"}, {"chunk_id": "3"}],
+    ]
+
+    result = retrieve_routes(["a", "b"], resources)
+
+    assert [item["chunk_id"] for item in result] == ["1", "2", "3"]
+    assert retrieve.call_count == 2
+
+
+#假冒重写
+def fake_rewrite(**values):
+    result = {
+        "answer": "完整问题",
+        "error": "",
+        "sub_questions": [],
+        "needs_clarification": False,
+        "clarification_question": "",
+        "target_source_ids": [],
+    }
+    result.update(values)
+    return lambda question, history=None: result
+
+#测试改写失败
+def test_plan_search_keeps_query_when_rewrite_fails(monkeypatch):
+    monkeypatch.setattr(
+        "app.query_rewriter.rewrite_retrieval_question",
+        fake_rewrite(error="改写失败"),
+    )
+
+    assert plan_search("原问题") == {
+        "queries": ["原问题"], "where": None, "clarification": "",
+    }
+
+
+#测试澄清返回
+def test_plan_search_returns_clarification(monkeypatch):
+    monkeypatch.setattr(
+        "app.query_rewriter.rewrite_retrieval_question",
+        fake_rewrite(needs_clarification=True, clarification_question="是哪家商家？"),
+    )
+
+    assert plan_search("原问题")["clarification"] == "是哪家商家？"
+
+
+#测试完整链路
+def test_plan_search_builds_routes_and_filter(monkeypatch):
+    monkeypatch.setattr(
+        "app.query_rewriter.rewrite_retrieval_question",
+        fake_rewrite(
+            sub_questions=["完整问题", "子问题"],
+            target_source_ids=["S05"],
+        ),
+    )
+
+    plan = plan_search("原问题")
+
+    assert plan["queries"] == ["完整问题", "子问题"]
+    assert plan["where"] == {"source_id": {"$in": ["S05"]}}
+
+
+def test_plan_search_without_target_searches_all(monkeypatch):
+    monkeypatch.setattr(
+        "app.query_rewriter.rewrite_retrieval_question",
+        fake_rewrite(),
+    )
+
+    assert plan_search("原问题")["where"] is None
+
+
+
+@pytest.fixture
+def search_state():
+    state = {"history": [], "searched": False, "where": None}
+    token = search_state_var.set(state)
+    yield state
+    search_state_var.reset(token)
+
+
+def test_search_plan_without_state_keeps_query():
+    assert get_search_plan("原问题") == {
+        "queries": ["原问题"], "where": None, "clarification": "",
+    }
+
+
+def test_search_plan_rewrites_only_first_search(monkeypatch, search_state):
+    rewrite = Mock(side_effect=fake_rewrite(target_source_ids=["S05"]))
+    monkeypatch.setattr("app.query_rewriter.rewrite_retrieval_question", rewrite)
+
+    first = get_search_plan("第一次")
+    second = get_search_plan("第二次")
+
+    assert first["queries"] == ["完整问题"]
+    assert second == {
+        "queries": ["第二次"],
+        "where": {"source_id": {"$in": ["S05"]}},
+        "clarification": "",
+    }
+    rewrite.assert_called_once_with("第一次", history=[])
+
+
+
+#测试问题澄清路线
+def test_search_returns_clarification_without_loading(
+    monkeypatch, fake_search, search_state,
+):
+    _, get_resources, _ = fake_search
+    monkeypatch.setattr(
+        "app.query_rewriter.rewrite_retrieval_question",
+        fake_rewrite(needs_clarification=True, clarification_question="是哪家商家？"),
+    )
+
+    result = execute_tool("knowledge_search", {"query": "这个团多少钱"})
+
+    assert result["data"] == {"clarification": "是哪家商家？"}
+    get_resources.assert_not_called()
+
+
+#测试资料不足补充新的切片
+def test_search_retries_all_when_filter_finds_too_little(
+    monkeypatch, fake_search, search_state,
+):
+    _, _, retrieve = fake_search  #元组拆包 ,只拿最后一个
+    retrieve.side_effect = [
+        [{"chunk_id": "1"}],
+        [{"chunk_id": "1"}, {"chunk_id": "2"}],
+    ]
+    monkeypatch.setattr(
+        "app.query_rewriter.rewrite_retrieval_question",
+        fake_rewrite(target_source_ids=["S05"]),
+    )
+
+    result = execute_tool("knowledge_search", {"query": "S05 退款"})
+
+    assert [item["chunk_id"] for item in result["data"]["evidence"]] == ["1", "2"]
+    assert retrieve.call_args_list[0].kwargs["where"] == {"source_id": {"$in": ["S05"]}}
+    assert retrieve.call_args_list[1].kwargs["where"] is None
+
+
+#计算token
+def test_rewrite_usage_is_traced(monkeypatch):
+    client = MagicMock()
+    generation = client.start_as_current_observation.return_value.__enter__.return_value
+    monkeypatch.setattr("app.tracing.get_tracing_client", lambda: client)
+
+    trace_rewrite_usage({
+        "模型名": "demo", "输入tokens": 10, "输出tokens": 2, "总tokens": 12,
+    })
+
+    assert client.start_as_current_observation.call_args.kwargs["name"] == "model-call"
+    generation.update.assert_called_once_with(
+        usage_details={"input": 10, "output": 2, "total": 12},
+    )
+
+
+def test_rewrite_usage_skips_empty_record(monkeypatch):
+    client = MagicMock()
+    monkeypatch.setattr("app.tracing.get_tracing_client", lambda: client)
+
+    trace_rewrite_usage(None)
+
+    client.start_as_current_observation.assert_not_called()
+
+
+def test_model_tools_keep_price_fields_simple():
+    quote_tool = next(
+        item for item in build_model_tools()
+        if item["function"]["name"] == "calculate_quote"
+    )
+
+    meal = quote_tool["function"]["parameters"]["properties"]["meal_price"]
+
+    assert meal == {"type": "number", "description": "餐饮，元/成人"}
