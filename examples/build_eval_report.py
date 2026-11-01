@@ -25,6 +25,7 @@ HUMAN_GROUNDEDNESS = "human_groundedness"
 ATTRIBUTIONS = ("检索", "重排", "生成", "工具")
 SCORE_FIELDS = "details"
 EVIDENCE_PREVIEW = 300
+LAST_CORE_CASE = 30
 TRACE_URL = "https://jp.cloud.langfuse.com/project/cmvpbwbvk000mad0emaw9f3ja/traces/"
 
 # 问题类型按定位顺序排列：先看有没有跑完，再看检索，最后看回答。
@@ -211,6 +212,18 @@ def overall_rows(summaries):
     ]
 
 
+def scope_rows(summaries):
+    """E31–E40 全部是工具题，分开统计才能看出知识库和多轮题的真实水平。"""
+    scopes = [
+        [summary for summary in summaries if int(summary["case_id"][1:]) <= LAST_CORE_CASE],
+        [summary for summary in summaries if int(summary["case_id"][1:]) > LAST_CORE_CASE],
+    ]
+    if not all(scopes):
+        return []
+    core_rows, tool_rows = [overall_rows(members) for members in scopes]
+    return [(name, core, tool) for (name, core, _), (_, tool, _) in zip(core_rows, tool_rows)]
+
+
 def group_rows(summaries):
     rows = []
     for name in [*CASE_GROUPS, "未分组"]:
@@ -252,6 +265,18 @@ def build_report(run, langfuse_scores=None):
         "",
         *table(["指标", "结果", "说明"], overall_rows(summaries)),
         "",
+    ]
+
+    scoped = scope_rows(summaries)
+    if scoped:
+        lines += [
+            "## 分范围指标",
+            "",
+            *table(["指标", "E01–E30 知识库与多轮", "E31–E40 工具"], scoped),
+            "",
+        ]
+
+    lines += [
         "## 分题型结果",
         "",
         *table(["题型", "题数", "证据完整命中", "要点覆盖", "幻觉率"], group_rows(summaries)),

@@ -104,6 +104,22 @@ def test_build_report_groups_cases():
     assert "1/2（50.00%）" in text
 
 
+def test_report_splits_core_and_tool_cases():
+    run = {"results": [make_case("E01"), make_case("E31")]}
+    scores = {"trace-E01": human(0.5, 0), "trace-E31": human(1, 1)}
+
+    text = report.build_report(run, scores)
+
+    assert "## 分范围指标" in text
+    assert "| 要点覆盖率 | 0.50 | 1.00 |" in text
+
+
+def test_report_skips_split_when_one_side_is_missing():
+    text = report.build_report({"results": [make_case("E01")]}, {})
+
+    assert "## 分范围指标" not in text
+
+
 def test_find_latest_run_skips_usage_file(tmp_path):
     (tmp_path / "20261028T01.json").write_text("{}", encoding="utf-8")
     (tmp_path / "20261029T01.json").write_text("{}", encoding="utf-8")
