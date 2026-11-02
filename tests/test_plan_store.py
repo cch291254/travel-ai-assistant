@@ -223,3 +223,20 @@ def test_save_plan_version_updates_title():
 
     plan_store.save_plan_version(plan_id,empty_draft(),2,"user_a",title="杭州四日游")
     assert plan_store.get_plan(plan_id)["title"]=="杭州四日游"
+
+
+
+def test_list_confirmed_plans_keeps_last_confirmed_version():
+    draft = empty_draft()
+    draft["lodging_mode"] = "none"
+    for key in draft["prices"]["adult"]:
+        draft["prices"]["adult"][key] = 10
+    plan_id = plan_store.create_plan("user_a", "杭州两日游", draft)
+    plan_store.change_plan_status(plan_id, 1, "pending")
+    assert plan_store.change_plan_status(plan_id, 1, "confirmed")["ok"]
+    plan_store.save_plan_version(plan_id, {"adults": 3}, 1, "user_a")
+
+    plans = plan_store.list_confirmed_plans()
+
+    assert [(plan["id"], plan["current_version"]) for plan in plans] == [(plan_id, 1)]
+    assert plans[0]["draft"] == draft

@@ -20,6 +20,7 @@ ACCOMMODATION_QUANTITY_MESSAGE = (
 )
 
 search_state_var=ContextVar("search_state",default=None)
+owner_id_var=ContextVar("owner_id",default=None)
 
 def validate_search_input(raw):
     try:
@@ -260,6 +261,37 @@ def knowledge_search(raw):
         return tool_failure("RETRIEVAL_FAILED", "资料检索暂时不可用，请稍后再试")
     return tool_success({"evidence": evidence})
 
+#检索已确认方案
+def confirmed_plan_search(raw):
+    validation=validate_search_input(raw)
+    if not validation["ok"]:
+        return validation
+    owner_id=owner_id_var.get()
+    if owner_id is None:
+        return tool_failure("NO_OWNER","无法确认员工身份不能查询方案")
+
+    try:
+        from app.plan_index import get_plan_collection
+        from app.rag_resources import get_rag_resources
+        resources={
+            **get_rag_resources(),
+            "collection":get_plan_collection()
+        }
+
+        evidence=retrieve_routes(
+            [validation["data"]["query"]],
+            resources,
+            where={"owner_id":owner_id}
+        )
+
+    except Exception:
+        logger.exception("方案检索工具执行失败")
+        return tool_failure("RETRIEVAL_FAILED","方案检索暂时不可用，请稍后重试")
+
+    return tool_success({"evidence":evidence})
+
+
+
 #网络搜索
 def web_search(raw):
     validation=validate_web_search_input(raw)
@@ -421,7 +453,13 @@ TOOL_CONTRACTS = {
         ),
         "parameters": SaveToDraftInput.model_json_schema(),
     },
-
+        "confirmed_plan_search": {
+        "description": (
+            "检索当前员工已确认的历史线路方案。只有员工问到以前做过的方案、"
+            "想参考旧行程或旧报价时才调用；方案价格只代表当时那一单，不是业务规则。"
+        ),
+        "parameters": KnowledgeSearchInput.model_json_schema(),
+    },
     }
 
 
@@ -430,7 +468,8 @@ TOOL_HANDLERS = {
     "knowledge_search": knowledge_search,   #知识检索
     "web_search":web_search,
     "web_fetch": web_fetch,
-    "save_to_draft":save_to_draft
+    "save_to_draft":save_to_draft,
+    "confirmed_plan_search": confirmed_plan_search,
 }
 
 

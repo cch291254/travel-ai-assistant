@@ -18,7 +18,7 @@ from app.tracing import setup_tracing,shutdown_tracing,get_tracing_client
 
 import json
 from app.tool_schemas import CalculateQuoteInput
-from app.tools import calculate_quote_parts
+from app.tools import calculate_quote_parts,owner_id_var
 from app.tool_results import tool_result_to_json
 
 from typing import Literal
@@ -39,7 +39,8 @@ async def lifespan(app):    #应用生命周期的写法，聊天接口保持原
     setup_tracing()   
     try:
         from app.rag_resources import get_rag_resources
-        get_rag_resources()
+        resources=get_rag_resources()
+        _check_plan_index(resources["model"])
     except Exception:  #这里提前加载模型
         logger.exception("模型预加载失败，第一次检索时会重试")
     logger.info("后端启动，日志配置已就绪")
@@ -50,7 +51,19 @@ async def lifespan(app):    #应用生命周期的写法，聊天接口保持原
         shutdown_tracing()  #发送追踪
         #这里关闭同步
         logger.info("后端已关闭")
+
     
+#启动时核对方案索引：补上写入失败的方案，删掉已删除方案的切片
+def _check_plan_index(model):
+    try:
+        from app.plan_index import get_plan_collection,rebuild_plan_index
+        from app.plan_store import list_confirmed_plans
+
+        result=rebuild_plan_index(list_confirmed_plans(),model,get_plan_collection())
+        logger.info("方案索引已核对 indexed=%s deleted=%s",result["indexed"],result["deleted"])
+    except Exception:
+        logger.exception("方案索引核对失败，下次启动会重试")
+
 
 init_db()
 app = FastAPI(lifespan=lifespan)
@@ -153,6 +166,33 @@ def _get_owner_conversation(conversation_id,current_user_id):
         )
 
     return conversation
+
+#保存方案
+def _sync_confirmed_plan(plan_id):
+    try:
+        from app.plan_index import (get_plan_collection,index_confirmed_plan)
+        from app.rag_resources import get_rag_resources
+
+        with RAG_REQUEST_LOCK:
+            model=get_rag_resources()["model"]
+
+            index_confirmed_plan(get_plan(plan_id),model,get_plan_collection())
+    except Exception:
+        logger.exception("方案写入向量库失败 plan_id=%s",plan_id)
+
+
+def _remove_plan_index(plan_id):
+    try:
+        from app.plan_index import get_plan_collection,remove_plan_chunks
+
+
+        with RAG_REQUEST_LOCK:
+            remove_plan_chunks(plan_id,get_plan_collection())
+    except Exception:
+        logger.exception("方案切片删除失败 plan_Id=%s",plan_id)
+
+
+
 
 def _get_owner_plan(plan_id,current_user_id):
     plan=get_plan(plan_id)
@@ -364,9 +404,13 @@ def chat(
             
         _use_daily_quota(current_user_id)
 
-        result=model_caller(request.question,
-                            history=history,
-                            pending_question=pending_question)
+        owner_token=owner_id_var.set(current_user_id)
+        try:
+            result=model_caller(request.question,
+                                history=history,
+                                pending_question=pending_question)
+        finally:
+            owner_id_var.reset(owner_token)
 
         # 出错时不保存消息，也不覆盖数据库中的追问状态
         if result["error"]:
@@ -513,9 +557,10 @@ def remove_plan(plan_id:int=Path(ge=1),
     current_user_id:str =Depends(get_current_user_id)):
     _get_owner_plan(plan_id,current_user_id)
     delete_plan(plan_id)
+    _remove_plan_index(plan_id)
     return {"status":"deleted","plan_id":plan_id}
 
-
+#应用以前的方案
 @app.post("/plans/{plan_id}/copy")
 def copy_existing_plan(plan_id:int=Path(ge=1),
     current_user_id:str =Depends(get_current_user_id)):
@@ -523,7 +568,7 @@ def copy_existing_plan(plan_id:int=Path(ge=1),
     new_plan_id=copy_plan(plan_id,current_user_id)
     return{"plan_id":new_plan_id,"version":1}
 
-
+#更新版本
 @app.put("/plans/{plan_id}")
 def update_plan(request:SavePlanRequest,
         plan_id:int =Path(ge=1),
@@ -532,9 +577,11 @@ def update_plan(request:SavePlanRequest,
     new_version=save_plan_version(plan_id,request.draft,request.base_version,current_user_id,request.title)
     if new_version is None:
         raise HTTPException(status_code=409,detail="方案已被修改，请刷新后重试")
+    
     return {"plan_id":plan_id,"version":new_version}
 
 
+#更新状态
 @app.post("/plans/{plan_id}/status")
 def update_plan_status(request:ChangePlanStatusRequest,
         plan_id:int =Path(ge=1),
@@ -548,5 +595,7 @@ def update_plan_status(request:ChangePlanStatusRequest,
             raise HTTPException(status_code=409,detail="当前状态不支持这个操作")
         if result["error"]=="missing_prices":
             raise HTTPException(status_code=422,detail="当前缺少这些价格："+"；".join(result["missing"]))
+    if result["status"]=="confirmed":
+        _sync_confirmed_plan(plan_id)
 
     return {"plan_id":plan_id,"status":result["status"]}

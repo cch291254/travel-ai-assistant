@@ -167,3 +167,24 @@ def copy_plan(plan_id,owner_id):
     new_plan_id=create_plan(owner_id,f'{plan["title"]}-副本',plan["draft"])
     return new_plan_id
 
+# 每条方案最新的已确认版本；当前版本可能已经改成新的草案
+def list_confirmed_plans():
+    conn=get_connection()
+    try:
+        rows=conn.execute("""
+            SELECT p.id,p.owner_id,p.title,v.version,v.draft_json
+            FROM plans p
+            JOIN plan_versions v ON v.plan_id=p.id
+            WHERE v.status='confirmed'
+            AND v.version=(
+                SELECT MAX(version) FROM plan_versions
+                WHERE plan_id=p.id AND status='confirmed'
+            )
+            ORDER BY p.id""").fetchall()
+        results=[]
+        for row in rows:
+            results.append({"id":row[0],"owner_id":row[1],"title":row[2],
+                            "current_version":row[3],"draft":json.loads(row[4])})
+        return results
+    finally:
+        conn.close()

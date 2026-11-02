@@ -19,8 +19,13 @@ client.headers.update({
     "Authorization":"Bearer token_a"
 })
 
+real_sync_confirmed_plan=api._sync_confirmed_plan
+
 @pytest.fixture(autouse=True)#每条测试自动使用临时数据库
 def isolated_db(tmp_path, monkeypatch):
+    #冒充向量库保存和删除
+    monkeypatch.setattr(api,"_sync_confirmed_plan",lambda plan_id:None)
+    monkeypatch.setattr(api,"_remove_plan_index",lambda plan_id:None)
     monkeypatch.setattr(
         store,
         "DB_PATH",
@@ -1392,3 +1397,79 @@ def test_tool_chat_builds_search_state(monkeypatch):
         {"role": "user", "content": "这个团多少钱"},
     ]
     assert search_state_var.get() is None  #查小本子在不在
+
+
+
+def confirmed_ready_plan():
+    draft = empty_draft()
+    draft["lodging_mode"] = "none"
+    for key in draft["prices"]["adult"]:
+        draft["prices"]["adult"][key] = 10
+    return client.post("/plans", json={"title": "杭州两日游", "draft": draft}).json()["plan_id"]
+
+
+#状态更新，存入向量库
+def test_only_confirmed_status_syncs_index(monkeypatch):
+    synced = []
+    monkeypatch.setattr(api, "_sync_confirmed_plan", synced.append)
+    plan_id = confirmed_ready_plan()
+    url = f"/plans/{plan_id}/status"
+
+    assert client.post(url, json={"status": "pending", "base_version": 1}).status_code == 200
+    assert synced == []
+
+    assert client.post(url, json={"status": "confirmed", "base_version": 1}).status_code == 200
+    assert synced == [plan_id]
+
+
+#测试向量库删除
+def test_delete_plan_removes_index(monkeypatch):
+    removed = []
+    monkeypatch.setattr(api, "_remove_plan_index", removed.append)
+    plan_id = confirmed_ready_plan()
+
+    assert client.delete(f"/plans/{plan_id}").status_code == 200
+
+    assert removed == [plan_id]
+
+#测试错误是否保存日志
+def test_index_failure_is_only_logged(monkeypatch, caplog):
+    monkeypatch.setattr(
+        "app.rag_resources.get_rag_resources",
+        Mock(side_effect=RuntimeError("模型加载失败")),
+    )
+
+    real_sync_confirmed_plan(1)
+
+    assert "方案写入向量库失败" in caplog.text
+
+
+#测试传入正确员工后收回
+def test_chat_passes_owner_to_tools():
+    seen = []
+
+    def fake_chat(question, history=None, *, pending_question=None):
+        seen.append(api.owner_id_var.get())
+        return {"data": {"answer": "好的", "sources": []}, "error": "",
+                "record": None, "pending_question": None}
+
+    api.app.dependency_overrides[api.get_model_caller] = lambda: fake_chat
+    try:
+        response = client.post("/chat", json={"question": "以前做过杭州的方案吗"})
+    finally:
+        api.app.dependency_overrides.pop(api.get_model_caller)
+
+    assert response.status_code == 200
+    assert seen == ["user_a"]
+    assert api.owner_id_var.get() is None
+
+
+def test_plan_index_check_failure_is_only_logged(monkeypatch, caplog):
+    monkeypatch.setattr(
+        "app.plan_store.list_confirmed_plans",
+        Mock(side_effect=RuntimeError("数据库读取失败")),
+    )
+
+    api._check_plan_index(object())
+
+    assert "方案索引核对失败" in caplog.text

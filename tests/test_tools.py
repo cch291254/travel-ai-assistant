@@ -22,7 +22,9 @@ from app.tools import (
     build_model_tools,
     retrieve_routes,
     get_search_plan,
-    search_state_var
+    search_state_var,
+    confirmed_plan_search,
+    owner_id_var,
 )
 
 
@@ -668,3 +670,29 @@ def test_model_tools_keep_price_fields_simple():
     meal = quote_tool["function"]["parameters"]["properties"]["meal_price"]
 
     assert meal == {"type": "number", "description": "餐饮，元/成人"}
+
+
+#只查自己的方案
+def test_plan_search_only_reads_own_plans(monkeypatch, fake_search):
+    resources, _, retrieve = fake_search
+    plan_collection = object()
+    monkeypatch.setattr("app.plan_index.get_plan_collection", lambda: plan_collection)
+    token = owner_id_var.set("user_a")
+    try:
+        result = confirmed_plan_search({"query": "杭州两日游"})
+    finally:
+        owner_id_var.reset(token)
+
+    assert result["ok"] is True
+    assert retrieve.call_args.args[2] is plan_collection
+    assert retrieve.call_args.kwargs["where"] == {"owner_id": "user_a"}
+
+
+#没有身份拒绝
+def test_plan_search_needs_owner(fake_search):
+    _, _, retrieve = fake_search
+
+    result = confirmed_plan_search({"query": "杭州两日游"})
+
+    assert result["error"]["code"] == "NO_OWNER"
+    retrieve.assert_not_called()

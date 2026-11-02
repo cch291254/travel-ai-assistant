@@ -14,6 +14,7 @@ from app.tracing import get_tracing_client
 
 
 logger = logging.getLogger(__name__)
+SEARCH_TOOLS={"knowledge_search","confirmed_plan_search"}
 
 #执行工具
 def execute_model_tool_call(tool_call):
@@ -391,7 +392,7 @@ def _run_tool_loop(question,history,max_rounds,max_tool_calls,counts):
             else:
                 #内部资料检索retrievel,其余tool
                 observation_type=(
-                    "retriever" if tool_name=="knowledge_search" else "tool"
+                    "retriever" if tool_name in SEARCH_TOOLS else "tool"
                 )
 
                 #自动归入当前聊天,先执行最终再正常运行
@@ -420,14 +421,14 @@ def _run_tool_loop(question,history,max_rounds,max_tool_calls,counts):
                             status_message=error_code,
                         )
 
-            if tool_name in {"knowledge_search", "web_search", "web_fetch"}:
+            if tool_name in SEARCH_TOOLS | { "web_search", "web_fetch"}:
                 execution_result = json.loads(tool_message["content"])
 
                 if execution_result["ok"]:
                     clarification=execution_result["data"].get("clarification")
                     if clarification:
                         return {"answer":clarification,"error":""}
-                    if tool_name == "knowledge_search":
+                    if tool_name in SEARCH_TOOLS:
                         current_evidence = execution_result["data"]["evidence"]
                     else:
                         current_evidence = build_web_evidence(
