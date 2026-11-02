@@ -1,6 +1,6 @@
 """旅行社 Copilot 工作台（下一阶段前端原型）。
 
-与 app/streamlit.py 并存，可分别启动比较：
+启动：
     streamlit run app/streamlit_workspace.py --server.port 8502
 
 真实接口：聊天、会话、草稿、生成草案、方案和费用核算（见 workspace_api）。

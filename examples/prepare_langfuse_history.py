@@ -3,7 +3,7 @@ from pathlib import Path
 
 #定位结果
 root=Path(__file__).resolve().parents[1]
-history_path=root/"docs"/"rag_eval_all_questions.json"
+history_path=root/"docs"/"evaluation"/"history"/"round3_results.json"
 
 history=json.loads(history_path.read_text(encoding="utf-8"))
 

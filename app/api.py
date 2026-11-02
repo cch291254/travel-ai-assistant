@@ -267,24 +267,6 @@ class ChangePlanStatusRequest(BaseModel):
 def health():
     return{"status":"ok"}
 
-def call_rag(question,history=None,*,pending_question=None):
-    from app.rag_resources import get_rag_resources
-    from app.rag_pipeline import run_rag
-
-    if history is None:
-        history=[]
-
-    resources=get_rag_resources()
-
-    return run_rag(
-        question=question,
-        history=history,
-        model=resources["model"],
-        collection=resources["collection"],
-        reranker=resources["reranker"],
-        pending_question=pending_question,
-    )
-
 #这里的请求是计算的
 @app.post("/quotes/calculate")
 def calculate_quote(

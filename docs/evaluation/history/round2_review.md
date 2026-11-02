@@ -127,7 +127,7 @@
 - 执行情况：成功0轮，错误1轮，跳过0轮。
 - 整题是否满足规则：否。
 - 主要问题：模型已生成部分路线，但达到300个输出 token 后中断，最终返回“回答不完整”。
-- 问题定位：[llm_client.py](/E:/ai-projects/travel-ai-assistant/app/llm_client.py:19)默认`max_tokens=300`；本次输出恰为300，结束原因为`length`，最终`data=null`。不是召回缺失或网络错误。
+- 问题定位：[llm_client.py](../../../app/llm_client.py:19)默认`max_tokens=300`；本次输出恰为300，结束原因为`length`，最终`data=null`。不是召回缺失或网络错误。
 
 
 
@@ -231,7 +231,7 @@
 - 执行情况：成功1轮，错误0轮，跳过0轮。
 - 整题是否满足规则：未完全满足。
 - 主要问题：已修正产品推荐错误，剩余问题主要是确认事项提醒不完整。
-- 问题定位：`tour_products:paragraph-4:chunk-1`已支持正确推荐；[产品限制说明](/E:/ai-projects/travel-ai-assistant/data/raw/tour_products.md:47)未进入最终证据，具体漏在初召回还是重排仍待定位。有效期已在证据元数据中提供，但回答未明确提醒核对。
+- 问题定位：`tour_products:paragraph-4:chunk-1`已支持正确推荐；[产品限制说明](../../../data/raw/tour_products.md:47)未进入最终证据，具体漏在初召回还是重排仍待定位。有效期已在证据元数据中提供，但回答未明确提醒核对。
 
 
 ## E11
@@ -292,7 +292,7 @@
 - 执行情况：成功1轮，错误0轮，跳过0轮。
 - 整题是否满足规则：未完全满足。
 - 主要问题：价格问题已改善，老人陪同要求仍漏答；满足陪同条件也不等于保证可订。
-- 问题定位：`pricing_rules:paragraph-23:chunk-1`已命中；[老人陪同规则](/E:/ai-projects/travel-ai-assistant/data/raw/supplier_notes.md:94)已有明确记载，但未进入最终证据，具体漏在初召回还是重排仍待定位。
+- 问题定位：`pricing_rules:paragraph-23:chunk-1`已命中；[老人陪同规则](../../../data/raw/supplier_notes.md:94)已有明确记载，但未进入最终证据，具体漏在初召回还是重排仍待定位。
 
 
 
@@ -310,7 +310,7 @@
 - 执行情况：成功1轮，错误0轮，跳过0轮。
 - 整题是否满足规则：否。
 - 主要问题：正确集合信息已召回却未使用；应提供07:15延安路595号浙江大酒店，另一处为08:30南山路15号雷峰塔检票口，2027年实际安排仍需确认。
-- 问题定位：`hangzhou_routes:paragraph-48:chunk-1`已命中，但回答只引用S05第26段；[S06返程说明](/E:/ai-projects/travel-ai-assistant/data/raw/hangzhou_routes.md:165)未进入最终证据，具体漏在初召回还是重排待定位。
+- 问题定位：`hangzhou_routes:paragraph-48:chunk-1`已命中，但回答只引用S05第26段；[S06返程说明](../../../data/raw/hangzhou_routes.md:165)未进入最终证据，具体漏在初召回还是重排待定位。
 
 
 
@@ -344,7 +344,7 @@
 - 执行情况：成功1轮，错误0轮，跳过0轮。
 - 整题是否满足规则：否。
 - 主要问题：应提供S05的09:00雷峰塔检票口参考集合安排，而非S06的07:15、08:30；另需提醒386元并非保证成交价。
-- 问题定位：引用7的`hangzhou_routes:paragraph-48:chunk-1`属于S06；S05的[集合说明](/E:/ai-projects/travel-ai-assistant/data/raw/hangzhou_routes.md:61)及[陪同要求](/E:/ai-projects/travel-ai-assistant/data/raw/supplier_notes.md:94)未进入最终证据，具体遗漏环节待定位。
+- 问题定位：引用7的`hangzhou_routes:paragraph-48:chunk-1`属于S06；S05的[集合说明](../../../data/raw/hangzhou_routes.md:61)及[陪同要求](../../../data/raw/supplier_notes.md:94)未进入最终证据，具体遗漏环节待定位。
 
 
 ## E17
@@ -404,7 +404,7 @@
 - 执行情况：成功1轮，错误0轮，跳过0轮。
 - 整题是否满足规则：否。
 - 主要问题：应指出行程于2027年1月1日结束，超出规则有效期；即使8人、4间房满足容量条件，也不能直接套用当前规则报价。
-- 问题定位：改写返回`needs_clarification=true`，在[澄清分支](/E:/ai-projects/travel-ai-assistant/app/rag_pipeline.py:47)提前结束，尚未进入检索，并非已确认的召回失败。
+- 问题定位：改写返回`needs_clarification=true`，在[澄清分支](../../../archive/legacy_rag/rag_pipeline.py:47)提前结束，尚未进入检索，并非已确认的召回失败。
 
 
 ## E20
@@ -437,7 +437,7 @@
 - 执行情况：成功1轮，错误0轮，跳过0轮。
 - 整题是否满足规则：未完全满足。
 - 主要问题：处理较谨慎，主要缺少旧FAQ及其适用范围提醒，并非错误承诺接车。
-- 问题定位：`hangzhou_routes:paragraph-26:chunk-1`已提示旧FAQ存在差异；[旧FAQ完整说明](/E:/ai-projects/travel-ai-assistant/data/raw/hangzhou_routes.md:96)未进入最终证据，具体遗漏环节待定位。
+- 问题定位：`hangzhou_routes:paragraph-26:chunk-1`已提示旧FAQ存在差异；[旧FAQ完整说明](../../../data/raw/hangzhou_routes.md:96)未进入最终证据，具体遗漏环节待定位。
 
 
 ## E22
@@ -454,7 +454,7 @@
 - 执行情况：成功1轮，错误0轮，跳过0轮。
 - 整题是否满足规则：未完全满足。
 - 主要问题：已避免直接承诺免费，但仍未完整呈现票价和开放时间的不同说法。
-- 问题定位：最终证据缺少S01的`hangzhou_attraction:paragraph-2:chunk-1`，[原文已有30元及7:00–17:45说明](/E:/ai-projects/travel-ai-assistant/data/raw/hangzhou_attraction.md:15)。本轮仅凭结果文件无法区分初召回与重排遗漏。
+- 问题定位：最终证据缺少S01的`hangzhou_attraction:paragraph-2:chunk-1`，[原文已有30元及7:00–17:45说明](../../../data/raw/hangzhou_attraction.md:15)。本轮仅凭结果文件无法区分初召回与重排遗漏。
 
 
 ## E23

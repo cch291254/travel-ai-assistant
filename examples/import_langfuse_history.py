@@ -9,11 +9,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT_DIR = ROOT / "examples" / "langfuse_history"
+HISTORY_DIR = ROOT / "docs" / "evaluation" / "history"
 DATASET_NAME = "travel-rag-v1"
 ROUNDS = {
-    1: ("rag_eval_all_questions_v1.json", "eval_cases_01.md", 27, 29, 15),
-    2: ("rag_eval_all_questions_v2.json", "eval_cases_02.md", 30, 40, 13),
-    3: ("rag_eval_all_questions.json", "eval_xases_03.md", 30, 40, 22),
+    1: ("round1_results.json", "round1_review.md", 27, 29, 15),
+    2: ("round2_results.json", "round2_review.md", 30, 40, 13),
+    3: ("round3_results.json", "round3_review.md", 30, 40, 22),
 }
 
 
@@ -35,8 +36,8 @@ def review_sections(text):
 
 def prepare_round(number):
     result_name, review_name, case_count, turn_count, pass_count = ROUNDS[number]
-    result_path = ROOT / "docs" / result_name
-    review_path = ROOT / "docs" / review_name
+    result_path = HISTORY_DIR / result_name
+    review_path = HISTORY_DIR / review_name
     history = json.loads(result_path.read_text(encoding="utf-8"))
     review_text = review_path.read_text(encoding="utf-8")
     sections = review_sections(review_text)

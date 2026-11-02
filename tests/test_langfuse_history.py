@@ -12,7 +12,7 @@ def test_original_counts_and_grading_are_preserved(number, cases, turns, correct
     assert len(prepared["cases"]) == cases
     assert sum(len(case["original_rows"]) for case in prepared["cases"]) == turns
     assert sum(case["legacy_answer_correct"] for case in prepared["cases"]) == correct
-    assert history.sha256(history.ROOT / "docs" / prepared["source_file"]) == prepared["source_sha256"]
+    assert history.sha256(history.HISTORY_DIR / prepared["source_file"]) == prepared["source_sha256"]
 
 
 def test_missing_and_skipped_turns_are_not_fabricated():

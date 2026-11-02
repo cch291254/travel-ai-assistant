@@ -12,7 +12,7 @@
 4. 模型使用deepseek-flash，打开low思考；改写最大输出4048 tokens，回答最大输出4028 tokens。保留当时已调整的改写、回答提示词，强调产品／套餐／日期适用范围、信息缺失边界和本轮引用编号。
 
 
-测试参照：[本轮原始结果](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json)，开始时间2026-10-21 02:29:04（UTC+8）。该文件原名为 `rag_eval_results_20261021_022904_211439.json`，现已改名；内容SHA256为 `C200FB7DDA09012A1C8514ECA9E5BD7BB301BF620C8BC48A854083E2D985F3EA`。不使用随后关闭思考的17/30那轮替代本轮。
+测试参照：[本轮原始结果](round3_results.json)，开始时间2026-10-21 02:29:04（UTC+8）。该文件原名为 `rag_eval_results_20261021_022904_211439.json`，现已改名；内容SHA256为 `C200FB7DDA09012A1C8514ECA9E5BD7BB301BF620C8BC48A854083E2D985F3EA`。不使用随后关闭思考的17/30那轮替代本轮。
 
 配置记录注意：结果文件run_info的每路5片、重排2片是当时运行脚本中的旧记录值；根据本轮保存的rag_pipeline.py指纹与对应代码核对，实际为7片／3片。本文按实际调用配置记录，这一元数据问题单独保留，不在本次文档任务中修改程序。思考参数记录的是本轮测试时状态，不代表之后的实时配置。
 
@@ -65,7 +65,7 @@
 - 执行情况：成功1轮，错误0轮，跳过0轮。
 - 整题是否满足规则：满足。
 - 主要问题：无明显问题；虽然候选证据有其他来源，正文没有套用其接送等无关规则。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:85)。
+- 结果定位：[本题测试记录](round3_results.json:85)。
 
 
 ## E02
@@ -84,7 +84,7 @@
 - 执行情况：成功1轮，错误0轮，跳过0轮。
 - 整题是否满足规则：满足。
 - 主要问题：无明显问题，未编造营业时间、包间、订座或接待承诺。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:236)。
+- 结果定位：[本题测试记录](round3_results.json:236)。
 
 
 ## E03
@@ -113,7 +113,7 @@
 - 执行情况：成功2轮，错误0轮，跳过0轮。
 - 整题是否满足规则：满足。
 - 主要问题：两轮均通过，未把菜品推荐当作接待能力证明，也未把未提供解释为不能接待。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:387)。
+- 结果定位：[本题测试记录](round3_results.json:387)。
 
 
 ## E04
@@ -132,7 +132,7 @@
 - 执行情况：成功1轮，错误0轮，跳过0轮。
 - 整题是否满足规则：满足。
 - 主要问题：无明显问题，未将“无自费”宣传扩大为全部项目免费或必须购买。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:691)。
+- 结果定位：[本题测试记录](round3_results.json:691)。
 
 
 ## E05
@@ -151,7 +151,7 @@
 - 执行情况：成功1轮，错误0轮，跳过0轮。
 - 整题是否满足规则：满足。
 - 主要问题：三天分组和客户限制均保留，未把不同版本拼成相互矛盾的路线。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:863)。
+- 结果定位：[本题测试记录](round3_results.json:863)。
 
 
 ## E06
@@ -170,7 +170,7 @@
 - 执行情况：成功1轮，错误0轮，跳过0轮。
 - 整题是否满足规则：满足。
 - 主要问题：无明显问题，未虚构当天日落时间或拍摄效果保证。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:1051)。
+- 结果定位：[本题测试记录](round3_results.json:1051)。
 
 
 ## E07
@@ -199,7 +199,7 @@
 - 执行情况：成功2轮，错误0轮，跳过0轮。
 - 整题是否满足规则：满足。
 - 主要问题：两轮均通过，产品补充后正确恢复原报价问题，未混用其他商品价格。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:1262)。
+- 结果定位：[本题测试记录](round3_results.json:1262)。
 
 
 ## E08
@@ -219,7 +219,7 @@
 - 整题是否满足规则：否，整题统计按0计。
 - 主要问题：用例称“页面里的套餐1”，预期定位S07，却未在实际问题中写明艾客或传入页面。当前保留原评分为0；若要改变预期，应补齐输入并重新测试。
 - 问题定位：实际只返回商家确认问句，没有执行退款检索；不能据此判断S07退款证据是否能被召回。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:1516)。
+- 结果定位：[本题测试记录](round3_results.json:1516)。
 
 
 ## E09
@@ -249,7 +249,7 @@
 - 整题是否满足规则：未完全满足，整题统计按0计。
 - 主要问题：首轮澄清和第二轮时间判断正确，剩余为通知流程说明不完整，整题按0计。
 - 问题定位：第2轮完整通知资料已进入最终证据；答案遗漏的是流程区分，不是被其他商品通知规则替代。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:1586)。
+- 结果定位：[本题测试记录](round3_results.json:1586)。
 
 
 ## E10
@@ -268,8 +268,8 @@
 - 执行情况：成功1轮，错误0轮，跳过0轮。
 - 整题是否满足规则：未完全满足，整题统计按0计。
 - 主要问题：“3天2晚”在tour_products:paragraph-4:chunk-1中已明确，不应将所有遗漏都归为召回不足；本轮也没有截断记录。
-- 问题定位：3天2晚已进入最终证据；[产品限制](/E:/ai-projects/travel-ai-assistant/data/raw/tour_products.md:45)另有开放、预约和交通核实要求，但该限制段未进入本轮最终证据。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:1826)。
+- 问题定位：3天2晚已进入最终证据；[产品限制](../../../data/raw/tour_products.md:45)另有开放、预约和交通核实要求，但该限制段未进入本轮最终证据。
+- 结果定位：[本题测试记录](round3_results.json:1826)。
 
 
 ## E11
@@ -298,7 +298,7 @@
 - 执行情况：成功2轮，错误0轮，跳过0轮。
 - 整题是否满足规则：满足。
 - 主要问题：两轮均通过，补充产品后继续回答通知问题，未套用S05或S06的其他商品规则。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:1985)。
+- 结果定位：[本题测试记录](round3_results.json:1985)。
 
 
 ## E12
@@ -317,7 +317,7 @@
 - 执行情况：成功1轮，错误0轮，跳过0轮。
 - 整题是否满足规则：满足。
 - 主要问题：核心推荐与条件匹配，未套用杭州06:00接早、07:00出发安排，也未保证10人专用小车。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:2209)。
+- 结果定位：[本题测试记录](round3_results.json:2209)。
 
 
 ## E13
@@ -336,8 +336,8 @@
 - 执行情况：成功1轮，错误0轮，跳过0轮。
 - 整题是否满足规则：未完全满足，整题统计按0计。
 - 主要问题：明确胜蓝仍返回空目标来源，发生全库检索并召回S06候选；但本轮正文和实际引用未套用S06价格或服务，不能据此认定为答案串用。
-- 问题定位：缺少的pricing_rules:paragraph-23:chunk-1已存在v2库，[原文](/E:/ai-projects/travel-ai-assistant/data/raw/pricing_rules.md:88)有598元起／人、成人3份1794元等记录。本结果仅保存最终证据，不能区分初召回遗漏还是重排丢失。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:2443)。
+- 问题定位：缺少的pricing_rules:paragraph-23:chunk-1已存在v2库，[原文](../../../data/raw/pricing_rules.md:88)有598元起／人、成人3份1794元等记录。本结果仅保存最终证据，不能区分初召回遗漏还是重排丢失。
+- 结果定位：[本题测试记录](round3_results.json:2443)。
 
 
 ## E14
@@ -356,8 +356,8 @@
 - 执行情况：成功1轮，错误0轮，跳过0轮。
 - 整题是否满足规则：未完全满足，整题统计按0计。
 - 主要问题：没有套用S05接送规则，正确性较第二轮对应题改善；剩余不是错误承诺送酒店，而是缺少已知返程地点。
-- 问题定位：固定S06仍未召回[返程武林小广场说明](/E:/ai-projects/travel-ai-assistant/data/raw/hangzhou_routes.md:165)；supplier_notes:paragraph-40:chunk-1也有相关内容，具体遗漏阶段待定位。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:2677)。
+- 问题定位：固定S06仍未召回[返程武林小广场说明](../../../data/raw/hangzhou_routes.md:165)；supplier_notes:paragraph-40:chunk-1也有相关内容，具体遗漏阶段待定位。
+- 结果定位：[本题测试记录](round3_results.json:2677)。
 
 
 ## E15
@@ -376,7 +376,7 @@
 - 执行情况：成功1轮，错误0轮，跳过0轮。
 - 整题是否满足规则：满足。
 - 主要问题：按前几轮相同口径，将“现场补票要求需确认”视为保留补票不确定性，计通过；未把旧100元补票或其他商品身高规则直接套入。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:2910)。
+- 结果定位：[本题测试记录](round3_results.json:2910)。
 
 
 ## E16
@@ -395,8 +395,8 @@
 - 执行情况：成功1轮，错误0轮，跳过0轮。
 - 整题是否满足规则：未完全满足，整题统计按0计。
 - 主要问题：本轮没有错误套用S06的集合安排，但仍未完成范围外酒店如何集合的核心问题。386元仅为参考，不是全包成交价。
-- 问题定位：最终证据均为S05产品片；[集合说明](/E:/ai-projects/travel-ai-assistant/data/raw/hangzhou_routes.md:61)及[陪同要求](/E:/ai-projects/travel-ai-assistant/data/raw/supplier_notes.md:94)在库中有记录，却未进入本轮最终证据。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:3200)。
+- 问题定位：最终证据均为S05产品片；[集合说明](../../../data/raw/hangzhou_routes.md:61)及[陪同要求](../../../data/raw/supplier_notes.md:94)在库中有记录，却未进入本轮最终证据。
+- 结果定位：[本题测试记录](round3_results.json:3200)。
 
 
 ## E17
@@ -415,7 +415,7 @@
 - 执行情况：成功1轮，错误0轮，跳过0轮。
 - 整题是否满足规则：满足。
 - 主要问题：历史日期和条款性质判断正确，不把“所有人群不作退费”扩大为所有订单取消均不退款。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:3435)。
+- 结果定位：[本题测试记录](round3_results.json:3435)。
 
 
 ## E18
@@ -445,7 +445,7 @@
 - 整题是否满足规则：未完全满足，整题统计按0计。
 - 主要问题：第一轮已明确胜蓝，但不能据两类拼团的共同身高门槛反推客户已选择拼团；无条件回答“要买”仍过早。第二轮明确18人团后已正常回答。此处补充适用范围诊断，不改变原金标准、原始结果和整题按0计的评分。
 - 问题定位：第1轮expected.needs_clarification=true，但实际为false；两轮均固定S05，未在正文套用其他商家的儿童规则。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:3649)。
+- 结果定位：[本题测试记录](round3_results.json:3649)。
 
 
 ## E19
@@ -464,7 +464,7 @@
 - 执行情况：成功1轮，错误0轮，跳过0轮。
 - 整题是否满足规则：满足。
 - 主要问题：日期、人数及房间容量分别判断正确，未沿用旧价、假定跨年续效或擅自修改行程。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:4047)。
+- 结果定位：[本题测试记录](round3_results.json:4047)。
 
 
 ## E20
@@ -483,7 +483,7 @@
 - 执行情况：成功1轮，错误0轮，跳过0轮。
 - 整题是否满足规则：满足。
 - 主要问题：未将“10人内／以下”或车辆容量自行解释成确定可报名条件。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:4251)。
+- 结果定位：[本题测试记录](round3_results.json:4251)。
 
 
 ## E21
@@ -502,8 +502,8 @@
 - 执行情况：成功1轮，错误0轮，跳过0轮。
 - 整题是否满足规则：否，整题统计按0计。
 - 主要问题：这是同一S05商品内部的套餐／版本适用关系问题，不是跨商家规则串用。不能只归因于无证据，因为已召回片段明确要求不能自行消除差异。
-- 问题定位：hangzhou_routes:paragraph-26:chunk-1已写旧FAQ范围未明；[旧FAQ](/E:/ai-projects/travel-ai-assistant/data/raw/hangzhou_routes.md:96)另写节假日不接早、08:00雷峰塔集合。实际回答仍给出约07:00推算。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:4425)。
+- 问题定位：hangzhou_routes:paragraph-26:chunk-1已写旧FAQ范围未明；[旧FAQ](../../../data/raw/hangzhou_routes.md:96)另写节假日不接早、08:00雷峰塔集合。实际回答仍给出约07:00推算。
+- 结果定位：[本题测试记录](round3_results.json:4425)。
 
 
 ## E22
@@ -522,7 +522,7 @@
 - 执行情况：成功1轮，错误0轮，跳过0轮。
 - 整题是否满足规则：满足。
 - 主要问题：本题跨来源检索是必要对照，不属于串用；没有把某商品宣传直接保证为自由行现行官方政策。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:4582)。
+- 结果定位：[本题测试记录](round3_results.json:4582)。
 
 
 ## E23
@@ -541,7 +541,7 @@
 - 执行情况：成功1轮，错误0轮，跳过0轮。
 - 整题是否满足规则：满足。
 - 主要问题：明确洲游但目标来源为空，最终证据有S05、S06；实际引用和结论依据为S06，正文反而明确不能套用S05规则，因此本题通过。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:4893)。
+- 结果定位：[本题测试记录](round3_results.json:4893)。
 
 
 ## E24
@@ -560,7 +560,7 @@
 - 执行情况：成功1轮，错误0轮，跳过0轮。
 - 整题是否满足规则：满足。
 - 主要问题：未拿杭州住宿区域建议替代淳安附近酒店，未编造名称、房价、实时房源或代订承诺。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:5086)。
+- 结果定位：[本题测试记录](round3_results.json:5086)。
 
 
 ## E25
@@ -579,7 +579,7 @@
 - 执行情况：成功1轮，错误0轮，跳过0轮。
 - 整题是否满足规则：满足。
 - 主要问题：沿用前几轮该题评分为通过。表达仍可补一句“分享者区域建议”，但未将区域评价扩大为具体酒店或最低价保证。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:5262)。
+- 结果定位：[本题测试记录](round3_results.json:5262)。
 
 
 ## E26
@@ -598,7 +598,7 @@
 - 执行情况：成功1轮，错误0轮，跳过0轮。
 - 整题是否满足规则：满足。
 - 主要问题：核心需求、证据归属及个人体验限定均保留；对备选店的概括不是本题通过依据，不将其当作已核实完整菜单。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:5432)。
+- 结果定位：[本题测试记录](round3_results.json:5432)。
 
 
 ## E27
@@ -617,7 +617,7 @@
 - 执行情况：成功1轮，错误0轮，跳过0轮。
 - 整题是否满足规则：满足。
 - 主要问题：未遗漏提前1天，也未自行合并成09:00—17:30或因免费而推断无需预约。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:5603)。
+- 结果定位：[本题测试记录](round3_results.json:5603)。
 
 
 ## E28
@@ -654,7 +654,7 @@
 - 执行情况：成功3轮，错误0轮，跳过0轮。
 - 整题是否满足规则：满足。
 - 主要问题：三轮均通过，偏好更新和最近区域承接正常，没有用SIM04的模拟住宿内容补造具体酒店。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:5778)。
+- 结果定位：[本题测试记录](round3_results.json:5778)。
 
 
 ## E29
@@ -683,7 +683,7 @@
 - 执行情况：成功2轮，错误0轮，跳过0轮。
 - 整题是否满足规则：满足。
 - 主要问题：两轮均通过，保留仍有效的鸡肉和人数条件，解除已放宽的地点及火锅限制。候选中的出团通知等无关片未进入餐厅事实结论。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:6263)。
+- 结果定位：[本题测试记录](round3_results.json:6263)。
 
 
 ## E30
@@ -720,4 +720,4 @@
 - 执行情况：成功3轮，错误0轮，跳过0轮。
 - 整题是否满足规则：满足。
 - 主要问题：三轮均通过，既保持必要澄清，又在信息充足后恢复原业务问题；未再混入S05或S07通知规则。
-- 结果定位：[本题测试记录](/E:/ai-projects/travel-ai-assistant/examples/rag_eval_all_questions.json:6735)。
+- 结果定位：[本题测试记录](round3_results.json:6735)。
