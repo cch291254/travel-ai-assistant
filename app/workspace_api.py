@@ -170,9 +170,11 @@ def save_draft(conversation_id, draft, token):
 
 
 # 作用：让后端读取全部聊天记录并整理成草案；要调用模型，等待时间和聊天一样长。
-def generate_draft(conversation_id, token):
+def generate_draft(conversation_id, token, draft=None):
+    """draft 是页面当前草案：后端以它为准，只补空着的内容。"""
     return _request(
         "POST", f"/conversations/{conversation_id}/draft/generate", token, timeout=CHAT_TIMEOUT,
+        json={"draft": draft},
     )
 
 

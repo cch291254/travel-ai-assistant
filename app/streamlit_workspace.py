@@ -26,6 +26,7 @@ from app.workspace_plan import (
     new_room,
     new_spot,
     restore_draft,
+    route_markdown,
     serialize,
 )
 
@@ -170,8 +171,10 @@ def draft_changed():
 
 
 def needs_discard_confirmation():
-    """有修改，或已打开的草案尚未保存时，离开前需要确认；生成的草案会自动保存到会话。"""
+    """草稿已自动保存到会话时，离开不会丢，回来能恢复；没有会话的草案离开前才需要确认。"""
     if ss.draft is None:
+        return False
+    if ss.conversation_id is not None and ss.autosave_error is None:
         return False
     return draft_changed() or (ss.draft["plan_id"] is None and ss.draft_origin not in {"blank", "autosaved", "generated"})
 
@@ -211,6 +214,8 @@ def notify(kind, text):
 # ---------- 需要确认的操作（会放弃当前草案） ----------
 
 def request_action(action):
+    # 离开前先把本次输入存进当前会话；页面最后的自动保存赶不上 st.rerun()
+    autosave_draft()
     if needs_discard_confirmation():
         ss.pending_action = action
     else:
@@ -238,8 +243,7 @@ def run_action(action):
         if not result["ok"]:
             notify("error", result["error"])
             return
-        load_draft(draft_from_plan(result["data"]), origin="plan")
-        ss.preview_plan_id = None
+        open_plan(draft_from_plan(result["data"]))
         ss.reopened = True
         notify("success", f"已打开方案 #{action['plan_id']} 继续编辑")
 
@@ -250,10 +254,30 @@ def run_action(action):
         apply_generated_draft(action["draft"])
 
 
+def open_plan(draft):
+    """继续编辑方案时切到方案自己的会话，不把它塞进当前会话，避免覆盖当前会话的草稿。"""
+    reset_conversation()
+    conversation_id = draft["conversation_id"]
+    if conversation_id is not None:
+        conversation = api.fetch_conversation(conversation_id, current_token())
+        if conversation["ok"]:
+            ss.conversation_id = conversation_id
+            ss.messages = conversation["data"]["messages"]
+            ss.history_loaded = True
+            # 会话里自动保存的就是这份方案时，它可能有还没保存的修改，优先用它
+            restore_conversation_draft(conversation_id)
+            if ss.draft is not None and ss.draft["plan_id"] == draft["plan_id"]:
+                return
+        else:
+            draft["conversation_id"] = None
+    load_draft(draft, origin="plan")
+
+
 def generate_draft_from_chat():
-    """读取这个会话的全部聊天记录，由模型整理成草案；员工核对后才保存。"""
-    with st.spinner("正在整理聊天内容……"):
-        result = api.generate_draft(ss.conversation_id, current_token())
+    """读取这个会话的全部聊天记录，以当前草案为准整理成完整线路；员工核对后才保存。"""
+    current = draft_to_json(ss.draft) if ss.draft is not None else None
+    with st.spinner("正在整理成完整线路……"):
+        result = api.generate_draft(ss.conversation_id, current_token(), current)
     if not result["ok"]:
         notify("error", result["error"])
         return
@@ -273,7 +297,7 @@ def apply_generated_draft(generated):
             draft[key] = current[key]
         load_draft(draft, origin=origin)
         ss.baseline = baseline
-    notify("success", "已整理成草案，请核对内容；空着的价格是聊天里没有确定的")
+    notify("success", "已整理成完整线路：你填过的内容都保留了，聊天里不一致的列在待确认事项里")
 
 
 ACTION_TEXT = {
@@ -288,13 +312,10 @@ def render_pending_action():
     if action is None:
         return
     with st.container(border=True):
-        if action["type"] in {"generate_draft", "apply_generated"}:
-            st.markdown(":orange[**重新生成会覆盖当前页面的内容**] · 你的手动修改会被替换，确认后才生效。")
-        else:
-            st.markdown(
-                f":orange[**当前方案尚未保存**] · {ACTION_TEXT[action['type']]}将放弃这些修改。"
-                "如需保留，请先取消并点击“保存方案”。"
-            )
+        st.markdown(
+            f":orange[**当前方案尚未保存**] · {ACTION_TEXT[action['type']]}将放弃这些修改。"
+            "如需保留，请先取消并点击“保存方案”。"
+        )
         with st.container(horizontal=True):
             st.button("放弃修改并继续", type="primary", on_click=run_action, args=(action,))
             st.button("取消", on_click=lambda: ss.update(pending_action=None))
@@ -545,6 +566,8 @@ def retry_failed_question():
 
 def submit_question(question, box):
     """提问成功后才把一问一答写入历史；失败只记录错误，不累积用户提问。"""
+    # 先存一次草稿：员工在聊天里要求整理草案时，后端以最新的草案为准
+    autosave_draft()
     with box:
         with st.chat_message("user", avatar=USER_AVATAR):
             st.markdown(question)
@@ -563,12 +586,9 @@ def submit_question(question, box):
             "evidence": data["evidence"],
             "needs_clarification": data["needs_clarification"],
         })
-        # 聊天里要求整理草案：页面有未保存修改时先确认，不直接覆盖。
+        # 聊天里要求整理草案：后端已经以当前草案为准合并，手动修改不会被覆盖。
         if data["generated_draft"]:
-            if draft_changed():
-                ss.pending_action = {"type": "apply_generated", "draft": data["generated_draft"]}
-            else:
-                apply_generated_draft(data["generated_draft"])
+            apply_generated_draft(data["generated_draft"])
         elif data["draft_error"]:
             notify("error", f"草案没有整理成功：{data['draft_error']}")
     else:
@@ -638,38 +658,44 @@ def render_day(draft, day_index, day):
                 disabled=len(draft["days"]) == 1,
             )
 
-        # 每个景点一行：名称、上移、下移、删除；控件键跟随景点编号，调整顺序时内容不会串行。
+        # 每个景点一行：名称、上移、下移、删除。用固定比例的列，窄屏下按钮也不会挤到下一行。
         for spot_index, spot in enumerate(day["spots"]):
-            with st.container(horizontal=True, vertical_alignment="center", gap="small"):
-                spot["name"] = st.text_input(
-                    f"第{day_index + 1}天第{spot_index + 1}个景点",
-                    key=bind(wkey("spot", spot["id"]), spot["name"]),
-                    placeholder="景点名称", label_visibility="collapsed", width="stretch",
-                )
-                st.button(
-                    ":material/arrow_upward:", key=wkey("up", spot["id"]), help="上移",
-                    on_click=move_spot, args=(day["id"], spot["id"], -1), disabled=spot_index == 0,
-                )
-                st.button(
-                    ":material/arrow_downward:", key=wkey("down", spot["id"]), help="下移",
-                    on_click=move_spot, args=(day["id"], spot["id"], 1),
-                    disabled=spot_index == len(day["spots"]) - 1,
-                )
-                st.button(
-                    ":material/close:", key=wkey("remove_spot", spot["id"]), help="删除景点",
-                    on_click=remove_spot, args=(day["id"], spot["id"]),
-                )
+            name_col, up_col, down_col, remove_col = st.columns(
+                [6, 1, 1, 1], gap="small", vertical_alignment="center",
+            )
+            spot["name"] = name_col.text_input(
+                f"第{day_index + 1}天第{spot_index + 1}个景点",
+                key=bind(wkey("spot", spot["id"]), spot["name"]),
+                placeholder="景点名称", label_visibility="collapsed",
+            )
+            up_col.button(
+                ":material/arrow_upward:", key=wkey("up", spot["id"]), help="上移", type="tertiary",
+                on_click=move_spot, args=(day["id"], spot["id"], -1), disabled=spot_index == 0,
+            )
+            down_col.button(
+                ":material/arrow_downward:", key=wkey("down", spot["id"]), help="下移", type="tertiary",
+                on_click=move_spot, args=(day["id"], spot["id"], 1),
+                disabled=spot_index == len(day["spots"]) - 1,
+            )
+            remove_col.button(
+                ":material/close:", key=wkey("remove_spot", spot["id"]), help="删除景点", type="tertiary",
+                on_click=remove_spot, args=(day["id"], spot["id"]),
+            )
         st.button(
             "添加景点", icon=":material/add:", type="tertiary",
             key=wkey("add_spot", day["id"]), on_click=add_spot, args=(day["id"],),
         )
 
-        hotel_col, notes_col = st.columns([1, 1.4])
+        hotel_col, meals_col = st.columns(2)
         day["hotel"] = hotel_col.text_input(
-            "住宿", key=bind(wkey("hotel", day["id"]), day["hotel"]), placeholder="酒店或区域",
+            "住宿", key=bind(wkey("hotel", day["id"]), day["hotel"]), placeholder="酒店名称或区域",
         )
-        day["notes"] = notes_col.text_input(
-            "备注", key=bind(wkey("notes", day["id"]), day["notes"]), placeholder="预约、接送、时间安排等",
+        day["meals"] = meals_col.text_input(
+            "用餐", key=bind(wkey("meals", day["id"]), day.get("meals", "")), placeholder="餐厅名称，或“午餐自理”",
+        )
+        day["notes"] = st.text_area(
+            "备注", key=bind(wkey("notes", day["id"]), day["notes"]),
+            placeholder="时间安排、预约、接送等", height=68,
         )
 
 
@@ -708,6 +734,35 @@ def render_pending_items(draft):
         st.button("添加", key=wkey("add_item"), on_click=add_manual_item, args=(input_key,))
 
 
+def add_list_item(field, input_key):
+    text = ss.get(input_key, "").strip()
+    if text and text not in ss.draft[field]:
+        ss.draft[field].append(text)
+    ss[input_key] = ""
+
+
+def remove_list_item(field, index):
+    ss.draft[field].pop(index)
+
+
+def render_text_list(draft, field, title, placeholder):
+    """注意事项、商家声明：可逐条增删，整理完整线路时也会补进来。"""
+    st.markdown(f"##### {title}")
+    for index, text in enumerate(draft[field]):
+        text_col, remove_col = st.columns([12, 1], vertical_alignment="center")
+        text_col.markdown(f"- {md_escape(text)}")
+        remove_col.button(
+            ":material/close:", key=wkey("remove", field, index), help="删除", type="tertiary",
+            on_click=remove_list_item, args=(field, index),
+        )
+    if not draft[field]:
+        st.caption("暂无。")
+    input_key = wkey("new", field)
+    input_col, add_col = st.columns([5, 1], vertical_alignment="bottom")
+    input_col.text_input(f"添加{title}", key=input_key, placeholder=placeholder, label_visibility="collapsed")
+    add_col.button("添加", key=wkey("add", field), on_click=add_list_item, args=(field, input_key))
+
+
 def render_plan_editor():
     draft = ss.draft
     if draft is None:
@@ -733,11 +788,24 @@ def render_plan_editor():
     draft["children"] = child_col.number_input(
         "儿童", key=bind(wkey("children"), draft["children"]), min_value=0, max_value=50, step=1,
     )
+    draft["merchant"] = st.text_input(
+        "商家与产品", key=bind(wkey("merchant"), draft["merchant"]), placeholder="例如：胜蓝旅游 18人经典团",
+    )
+    draft["pickup"] = st.text_area(
+        "接车与集合", key=bind(wkey("pickup"), draft["pickup"]),
+        placeholder="时间、地点、接送范围；范围外怎么集合", height=68,
+    )
 
     st.markdown(f"##### 每日路线 · {len(draft['days'])} 天")
     for day_index, day in enumerate(draft["days"]):
         render_day(draft, day_index, day)
     st.button("增加一天", icon=":material/add:", key=wkey("add_day"), on_click=add_day)
+
+    render_text_list(draft, "notices", "注意事项", "例如：携带身份证原件")
+    render_text_list(draft, "merchant_terms", "商家声明", "例如：节假日接送时间可能调整，以导游通知为准")
+
+    with st.expander("完整线路预览", icon=":material/description:"):
+        st.markdown(route_markdown(draft))
 
     render_pending_items(draft)
 
@@ -891,10 +959,8 @@ def render_plan_preview(plan):
             f"{md_escape(draft['destination'] or '目的地未填')} · {date_text} · "
             f"成人 {draft['adults']} · 儿童 {draft['children']} · 更新于 {plan['updated_at']}"
         )
-        for index, day in enumerate(draft["days"], start=1):
-            spots = " → ".join(spot["name"] for spot in day["spots"] if spot["name"].strip()) or "未安排景点"
-            hotel = f" · 住宿：{day['hotel']}" if day["hotel"].strip() else ""
-            st.markdown(f"**第{index}天** {md_escape(spots + hotel)}")
+        with st.expander("完整线路", expanded=True):
+            st.markdown(route_markdown(draft))
 
         for side, label in (("adult", "成人"), ("child", "儿童")):
             if side == "child" and draft["children"] == 0:
@@ -987,8 +1053,9 @@ def render_plan_header():
             )
         if draft is not None and ss.conversation_id is not None:
             st.button(
-                "重新生成", icon=":material/refresh:", key="regenerate_draft",
-                on_click=lambda: ss.update(pending_action={"type": "generate_draft"}),
+                "整理完整线路", icon=":material/auto_awesome:", key="regenerate_draft",
+                help="以当前草案为准，用聊天记录和资料补齐接车、用餐、注意事项和商家声明；已填的内容不会被改",
+                on_click=run_action, args=({"type": "generate_draft"},),
             )
         # 保存：只有明确点击才写入方案库。
         if st.button(
@@ -1135,7 +1202,7 @@ render_pending_action()
 
 # 宽屏并排：左聊天、右方案；窄窗口自动上下排列。
 # 先渲染方案列再渲染聊天列，保证发送提问前，方案输入已写回草案。
-chat_col, plan_col = st.columns([1, 1.05], gap="large")
+chat_col, plan_col = st.columns([1, 1], gap="large")
 with plan_col:
     render_plan_column()
 with chat_col:

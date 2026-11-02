@@ -42,14 +42,15 @@ def new_spot(name=""):
     return {"id": new_id("spot"), "name": name}
 
 
-# 作用：创建一天的路线，包含景点、住宿名称和备注。
+# 作用：创建一天的路线，包含景点、住宿、用餐和备注。
 # 默认值 () 是不可变空元组，避免用列表作默认值导致多次调用共享同一个可变对象。
-def new_day(spots=(), hotel="", notes=""):
+def new_day(spots=(), hotel="", notes="", meals=""):
     return {
         "id": new_id("day"),
         # 列表推导式：将每个景点名称转换成带 id 的景点字典。
         "spots": [new_spot(name) for name in spots],
         "hotel": hotel,
+        "meals": meals,
         "notes": notes,
     }
 
@@ -81,17 +82,64 @@ def empty_draft():
         "version": 0,
         "status": "draft",
         "name": "",
+        "merchant": "",
         "destination": "",
         "start_date": None,
         "adults": 1,
         "children": 0,
+        "pickup": "",
         "days": [new_day()],
+        "notices": [],
+        "merchant_terms": [],
         "manual_items": [],
         "prices": {"adult": empty_prices(), "child": empty_prices()},
         "lodging_mode": "unknown",
         "rooms": [],
         "conversation_id": None,
     }
+
+
+# 作用：给旧草案补上后来新增的字段；已保存的旧方案和自动保存的草稿都能直接打开。
+# 只补缺失的键，不改已有内容；返回同一个字典，方便链式使用。
+def normalize_draft(draft):
+    for key, value in (("merchant", ""), ("pickup", ""), ("notices", []), ("merchant_terms", [])):
+        if key not in draft:
+            draft[key] = copy.deepcopy(value)
+    for day in draft.get("days", []):
+        day.setdefault("meals", "")
+        day.setdefault("notes", "")
+    return draft
+
+
+# 作用：把草案排成一份完整线路文字，页面预览和长期记忆都用它；只读，不改草案。
+def route_markdown(draft):
+    lines = [f"### {draft['name'] or '未命名线路'}"]
+    basics = [
+        f"商家：{draft.get('merchant') or '未填写'}",
+        f"目的地：{draft['destination'] or '未填写'}",
+        f"出发日期：{draft['start_date'] or '未确定'}",
+        f"人数：成人 {draft['adults']} 人，儿童 {draft['children']} 人",
+    ]
+    lines.append("　·　".join(basics))
+    if draft.get("pickup"):
+        lines += ["", f"**接车与集合**：{draft['pickup']}"]
+
+    lines += ["", "**每日安排**"]
+    for index, day in enumerate(draft["days"], start=1):
+        spots = " → ".join(spot["name"] for spot in day["spots"] if spot["name"].strip()) or "未安排景点"
+        parts = [f"- 第{index}天：{spots}"]
+        if day.get("meals"):
+            parts.append(f"用餐：{day['meals']}")
+        if day.get("hotel"):
+            parts.append(f"住宿：{day['hotel']}")
+        if day.get("notes"):
+            parts.append(f"备注：{day['notes']}")
+        lines.append("；".join(parts))
+
+    for title, key in (("注意事项", "notices"), ("商家声明", "merchant_terms")):
+        if draft.get(key):
+            lines += ["", f"**{title}**"] + [f"- {item}" for item in draft[key]]
+    return "\n".join(lines)
 
 
 # 作用：把草案或核算参数变成稳定的 JSON 字符串，用于检查修改和核算结果是否过期。
@@ -111,7 +159,7 @@ def draft_to_json(draft):
 
 # 作用：把后端取回的草案恢复成页面能用的数据；日期控件需要 date 对象，不能是字符串。
 def restore_draft(draft):
-    restored = copy.deepcopy(draft)
+    restored = normalize_draft(copy.deepcopy(draft))
     if restored["start_date"]:
         restored["start_date"] = date.fromisoformat(restored["start_date"])
     return restored

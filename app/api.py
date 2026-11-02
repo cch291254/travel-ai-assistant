@@ -26,7 +26,7 @@ from datetime import datetime,timedelta,timezone
                     #日期和时间，一段时长，时区
 
 from app.plan_store import (get_plan,list_plans,change_plan_status,delete_plan,copy_plan,create_plan,save_plan_version)
-from app.draft_generator import draft_to_context,generate_draft
+from app.draft_generator import collect_route_evidence,draft_to_context,generate_draft
 
 
 logger=logging.getLogger(__name__)
@@ -212,13 +212,25 @@ def _use_daily_quota(current_user_id):
         raise HTTPException(status_code=429,detail="今日调用次数已用完")
 
 
+#查资料只是为了补接车、注意事项和商家声明；查不到也照常整理草案
+def _route_evidence(messages,draft):
+    try:
+        return collect_route_evidence(messages,draft)
+    except Exception:
+        logger.exception("整理草案时检索资料失败，改为只用聊天内容")
+        return []
+
+
 def _generate_chat_draft(conversation_id,current_user_id):
     try:
         _use_daily_quota(current_user_id)
     except HTTPException as error:
-        return{"generate_draft":None,"draft_error":error.detail}
+        return{"generated_draft":None,"draft_error":error.detail}
 
-    result=generate_draft(get_messages(conversation_id),conversation_id)
+    # 以员工当前草案为准，只补空着的内容；调用方已经持有 RAG_REQUEST_LOCK
+    messages=get_messages(conversation_id)
+    current=get_draft(conversation_id)
+    result=generate_draft(messages,conversation_id,current=current,evidence=_route_evidence(messages,current))
     return {"generated_draft":result["draft"],"draft_error":result["error"]}
 
 class ChatRequest(BaseModel):
@@ -245,6 +257,11 @@ class ErrorResponse(BaseModel):
 class SaveDraftRequest(BaseModel):
     model_config=ConfigDict(extra="forbid")  #不允许出现没有定义的字段
     draft:dict
+
+
+class GenerateDraftRequest(BaseModel):
+    model_config=ConfigDict(extra="forbid")
+    draft:dict|None=None   #页面当前草案；不传时用自动保存的草稿
 
 class CreatePlanRequest(BaseModel):
     model_config=ConfigDict(extra="forbid")
@@ -486,9 +503,10 @@ def write_draft(request:SaveDraftRequest,
     return {"status":"saved"}
 
 
-#读取全部聊天记录，整理成草案；只返回给页面，由页面保存
+#读取全部聊天记录，以当前草案为准整理成完整线路；只返回给页面，由页面保存
 @app.post("/conversations/{conversation_id}/draft/generate")
 def generate_conversation_draft(
+    request:GenerateDraftRequest|None=None,
     conversation_id:int=Path(ge=1),
     current_user_id:str=Depends(get_current_user_id),
 ):
@@ -500,7 +518,9 @@ def generate_conversation_draft(
 
     _use_daily_quota(current_user_id)
 
-    result=generate_draft(messages,conversation_id)
+    current=request.draft if request is not None and request.draft is not None else get_draft(conversation_id)
+    with RAG_REQUEST_LOCK:   #检索会在 CPU 和 GPU 之间移动模型，和聊天共用一把锁
+        result=generate_draft(messages,conversation_id,current=current,evidence=_route_evidence(messages,current))
     if result["error"]:
         raise HTTPException(status_code=502,detail=result["error"])
 

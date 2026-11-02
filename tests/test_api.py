@@ -1220,7 +1220,7 @@ def test_generate_draft_uses_all_messages(monkeypatch):
 
     seen = {}
 
-    def fake_generate(messages, target_id):
+    def fake_generate(messages, target_id, **kwargs):
         seen["count"] = len(messages)
         return {"draft": {"name": "杭州两日游"}, "error": ""}
 
@@ -1302,7 +1302,7 @@ def fake_draft_chat(question, history=None, *, pending_question=None):
 def test_chat_generates_draft_with_current_turn(monkeypatch):
     seen = []
 
-    def fake_generate(messages, conversation_id):
+    def fake_generate(messages, conversation_id, **kwargs):
         seen.extend(messages)
         return {"draft": {"name": "杭州"}, "error": ""}
 
@@ -1320,7 +1320,7 @@ def test_chat_keeps_answer_when_draft_fails(monkeypatch):
     monkeypatch.setitem(api.app.dependency_overrides, api.get_model_caller, lambda: fake_draft_chat)
     monkeypatch.setattr(
         api, "generate_draft",
-        lambda messages, conversation_id: {"draft": None, "error": "草案整理失败，请重试"},
+        lambda messages, conversation_id, **kwargs: {"draft": None, "error": "草案整理失败，请重试"},
     )
 
     response = client.post("/chat", json={"question": "整理成草案"})
@@ -1473,3 +1473,20 @@ def test_plan_index_check_failure_is_only_logged(monkeypatch, caplog):
     api._check_plan_index(object())
 
     assert "方案索引核对失败" in caplog.text
+
+def test_generate_draft_uses_page_draft(monkeypatch):
+    conversation_id = store.create_conversation("杭州", "user_a")
+    store.save_turn(conversation_id, "成人餐费150", "好的")
+    seen = {}
+
+    def fake_generate(messages, target_id, *, current=None, evidence=None):
+        seen["current"] = current
+        return {"draft": current, "error": ""}
+
+    monkeypatch.setattr(api, "generate_draft", fake_generate)
+    page_draft = {"name": "页面上的草案"}
+
+    response = client.post(f"/conversations/{conversation_id}/draft/generate", json={"draft": page_draft})
+
+    assert response.status_code == 200
+    assert seen["current"] == page_draft
