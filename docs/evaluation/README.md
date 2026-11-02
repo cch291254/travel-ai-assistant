@@ -4,7 +4,10 @@
 
 | 文件 | 内容 |
 |---|---|
-| `baseline_20261031.md` | 工具聊天的正式基线：40 题、51 轮，含人工评分 |
+| `eval_report_20261102.md` | 最新评测：开发集、留出集、功能题三组成绩，和基线对比 |
+| `holdout_plan.md` | 留出集的组成和规则 |
+| `baseline_20261031.md` | 工具聊天的第一版正式基线：40 题、51 轮，含人工评分 |
+| `../../examples/rag_eval_holdout.json` | 留出集题目 H01–H16 |
 | `../../examples/rag_eval_cases.json` | 题目和评分标准 |
 | `../../examples/EVALUATION_QUICKSTART.md` | 怎么跑评测、生成报告 |
 

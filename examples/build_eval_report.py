@@ -53,8 +53,9 @@ CASE_GROUPS = {
 }
 
 
-def group_of(case_id):
-    return next((name for name, ids in CASE_GROUPS.items() if case_id in ids), "未分组")
+def group_of(case_id, group=None):
+    """留出集的题型写在题目里；开发集按上面的固定分组。"""
+    return group or next((name for name, ids in CASE_GROUPS.items() if case_id in ids), "未分组")
 
 
 def find_latest_run(run_dir=RUN_DIR):
@@ -124,7 +125,7 @@ def summarize_case(case, langfuse_data=None):
     groundedness = langfuse_data.get(HUMAN_GROUNDEDNESS) or {}
     return {
         "case_id": case["case_id"],
-        "group": group_of(case["case_id"]),
+        "group": group_of(case["case_id"], case.get("group")),
         "rows": rows,
         "evidence_rows": evidence_rows,
         "evidence_hits": sum(row["matched"] == row["required"] for row in evidence_rows),
@@ -226,7 +227,8 @@ def scope_rows(summaries):
 
 def group_rows(summaries):
     rows = []
-    for name in [*CASE_GROUPS, "未分组"]:
+    extra = sorted({summary["group"] for summary in summaries} - set(CASE_GROUPS) - {"未分组"})
+    for name in [*CASE_GROUPS, *extra, "未分组"]:
         members = [summary for summary in summaries if summary["group"] == name]
         if not members:
             continue
@@ -392,7 +394,9 @@ def build_score_sheet(run):
         "",
     ]
     for case in sorted(run["results"], key=lambda item: item["case_id"]):
-        lines += [f"## {case['case_id']}（{group_of(case['case_id'])}）", "", f"追踪：{TRACE_URL}{case['trace_id']}", ""]
+        lines += [f"## {case['case_id']}（{group_of(case['case_id'], case.get('group'))}）", "", f"追踪：{TRACE_URL}{case['trace_id']}", ""]
+        if case.get("paraphrase_of"):
+            lines += [f"改写自：{case['paraphrase_of']}", ""]
         turns = (case.get("output") or {}).get("turns") or []
         for index, expected in enumerate(case["expected_output"]["turns"]):
             turn = turns[index] if index < len(turns) else {}
@@ -411,6 +415,9 @@ def build_score_sheet(run):
             ]
             if result.get("error"):
                 lines += [f"**错误**：{result['error']}", ""]
+            if "draft" in turn:
+                draft_text = json.dumps(turn["draft"], ensure_ascii=False) if turn["draft"] else turn.get("draft_error") or "无"
+                lines += [f"**生成的草案**：{draft_text}", ""]
             references = cited_evidence(result)
             lines += (["**引用的证据**：", *references, ""] if references else ["**引用的证据**：无", ""])
     return "\n".join(lines)

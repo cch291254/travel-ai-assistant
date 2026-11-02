@@ -1,12 +1,17 @@
+import argparse
 import json
 from pathlib import Path
 from dotenv import load_dotenv
 from langfuse import get_client
 
 
-#定位项目中的原始题集
+#定位项目中的原始题集；留出集用 --cases 和 --dataset 指定
 root=Path(__file__).resolve().parents[1]
-case_path=root/"examples"/"rag_eval_cases.json"
+parser=argparse.ArgumentParser(description="把本地题集上传到 Langfuse；同一题号重复上传会更新原题")
+parser.add_argument("--cases",default="rag_eval_cases.json",help="examples/ 下的题集文件")
+parser.add_argument("--dataset",default="travel-rag-v1",help="Langfuse 题集名")
+args=parser.parse_args()
+case_path=root/"examples"/args.cases
 
 #json文件转化pathon列表
 cases=json.loads(case_path.read_text(encoding="utf-8"))
@@ -28,6 +33,7 @@ for case in cases:
                     "source_ids": turn["expected_source_ids"],
                     "points": turn["expected_points"],
                     "forbidden_points": turn["forbidden_points"],
+                    "tools": turn.get("expected_tools", []),
                 }
                 for turn in case["turns"]
             ]
@@ -39,6 +45,12 @@ for case in cases:
             "turn_count": len(case["turns"]),
         },
     }
+    # 留出集的题型、改写来源和草案标准
+    for key in ("group","paraphrase_of"):
+        if key in case:
+            item["metadata"][key]=case[key]
+    if "draft_expected" in case:
+        item["expected_output"]["draft"]=case["draft_expected"]
     items.append(item)
 
 
@@ -48,7 +60,7 @@ for case in cases:
 load_dotenv(root / ".env")
 client = get_client()
 
-dataset_name = "travel-rag-v1"
+dataset_name = args.dataset
 
 try:
     # 在当前 Langfuse 项目下创建评测题集。

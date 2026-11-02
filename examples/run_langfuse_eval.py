@@ -35,6 +35,17 @@ def run_eval_case(*,item,**kwargs):
         if result["error"]:
             break
 
+        # 评测不经过 /chat，模型要求保存草案时，在这里用同样的对话生成，供人工核对
+        if result.get("draft_requested"):
+            from app.draft_generator import generate_draft
+
+            draft_result=generate_draft(history+[
+                {"role":"user","content":question},
+                {"role":"assistant","content":result["answer"]},
+            ],None)
+            results[-1]["draft"]=draft_result["draft"]
+            results[-1]["draft_error"]=draft_result["error"]
+
         history.append({
             "role": "user",
             "content": question,
@@ -165,6 +176,7 @@ if __name__ == "__main__":
     parser.add_argument("--all", action="store_true", help="运行完整题集，会产生助手用量")
     parser.add_argument("--case", nargs="+", default=["E03"], help="运行指定题号，可写多个，例如 --case E01 E03 E07")
     parser.add_argument("--proxy", help="本次进程HTTP/HTTPS代理")
+    parser.add_argument("--dataset", default="travel-rag-v1", help="Langfuse 题集名，留出集是 travel-rag-holdout-v1")
     args = parser.parse_args()
     if args.proxy:
         os.environ["HTTP_PROXY"] = args.proxy
@@ -178,14 +190,14 @@ if __name__ == "__main__":
 
     try:
         # 从云端读取已经上传的题集。
-        dataset = client.get_dataset("travel-rag-v1")
+        dataset = client.get_dataset(args.dataset)
 
         # 每道题独立执行；同一道题内按顺序保留多轮历史。
         # 只取题库上传的题目：编号固定，页面从运行记录加入的条目不是标准题。
         selected_items = [
             item
             for item in dataset.items
-            if item.id.startswith("travel-rag-v1-E")
+            if item.id.startswith(f"{args.dataset}-")
             and (args.all or item.metadata["case_id"] in args.case)
         ]
 
@@ -201,11 +213,12 @@ if __name__ == "__main__":
         ).stdout.strip()
         root = Path(__file__).resolve().parents[1]
         hashes = {name: hashlib.sha256((root / name).read_bytes()).hexdigest() for name in (
-            "app/tool_calling.py", "app/tools.py", "examples/rag_eval_cases.json")}
+            "app/tool_calling.py", "app/tools.py", "examples/rag_eval_cases.json", "examples/rag_eval_holdout.json")}
+        run_prefix = "tool-agent" if args.dataset == "travel-rag-v1" else args.dataset
 
         # 执行选定题目，并记录追踪。
         experiment = client.run_experiment(
-            name="tool-agent-full" if args.all else "tool-agent-" + "-".join(sorted(set(args.case))),
+            name=f"{run_prefix}-full" if args.all else f"{run_prefix}-" + "-".join(sorted(set(args.case))),
             data=selected_items,
             task=run_eval_case,
             evaluators=evaluators,
@@ -225,7 +238,10 @@ if __name__ == "__main__":
             "run_name": experiment.run_name, "code_hashes": hashes,"git_commit":git_commit,
             "requested_cases": [item.metadata["case_id"] for item in selected_items],
             "judge_enabled": False,
+            "dataset": args.dataset,
             "results": [{"case_id": row.item.metadata["case_id"], "trace_id": row.trace_id,
+                         "group": row.item.metadata.get("group"),
+                         "paraphrase_of": row.item.metadata.get("paraphrase_of"),
                          "input": row.item.input, "expected_output": row.item.expected_output,
                          "output": row.output,
                          "scores": [{"name": score.name, "value": score.value, "reason": score.comment}
