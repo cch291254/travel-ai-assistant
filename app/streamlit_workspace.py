@@ -1,4 +1,4 @@
-"""旅行社 Copilot 工作台（下一阶段前端原型）。
+"""旅行社线路 Copilot 工作台（下一阶段前端原型）。
 
 启动：
     streamlit run app/streamlit_workspace.py --server.port 8502
@@ -33,7 +33,7 @@ from app.workspace_plan import (
 
 
 st.set_page_config(
-    page_title="旅行社 Copilot 工作台",
+    page_title="旅行社线路 Copilot 工作台",
     page_icon=":material/travel_explore:",
     layout="wide",
     initial_sidebar_state="auto",
@@ -1196,7 +1196,7 @@ if notice is not None:
     icons = {"success": ":material/check_circle:", "error": ":material/error:", "info": ":material/info:"}
     st.toast(text, icon=icons[kind])
 
-st.title("旅行社 Copilot 工作台")
+st.title("旅行社线路 Copilot 工作台")
 workflow_slot = st.container()
 render_pending_action()
 
